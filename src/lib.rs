@@ -4,8 +4,8 @@ mod row;
 mod cell;
 mod col;
 mod file;
-mod shared_string;
 mod xml;
+mod result;
 
 pub use workbook::Workbook;
 

@@ -1,8 +1,7 @@
-use serde::{Deserialize, Serialize};
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
-pub(crate) struct PhoneticPr {
-    #[serde(rename = "@fontId")]
-    font_id: u32,
-    #[serde(rename = "@type")]
-    phonetic_pr_type: String
-}
+pub(crate) mod facade;
+
+pub(crate) mod common;
+mod workbook;
+mod worksheet;
+mod shared_string;
+mod sheet_data;

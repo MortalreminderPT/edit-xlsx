@@ -1,3 +1,5 @@
+mod result;
+
 pub struct Cell {
     col_id: u32,
     row_id: u32,

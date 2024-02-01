@@ -7,45 +7,47 @@ use std::fs::File;
 use std::io::{Read, Seek, Write};
 use std::ops::Deref;
 use std::path::Path;
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 use serde::{Deserialize, Serialize};
 use walkdir::{DirEntry, WalkDir};
 use zip::CompressionMethod;
 use zip::write::FileOptions;
 use crate::sheet::Sheet;
 use crate::workbook::result::{WorkbookError, WorkbookResult};
-use crate::shared_string::SharedString;
+use crate::xml::facade::{Borrow, XmlIo, XmlManager};
 
 #[derive(Debug)]
 pub struct Workbook {
+    pub xml_facade: Rc<RefCell<XmlManager>>,
     pub sheets: Vec<Sheet>,
-    pub shared_string: Rc<RefCell<SharedString>>,
     pub tmp_path: String,
     pub file_path: String,
 }
 
 impl Workbook {
-    pub fn get_mut_sheet(&mut self, id: u8) -> Option<&mut Sheet> {
-        self.sheets.get_mut(usize::from(id))
+    pub fn get_sheet_mut(&mut self, id: u32) -> Option<&mut Sheet> {
+        self.sheets.iter_mut().find(|sheet| sheet.id == id)
     }
 
-    pub fn get_sheet(&mut self, id: u8) -> Option<&Sheet> {
-        self.sheets.get(usize::from(id))
+    pub fn get_sheet(&self, id: u32) -> Option<&Sheet> {
+        self.sheets.iter().find(|sheet| sheet.id == id)
     }
 }
 
 impl Workbook {
     pub fn from_path<P: AsRef<Path>>(file_path: P) -> Workbook {
         let tmp_path = Workbook::create_tmp_dir(&file_path).unwrap();
-        let shared_string = SharedString::from_path(&tmp_path);
-        let shared_string = Rc::new(RefCell::new(shared_string));
+        let xml_facade = XmlManager::from_path(&tmp_path);
+        let xml_facade = Rc::new(RefCell::new(xml_facade));
+        let sheets = xml_facade.borrow().borrow_workbook().sheets.sheets.iter().map(
+            |sheet_xml| Sheet::from_xml(sheet_xml.sheet_id, Rc::clone(&xml_facade))
+        ).collect();
         let workbook = Workbook {
-            sheets: vec![Sheet::from_path(&tmp_path, 1, Rc::clone(&shared_string))],
-            shared_string: Rc::clone(&shared_string),
+            xml_facade,
+            sheets,
             tmp_path,
-            file_path: file_path.as_ref().to_str().unwrap().to_string()
+            file_path: file_path.as_ref().to_str().unwrap().to_string(),
         };
-        // add a ptr for sheets to workbook
         workbook
     }
 
@@ -107,18 +109,15 @@ impl Workbook {
         }
         Ok(base_path.to_str().unwrap().to_string())
     }
-    pub fn save<P: AsRef<Path>>(&self, file_path: P) -> WorkbookResult<bool> {
+    pub fn save<P: AsRef<Path>>(&self, file_path: P) -> WorkbookResult<()> {
         // save files
-        self.shared_string.borrow_mut().save(&self.tmp_path);
-        self.sheets[0].save(&self.tmp_path);
-
+        self.xml_facade.borrow_mut().save(&self.tmp_path);
         // package files
-        let tmp_path = &self.tmp_path;
         let file = File::create(&file_path).unwrap();
-        let walk_dir = WalkDir::new(tmp_path);
+        let walk_dir = WalkDir::new(&self.tmp_path);
         let it = walk_dir.into_iter();
-        zip_dir(&mut it.filter_map(|e| e.ok()), tmp_path, file, CompressionMethod::Deflated)?;
-        Ok(true)
+        zip_dir(&mut it.filter_map(|e| e.ok()), &self.tmp_path, file, CompressionMethod::Deflated)?;
+        Ok(())
     }
 }
 

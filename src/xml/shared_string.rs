@@ -3,9 +3,10 @@ use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::xml::PhoneticPr;
+use crate::xml::common::PhoneticPr;
+use crate::xml::facade::XmlIo;
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="sst")]
 pub(crate) struct SharedString {
     #[serde(rename = "@count")]
@@ -18,7 +19,7 @@ pub(crate) struct SharedString {
     pub string_item: Vec<StringItem>,
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct StringItem {
     #[serde(rename = "t")]
     pub text: String,
@@ -30,7 +31,7 @@ impl SharedString {
     pub(crate) fn add_text(&mut self, text: &str) -> usize {
         let item = StringItem { text: String::from(text), phonetic_pr: None };
         for i in 0..self.string_item.len() {
-            if self.string_item[i] == item {
+            if self.string_item[i].text == item.text {
                 return i;
             }
         }
@@ -41,8 +42,8 @@ impl SharedString {
     }
 }
 
-impl SharedString {
-    pub fn from_path<P: AsRef<Path>>(file_path: P) -> SharedString {
+impl XmlIo<SharedString> for SharedString {
+    fn from_path<P: AsRef<Path>>(file_path: P) -> SharedString {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SharedStringFile).unwrap();
         let mut xml = String::new();
         file.read_to_string(&mut xml).unwrap();
@@ -50,7 +51,7 @@ impl SharedString {
         shared_string
     }
 
-    pub fn save<P: AsRef<Path>>(&self, file_path: P) {
+    fn save<P: AsRef<Path>>(&mut self, file_path: P) {
         let xml = se::to_string(&self).unwrap();
         // let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
         let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::SharedStringFile).unwrap();
