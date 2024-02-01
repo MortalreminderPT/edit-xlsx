@@ -5,10 +5,8 @@ use std::{fs, io};
 use std::cell::RefCell;
 use std::fs::File;
 use std::io::{Read, Seek, Write};
-use std::ops::Deref;
 use std::path::Path;
 use std::rc::Rc;
-use serde::{Deserialize, Serialize};
 use walkdir::{DirEntry, WalkDir};
 use zip::CompressionMethod;
 use zip::write::FileOptions;
@@ -18,7 +16,7 @@ use crate::xml::facade::{Borrow, XmlIo, XmlManager};
 
 #[derive(Debug)]
 pub struct Workbook {
-    pub xml_facade: Rc<RefCell<XmlManager>>,
+    xml_facade: Rc<RefCell<XmlManager>>,
     pub sheets: Vec<Sheet>,
     pub tmp_path: String,
     pub file_path: String,
@@ -123,7 +121,7 @@ impl Workbook {
 
 impl Drop for Workbook {
     fn drop(&mut self) {
-        let droped = fs::remove_dir_all(&self.tmp_path);
+        fs::remove_dir_all(&self.tmp_path).unwrap();
     }
 }
 

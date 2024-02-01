@@ -14,6 +14,8 @@ pub(crate) struct Workbook {
     file_version: FileVersion,
     #[serde(rename = "workbookPr")]
     workbook_pr: WorkbookPr,
+    #[serde(rename(serialize = "xr:revisionPtr", deserialize = "revisionPtr"), skip_serializing_if = "Option::is_none")]
+    xr_revision_ptr: Option<XrRevisionPtr>,
     #[serde(rename = "bookViews")]
     book_views: BookViews,
     #[serde(rename = "sheets")]
@@ -38,8 +40,8 @@ struct FileVersion {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct WorkbookPr {
-    #[serde(rename = "@filterPrivacy")]
-    filter_privacy: u32,
+    #[serde(rename = "@filterPrivacy", skip_serializing_if = "Option::is_none")]
+    filter_privacy: Option<u32>,
     #[serde(rename = "@defaultThemeVersion")]
     default_theme_version: String,
 }
@@ -60,8 +62,8 @@ struct WorkbookView {
     window_width: u32,
     #[serde(rename = "@windowHeight")]
     window_height: u32,
-    #[serde(rename = "@activeTab")]
-    active_tab: u32
+    #[serde(rename = "@activeTab", skip_serializing_if = "Option::is_none")]
+    active_tab: Option<u32>
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -96,16 +98,30 @@ struct ExtLst {
 struct Ext {
     #[serde(rename = "@uri")]
     uri: String,
-    #[serde(rename = "@xmlns:x15", skip_serializing_if = "Option::is_none")]
-    xmlns_x15: Option<String>,
+    #[serde(flatten)]
+    xmlns_attrs: XmlnsAttrs,
     #[serde(rename(serialize = "x15:workbookPr", deserialize = "workbookPr"), skip_serializing_if = "Option::is_none")]
-    x15workbook_pr: Option<X15WorkbookPr>,
+    x15_workbook_pr: Option<X15WorkbookPr>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct X15WorkbookPr {
     #[serde(rename = "@chartTrackingRefBase", skip_serializing_if = "Option::is_none")]
     chart_tracking_ref_base: Option<u32>
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct XrRevisionPtr {
+    #[serde(rename = "@revIDLastSave", skip_serializing_if = "Option::is_none")]
+    rev_id_last_save: Option<u32>,
+    #[serde(rename = "@documentId", skip_serializing_if = "Option::is_none")]
+    document_id: Option<String>,
+    #[serde(rename(serialize = "@xr6:coauthVersionLast", deserialize = "@coauthVersionLast"), skip_serializing_if = "Option::is_none")]
+    xr6_coauth_version_last: Option<u32>,
+    #[serde(rename(serialize = "@xr6:coauthVersionMax", deserialize = "@coauthVersionMax"), skip_serializing_if = "Option::is_none")]
+    xr6_coauth_version_max: Option<u32>,
+    #[serde(rename(serialize = "@xr10:uidLastSave", deserialize = "@uidLastSave"), skip_serializing_if = "Option::is_none")]
+    xr10_uid_last_save: Option<String>,
 }
 
 

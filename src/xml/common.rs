@@ -1,7 +1,4 @@
 use serde::{Deserialize, Serialize};
-use crate::xml::shared_string::SharedString;
-use crate::xml::workbook::Workbook;
-use crate::xml::worksheet::WorkSheet;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct PhoneticPr {
@@ -13,8 +10,8 @@ pub(crate) struct PhoneticPr {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct XmlnsAttrs {
-    #[serde(rename = "@xmlns")]
-    xmlns: String,
+    #[serde(rename = "@xmlns", skip_serializing_if = "Option::is_none")]
+    xmlns: Option<String>,
     #[serde(rename = "@xmlns:r", skip_serializing_if = "Option::is_none")]
     xmlns_r: Option<String>,
     #[serde(rename = "@xmlns:mc", skip_serializing_if = "Option::is_none")]
@@ -25,4 +22,16 @@ pub(crate) struct XmlnsAttrs {
     xmlns_x14ac: Option<String>,
     #[serde(rename = "@xmlns:x15", skip_serializing_if = "Option::is_none")]
     xmlns_x15: Option<String>,
+    #[serde(rename = "@xmlns:xr", skip_serializing_if = "Option::is_none")]
+    xmlns_xr: Option<String>,
+    #[serde(rename = "@xmlns:xr6", skip_serializing_if = "Option::is_none")]
+    xmlns_xr6: Option<String>,
+    #[serde(rename = "@xmlns:xr10", skip_serializing_if = "Option::is_none")]
+    xmlns_xr10: Option<String>,
+    #[serde(rename = "@xmlns:xr2", skip_serializing_if = "Option::is_none")]
+    xmlns_xr2: Option<String>,
+    #[serde(rename = "@xmlns:xr3", skip_serializing_if = "Option::is_none")]
+    xmlns_xr3: Option<String>,
+    #[serde(rename(serialize = "@xr:uid", deserialize = "@uid"), skip_serializing_if = "Option::is_none")]
+    xr_uid: Option<String>,
 }

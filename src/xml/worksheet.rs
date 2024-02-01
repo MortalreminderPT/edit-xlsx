@@ -39,7 +39,7 @@ struct SheetView {
     tab_selected: Option<u32>,
     #[serde(rename = "@workbookViewId")]
     workbook_view_id: u32,
-    #[serde(rename = "Selection", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "selection", skip_serializing_if = "Option::is_none")]
     selection: Option<Selection>
 }
 
@@ -70,18 +70,18 @@ struct SheetFormatPr {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct PageMargins {
-    #[serde(rename = "@bottom")]
-    bottom: f64,
-    #[serde(rename = "@footer")]
-    footer: f64,
-    #[serde(rename = "@header")]
-    header: f64,
     #[serde(rename = "@left")]
     left: f64,
     #[serde(rename = "@right")]
     right: f64,
     #[serde(rename = "@top")]
     top: f64,
+    #[serde(rename = "@bottom")]
+    bottom: f64,
+    #[serde(rename = "@header")]
+    header: f64,
+    #[serde(rename = "@footer")]
+    footer: f64,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
@@ -113,6 +113,7 @@ impl WorkSheet {
     pub(crate) fn save<P: AsRef<Path>>(&mut self, file_path: P, sheet_id: u32) {
         self.sheet_data.sort();
         let xml = se::to_string_with_root("worksheet", &self).unwrap();
+        let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
         let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::SheetFile(sheet_id)).unwrap();
         file.write_all(xml.as_ref()).unwrap();
     }

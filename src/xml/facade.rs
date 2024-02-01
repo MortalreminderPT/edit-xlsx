@@ -88,7 +88,7 @@ pub(crate) trait EditRow {
     fn sort(&mut self);
 }
 
-trait EditCell {
+pub(crate) trait EditCell {
     fn get(&mut self, col_id: u32) -> CellResult<&mut Cell>;
     fn create(&mut self, col_id: u32) -> CellResult<&mut Cell>;
     fn update(&mut self, col_id: u32) -> CellResult<&mut Cell>;

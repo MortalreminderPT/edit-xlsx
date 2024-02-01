@@ -1,20 +1,19 @@
-use std::io::{Read, Write};
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::xml::common::PhoneticPr;
+use crate::xml::common::{PhoneticPr, XmlnsAttrs};
 use crate::xml::facade::XmlIo;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="sst")]
 pub(crate) struct SharedString {
+    #[serde(flatten)]
+    xmlns_attrs: XmlnsAttrs,
     #[serde(rename = "@count")]
     count: u32,
     #[serde(rename="@uniqueCount")]
     unique_count: u32,
-    #[serde(rename="@xmlns")]
-    xmlns: String,
     #[serde(rename="si")]
     pub string_item: Vec<StringItem>,
 }
@@ -52,8 +51,8 @@ impl XmlIo<SharedString> for SharedString {
     }
 
     fn save<P: AsRef<Path>>(&mut self, file_path: P) {
-        let xml = se::to_string(&self).unwrap();
-        // let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
+        let xml = se::to_string_with_root("sst", &self).unwrap();
+        let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
         let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::SharedStringFile).unwrap();
         file.write_all(xml.as_ref()).unwrap();
     }

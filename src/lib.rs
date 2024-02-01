@@ -6,6 +6,7 @@ mod col;
 mod file;
 mod xml;
 mod result;
+mod utils;
 
 pub use workbook::Workbook;
 

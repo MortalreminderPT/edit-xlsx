@@ -1,5 +1,7 @@
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 use crate::result::{RowError, RowResult};
+use crate::utils::col_helper;
+use crate::utils::col_helper::to_col_name;
 use crate::xml::facade::EditRow;
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -11,7 +13,7 @@ pub(crate) struct SheetData {
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Cell {
     #[serde(flatten)]
-    pub(crate) loc: CellLocation,
+    loc: CellLocation,
     #[serde(rename = "@s", skip_serializing_if = "Option::is_none")]
     pub(crate) style: Option<u32>,
     #[serde(rename = "@t")]
@@ -31,7 +33,7 @@ struct CellLocation {
 impl CellLocation {
     fn new(row: u32, col: u32) -> CellLocation {
         CellLocation {
-            location: num_2_col(col) + &row.to_string(),
+            location: to_col_name(col) + &row.to_string(),
             col: Some(col)
         }
     }
@@ -39,7 +41,7 @@ impl CellLocation {
     fn col(&self) -> u32 {
         match self.col {
             Some(col) => col,
-            None => col_2_num(&self.location)
+            None => col_helper::to_col(&self.location)
         }
     }
 }
@@ -112,40 +114,5 @@ impl Cell {
             text_type: "s".to_string(),
             text: None,
         }
-    }
-
-    pub(crate) fn col(num: u32) -> u32 {
-        0
-    }
-}
-
-fn num_2_col(mut col_num: u32) -> String {
-    let mut col = String::new();
-    while col_num > 0 {
-        let pop = (col_num - 1) % 26;
-        col_num = (col_num - 1) / 26;
-        col.push(('A' as u8 + pop as u8) as char);
-    }
-    col.chars().rev().collect::<String>()
-}
-
-fn col_2_num(col: &String) -> u32 {
-    let num = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
-    let mut col = col.trim_matches(num);
-    let mut col = col.chars().rev().collect::<String>();
-    let mut num: u32 = 0;
-    while !col.is_empty() {
-        num *= 26;
-        num += (col.pop().unwrap() as u8 - 'A' as u8 + 1) as u32;
-    }
-    num
-}
-
-#[test]
-fn test_col () {
-    for i in 1..1_000_000 {
-        let mut s = num_2_col(i);
-        let r = col_2_num(&mut s);
-        assert_eq!(i, r)
     }
 }
