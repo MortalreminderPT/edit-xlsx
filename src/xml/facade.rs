@@ -3,7 +3,7 @@ use std::path::Path;
 use crate::result::{CellResult, RowResult};
 use crate::xml::sheet_data::{Cell, Row};
 use crate::xml::shared_string::SharedString;
-use crate::xml::workbook::Workbook;
+use crate::xml::workbook::{Sheet, Workbook};
 use crate::xml::worksheet::WorkSheet;
 
 #[derive(Debug)]
@@ -16,6 +16,10 @@ pub(crate) struct XmlManager {
 pub(crate) trait XmlIo<T> {
     fn from_path<P: AsRef<Path>>(file_path: P) -> T;
     fn save<P: AsRef<Path>>(&mut self, file_path: P);
+}
+
+pub(crate) trait Create {
+    fn create_worksheet(&mut self, id: u32) -> &mut WorkSheet;
 }
 
 pub(crate) trait Borrow {
@@ -45,6 +49,17 @@ impl XmlIo<XmlManager> for XmlManager {
         self.workbook.save(&file_path);
         self.worksheets.iter_mut().for_each(|(id, worksheet)| worksheet.save(&file_path, *id));
         self.shared_string.save(&file_path);
+    }
+}
+
+impl Create for XmlManager {
+    fn create_worksheet(&mut self, id: u32) -> &mut WorkSheet {
+        let work_sheet = WorkSheet::new();
+        self.worksheets.insert(id, work_sheet);
+        self.workbook.sheets.sheets.push(
+            Sheet::new(id)
+        );
+        self.worksheets.get_mut(&id).unwrap()
     }
 }
 

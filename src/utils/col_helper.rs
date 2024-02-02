@@ -1,12 +1,12 @@
 pub(crate) fn to_col_name(mut col_num: u32) -> String {
-        let mut col = String::new();
-        while col_num > 0 {
-            let pop = (col_num - 1) % 26;
-            col_num = (col_num - 1) / 26;
-            col.push(char::from_u32(65 + pop).unwrap());
-        }
-        col.chars().rev().collect::<String>()
+    let mut col = String::new();
+    while col_num > 0 {
+        let pop = (col_num - 1) % 26;
+        col_num = (col_num - 1) / 26;
+        col.push(char::from_u32(65 + pop).unwrap());
     }
+    col.chars().rev().collect::<String>()
+}
 
 pub(crate) fn to_col(col: &str) -> u32 {
     let mut col = col.as_bytes();

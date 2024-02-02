@@ -6,8 +6,16 @@ use crate::xml::facade::EditRow;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct SheetData {
-    #[serde(rename = "row")]
+    #[serde(rename = "row", default = "Vec::new")]
     pub(crate) rows: Vec<Row>
+}
+
+impl SheetData {
+    pub(crate) fn default() -> SheetData {
+        SheetData {
+            rows: vec![]
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]

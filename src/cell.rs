@@ -1,4 +1,4 @@
-mod result;
+
 
 pub struct Cell {
     col_id: u32,

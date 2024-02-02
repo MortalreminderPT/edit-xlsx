@@ -82,6 +82,16 @@ pub(crate) struct Sheet {
     r_id: String,
 }
 
+impl Sheet {
+    pub(crate) fn new(id: u32) -> Sheet {
+        Sheet {
+            name: format!("sheet{id}"),
+            sheet_id: id,
+            r_id: format!("rId{id}"),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 struct CalcPr {
     #[serde(rename = "@calcId")]

@@ -35,3 +35,22 @@ pub(crate) struct XmlnsAttrs {
     #[serde(rename(serialize = "@xr:uid", deserialize = "@uid"), skip_serializing_if = "Option::is_none")]
     xr_uid: Option<String>,
 }
+
+impl XmlnsAttrs {
+    pub(crate) fn default() -> XmlnsAttrs {
+        XmlnsAttrs {
+            xmlns: Some("http://schemas.openxmlformats.org/spreadsheetml/2006/main".to_string()),
+            xmlns_r: Some("http://schemas.openxmlformats.org/officeDocument/2006/relationships".to_string()),
+            xmlns_mc: Some("http://schemas.openxmlformats.org/markup-compatibility/2006".to_string()),
+            mc_ignorable: Some("x14ac".to_string()),
+            xmlns_x14ac: Some("http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac".to_string()),
+            xmlns_x15: None,
+            xmlns_xr: None,
+            xmlns_xr6: None,
+            xmlns_xr10: None,
+            xmlns_xr2: None,
+            xmlns_xr3: None,
+            xr_uid: None,
+        }
+    }
+}
