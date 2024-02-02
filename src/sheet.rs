@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 use crate::result::SheetResult;
-use crate::xml::facade::{Borrow, Create, EditRow, XmlManager};
+use crate::xml::manage::{Borrow, Create, EditRow, XmlManager};
 
 #[derive(Debug)]
 pub struct Sheet {

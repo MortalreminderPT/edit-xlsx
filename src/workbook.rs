@@ -9,7 +9,8 @@ use std::rc::Rc;
 use crate::sheet::Sheet;
 use crate::utils::zip_util;
 use crate::result::WorkbookResult;
-use crate::xml::facade::{Borrow, XmlIo, XmlManager};
+use crate::workbook::rel::Relationships;
+use crate::xml::manage::{Borrow, XmlIo, XmlManager};
 
 #[derive(Debug)]
 pub struct Workbook {
@@ -17,6 +18,7 @@ pub struct Workbook {
     pub(crate) tmp_path: String,
     pub(crate) file_path: String,
     xml_manager: Rc<RefCell<XmlManager>>,
+    rels: Relationships,
 }
 
 impl Workbook {
@@ -29,10 +31,10 @@ impl Workbook {
     }
 
     pub fn add_worksheet(&mut self) -> Option<&mut Sheet> {
-        let max_id = self.sheets.iter().map(|sheet| sheet.id).max().unwrap();
-        let sheet = Sheet::new(max_id + 1, Rc::clone(&self.xml_manager));
+        let sheet_id = self.rels.add_worksheet();
+        let sheet = Sheet::new(sheet_id, Rc::clone(&self.xml_manager));
         self.sheets.push(sheet);
-        self.get_sheet_mut(max_id + 1)
+        self.get_sheet_mut(sheet_id)
     }
 }
 
@@ -44,11 +46,13 @@ impl Workbook {
         let sheets = xml_manager.borrow().borrow_workbook().sheets.sheets.iter().map(
             |sheet_xml| Sheet::from_xml(sheet_xml.sheet_id, Rc::clone(&xml_manager))
         ).collect();
+        let rels = Relationships::from_path(&tmp_path);
         Workbook {
             xml_manager,
             sheets,
             tmp_path,
             file_path: file_path.as_ref().to_str().unwrap().to_string(),
+            rels,
         }
     }
 
@@ -56,16 +60,17 @@ impl Workbook {
         Ok(zip_util::extract_dir(file_path)?)
     }
 
-    pub fn save_as<P: AsRef<Path>>(&self, file_path: P) -> WorkbookResult<()> {
+    pub fn save_as<P: AsRef<Path>>(&mut self, file_path: P) -> WorkbookResult<()> {
         // save files
         self.xml_manager.borrow_mut().save(&self.tmp_path);
+        self.rels.save(&self.tmp_path);
         // package files
         zip_util::zip_dir(&self.tmp_path, file_path)?;
         Ok(())
     }
 
-    pub fn save(&self) -> WorkbookResult<()> {
-        self.save_as(&self.file_path)
+    pub fn save(&mut self) -> WorkbookResult<()> {
+        self.save_as(&self.file_path.clone())
     }
 }
 

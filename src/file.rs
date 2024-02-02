@@ -7,6 +7,7 @@ pub enum XlsxFileType {
     WorkbookFile,
     SheetFile(u32),
     SharedStringFile,
+    WorkbookRels,
 }
 
 pub struct XlsxFileReader {
@@ -61,6 +62,9 @@ fn parse_path<P: AsRef<Path>>(base_path: P, file_type: &XlsxFileType) -> PathBuf
         }
         XlsxFileType::SharedStringFile => {
             base_path.as_ref().join("xl/sharedStrings.xml")
+        }
+        XlsxFileType::WorkbookRels => {
+            base_path.as_ref().join("xl/_rels/workbook.xml.rels")
         }
     }
 }

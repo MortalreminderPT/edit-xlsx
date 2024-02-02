@@ -3,18 +3,18 @@ use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
-use crate::xml::facade::XmlIo;
+use crate::xml::manage::XmlIo;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="sst")]
 pub(crate) struct SharedString {
     #[serde(flatten)]
     xmlns_attrs: XmlnsAttrs,
-    #[serde(rename = "@count")]
+    #[serde(rename = "@count", default)]
     count: u32,
-    #[serde(rename="@uniqueCount")]
+    #[serde(rename = "@uniqueCount", default)]
     unique_count: u32,
-    #[serde(rename="si")]
+    #[serde(rename = "si", default = "Vec::new")]
     pub string_item: Vec<StringItem>,
 }
 

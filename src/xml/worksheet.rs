@@ -3,7 +3,7 @@ use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
-use crate::xml::facade::{EditRow, XmlIo};
+use crate::xml::manage::{EditRow, XmlIo};
 use crate::xml::sheet_data::SheetData;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -75,7 +75,7 @@ struct SheetView {
 impl SheetView {
     pub(crate) fn default() -> SheetView {
         SheetView {
-            tab_selected: Some(1),
+            tab_selected: Some(0),
             workbook_view_id: 0,
             selection: None,
         }

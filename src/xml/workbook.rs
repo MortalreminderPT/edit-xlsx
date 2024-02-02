@@ -3,7 +3,7 @@ use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::common::XmlnsAttrs;
-use crate::xml::facade::XmlIo;
+use crate::xml::manage::XmlIo;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="workbook")]
