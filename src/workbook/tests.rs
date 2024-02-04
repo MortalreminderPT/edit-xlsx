@@ -10,7 +10,7 @@ mod tests {
     #[test]
     fn test_sheet() {
         let mut workbook = Workbook::from_path("2024-01-16 - 副本).xlsx");
-        let worksheet = workbook.get_sheet_mut(0).unwrap();
+        let worksheet = workbook.get_worksheet(0).unwrap();
         worksheet.write(0, 0, "Hello");
         workbook.save_as("2024-01-16 - 副本).xlsx").unwrap();
     }

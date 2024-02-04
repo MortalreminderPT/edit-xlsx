@@ -22,19 +22,15 @@ pub struct Workbook {
 }
 
 impl Workbook {
-    pub fn get_sheet_mut(&mut self, id: u32) -> Option<&mut Sheet> {
+    pub fn get_worksheet(&mut self, id: u32) -> Option<&mut Sheet> {
         self.sheets.iter_mut().find(|sheet| sheet.id == id)
-    }
-
-    pub fn get_sheet(&self, id: u32) -> Option<&Sheet> {
-        self.sheets.iter().find(|sheet| sheet.id == id)
     }
 
     pub fn add_worksheet(&mut self) -> Option<&mut Sheet> {
         let sheet_id = self.rels.add_worksheet();
         let sheet = Sheet::new(sheet_id, Rc::clone(&self.xml_manager));
         self.sheets.push(sheet);
-        self.get_sheet_mut(sheet_id)
+        self.get_worksheet(sheet_id)
     }
 }
 

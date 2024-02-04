@@ -2,7 +2,7 @@ use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::xml::common::XmlnsAttrs;
+use crate::xml::common::{ExtLst, XmlnsAttrs};
 use crate::xml::manage::XmlIo;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -22,8 +22,8 @@ pub(crate) struct Workbook {
     pub(crate) sheets: Sheets,
     #[serde(rename = "calcPr")]
     calc_pr: CalcPr,
-    #[serde(rename = "extLst")]
-    ext_lst: ExtLst,
+    #[serde(rename = "extLst", skip_serializing_if = "Option::is_none")]
+    ext_lst: Option<ExtLst>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -98,27 +98,6 @@ struct CalcPr {
     calc_id: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct ExtLst {
-    #[serde(rename = "ext")]
-    ext: Vec<Ext>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Ext {
-    #[serde(rename = "@uri")]
-    uri: String,
-    #[serde(flatten)]
-    xmlns_attrs: XmlnsAttrs,
-    #[serde(rename(serialize = "x15:workbookPr", deserialize = "workbookPr"), skip_serializing_if = "Option::is_none")]
-    x15_workbook_pr: Option<X15WorkbookPr>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct X15WorkbookPr {
-    #[serde(rename = "@chartTrackingRefBase", skip_serializing_if = "Option::is_none")]
-    chart_tracking_ref_base: Option<u32>
-}
 
 #[derive(Debug, Deserialize, Serialize)]
 struct XrRevisionPtr {

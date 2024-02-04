@@ -24,8 +24,8 @@ pub(crate) struct Cell {
     loc: CellLocation,
     #[serde(rename = "@s", skip_serializing_if = "Option::is_none")]
     pub(crate) style: Option<u32>,
-    #[serde(rename = "@t")]
-    pub(crate) text_type: String,
+    #[serde(rename = "@t", skip_serializing_if = "Option::is_none")]
+    pub(crate) text_type: Option<String>,
     #[serde(rename = "v", skip_serializing_if = "Option::is_none")]
     pub(crate) text: Option<String>,
 }
@@ -119,7 +119,7 @@ impl Cell {
         Cell {
             loc: CellLocation::new(row, col), // num_2_col(col) + &row.to_string(),
             style: None,
-            text_type: "s".to_string(),
+            text_type: Some("s".to_string()),
             text: None,
         }
     }

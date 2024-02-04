@@ -5,3 +5,4 @@ mod workbook;
 mod worksheet;
 mod shared_string;
 pub(crate) mod sheet_data;
+mod style;

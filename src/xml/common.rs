@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct PhoneticPr {
@@ -18,6 +18,8 @@ pub(crate) struct XmlnsAttrs {
     xmlns_mc: Option<String>,
     #[serde(rename(serialize = "@mc:Ignorable", deserialize = "@Ignorable"), skip_serializing_if = "Option::is_none")]
     mc_ignorable: Option<String>,
+    #[serde(rename = "@xmlns:x14", skip_serializing_if = "Option::is_none")]
+    xmlns_x14: Option<String>,
     #[serde(rename = "@xmlns:x14ac", skip_serializing_if = "Option::is_none")]
     xmlns_x14ac: Option<String>,
     #[serde(rename = "@xmlns:x15", skip_serializing_if = "Option::is_none")]
@@ -32,8 +34,54 @@ pub(crate) struct XmlnsAttrs {
     xmlns_xr2: Option<String>,
     #[serde(rename = "@xmlns:xr3", skip_serializing_if = "Option::is_none")]
     xmlns_xr3: Option<String>,
+    #[serde(rename = "@xmlns:x16r2", skip_serializing_if = "Option::is_none")]
+    xmlns_x16r2: Option<String>,
     #[serde(rename(serialize = "@xr:uid", deserialize = "@uid"), skip_serializing_if = "Option::is_none")]
     xr_uid: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub(crate) struct ExtLst {
+    #[serde(rename = "ext")]
+    ext: Vec<Ext>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Ext {
+    #[serde(rename = "@uri")]
+    uri: String,
+    #[serde(flatten)]
+    xmlns_attrs: XmlnsAttrs,
+    #[serde(rename(serialize = "x15:workbookPr", deserialize = "workbookPr"), skip_serializing_if = "Option::is_none")]
+    x15_workbook_pr: Option<X15WorkbookPr>,
+    #[serde(rename(serialize = "x14:slicerStyles", deserialize = "slicerStyles"), skip_serializing_if = "Option::is_none")]
+    x14_slicer_styles: Option<X14SlicerStyles>,
+    #[serde(rename(serialize = "x15:timelineStyles", deserialize = "timelineStyles"), skip_serializing_if = "Option::is_none")]
+    x15_timeline_styles: Option<X15TimelineStyles>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct X15WorkbookPr {
+    #[serde(rename = "@chartTrackingRefBase", skip_serializing_if = "Option::is_none")]
+    chart_tracking_ref_base: Option<u32>
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct X14SlicerStyles {
+    #[serde(rename = "@defaultSlicerStyle", skip_serializing_if = "Option::is_none")]
+    default_slicer_style: Option<String>
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct X15TimelineStyles {
+    #[serde(rename = "@defaultTimelineStyle", skip_serializing_if = "Option::is_none")]
+    default_timeline_style: Option<String>
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub(crate) struct Element {
+    #[serde(rename = "@val")]
+    val: String
 }
 
 impl XmlnsAttrs {
@@ -43,6 +91,7 @@ impl XmlnsAttrs {
             xmlns_r: Some("http://schemas.openxmlformats.org/officeDocument/2006/relationships".to_string()),
             xmlns_mc: Some("http://schemas.openxmlformats.org/markup-compatibility/2006".to_string()),
             mc_ignorable: Some("x14ac".to_string()),
+            xmlns_x14: None,
             xmlns_x14ac: Some("http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac".to_string()),
             xmlns_x15: None,
             xmlns_xr: None,
@@ -50,6 +99,7 @@ impl XmlnsAttrs {
             xmlns_xr10: None,
             xmlns_xr2: None,
             xmlns_xr3: None,
+            xmlns_x16r2: None,
             xr_uid: None,
         }
     }
