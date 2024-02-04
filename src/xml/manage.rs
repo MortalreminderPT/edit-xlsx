@@ -5,11 +5,13 @@ use crate::xml::sheet_data::{Cell, Row};
 use crate::xml::shared_string::SharedString;
 use crate::xml::style::StyleSheet;
 use crate::xml::workbook::{Sheet, Workbook};
+use crate::xml::workbook_rel::Relationships;
 use crate::xml::worksheet::WorkSheet;
 
 #[derive(Debug)]
 pub(crate) struct XmlManager {
     workbook: Workbook,
+    workbook_rel: Relationships,
     worksheets: HashMap<u32, WorkSheet>,
     shared_string: SharedString,
     style_sheet: StyleSheet,
@@ -21,7 +23,7 @@ pub(crate) trait XmlIo<T> {
 }
 
 pub(crate) trait Create {
-    fn create_worksheet(&mut self, id: u32) -> &mut WorkSheet;
+    fn create_worksheet(&mut self) -> (u32, &mut WorkSheet);
 }
 
 pub(crate) trait Borrow {
@@ -38,12 +40,14 @@ pub(crate) trait Borrow {
 impl XmlIo<XmlManager> for XmlManager {
      fn from_path<P: AsRef<Path>>(path: P) -> XmlManager {
          let workbook = Workbook::from_path(&path);
+         let workbook_rel = Relationships::from_path(&path);
          let shared_string = SharedString::from_path(&path);
          let style_sheet = StyleSheet::from_path(&path);
          let worksheets: HashMap<u32, WorkSheet> = workbook.sheets.sheets.iter()
              .map(|sheet| (sheet.sheet_id, WorkSheet::from_path(&path, sheet.sheet_id))).collect();
          XmlManager {
              workbook,
+             workbook_rel,
              worksheets,
              shared_string,
              style_sheet,
@@ -54,17 +58,19 @@ impl XmlIo<XmlManager> for XmlManager {
         self.worksheets.iter_mut().for_each(|(id, worksheet)| worksheet.save(&file_path, *id));
         self.shared_string.save(&file_path);
         self.style_sheet.save(&file_path);
+        self.workbook_rel.save(&file_path);
     }
 }
 
 impl Create for XmlManager {
-    fn create_worksheet(&mut self, id: u32) -> &mut WorkSheet {
+    fn create_worksheet(&mut self) -> (u32, &mut WorkSheet) {
+        let id = self.workbook_rel.add_worksheet();
         let work_sheet = WorkSheet::new();
         self.worksheets.insert(id, work_sheet);
         self.workbook.sheets.sheets.push(
             Sheet::new(id)
         );
-        self.worksheets.get_mut(&id).unwrap()
+        (id, self.worksheets.get_mut(&id).unwrap())
     }
 }
 

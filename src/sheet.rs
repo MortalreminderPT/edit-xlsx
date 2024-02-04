@@ -30,9 +30,9 @@ impl Sheet {
 }
 
 impl Sheet {
-    pub(crate) fn new(sheet_id: u32, xml_manager: Rc<RefCell<XmlManager>>) -> Sheet {
-        xml_manager.borrow_mut().create_worksheet(sheet_id);
-        Self::from_xml(sheet_id, Rc::clone(&xml_manager))
+    pub(crate) fn new(xml_manager: Rc<RefCell<XmlManager>>) -> Sheet {
+        let (id, worksheet) = xml_manager.borrow_mut().create_worksheet();
+        Self::from_xml(id, Rc::clone(&xml_manager))
     }
 
     pub(crate) fn from_xml(sheet_id: u32, xml_manager: Rc<RefCell<XmlManager>>) -> Sheet {
