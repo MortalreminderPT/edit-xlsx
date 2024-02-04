@@ -31,10 +31,14 @@ pub(crate) trait Borrow {
     fn borrow_worksheets(&self) -> &HashMap<u32, WorkSheet>;
     fn borrow_worksheet(&self, id: u32) -> &WorkSheet;
     fn borrow_shared_string(&self) -> &SharedString;
+
+    fn borrow_style_sheet(&self) -> &StyleSheet;
+
     fn borrow_workbook_mut(&mut self) -> &mut Workbook;
     fn borrow_worksheets_mut(&mut self) -> &mut HashMap<u32, WorkSheet>;
     fn borrow_worksheet_mut(&mut self, id: u32) -> &mut WorkSheet;
     fn borrow_shared_string_mut(&mut self) -> &mut SharedString;
+    fn borrow_style_sheet_mut(&mut self) -> &mut StyleSheet;
 }
 
 impl XmlIo<XmlManager> for XmlManager {
@@ -87,6 +91,11 @@ impl Borrow for XmlManager {
     fn borrow_shared_string(&self) -> &SharedString {
         &self.shared_string
     }
+
+    fn borrow_style_sheet(&self) -> &StyleSheet {
+        &self.style_sheet
+    }
+
     fn borrow_workbook_mut(&mut self) -> &mut Workbook {
         &mut self.workbook
     }
@@ -99,6 +108,10 @@ impl Borrow for XmlManager {
 
     fn borrow_shared_string_mut(&mut self) -> &mut SharedString {
         &mut self.shared_string
+    }
+
+    fn borrow_style_sheet_mut(&mut self) -> &mut StyleSheet {
+        &mut self.style_sheet
     }
 }
 

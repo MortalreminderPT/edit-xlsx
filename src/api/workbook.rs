@@ -5,10 +5,9 @@ use std::cell::RefCell;
 use std::io::{Read, Seek, Write};
 use std::path::Path;
 use std::rc::Rc;
-use crate::sheet::Sheet;
+use crate::api::sheet::Sheet;
 use crate::utils::zip_util;
 use crate::result::WorkbookResult;
-use crate::xml::workbook_rel::Relationships;
 use crate::xml::manage::{Borrow, Create, XmlIo, XmlManager};
 
 #[derive(Debug)]
@@ -17,7 +16,6 @@ pub struct Workbook {
     pub(crate) tmp_path: String,
     pub(crate) file_path: String,
     xml_manager: Rc<RefCell<XmlManager>>,
-    // rels: Relationships,
 }
 
 impl Workbook {
@@ -41,7 +39,6 @@ impl Workbook {
         let sheets = xml_manager.borrow().borrow_workbook().sheets.sheets.iter().map(
             |sheet_xml| Sheet::from_xml(sheet_xml.sheet_id, Rc::clone(&xml_manager))
         ).collect();
-        let rels = Relationships::from_path(&tmp_path);
         Workbook {
             xml_manager,
             sheets,

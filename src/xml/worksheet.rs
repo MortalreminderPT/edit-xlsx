@@ -172,7 +172,7 @@ pub struct Cols {
 impl WorkSheet {
     pub(crate) fn new() -> WorkSheet {
         WorkSheet {
-            xmlns_attrs: XmlnsAttrs::default(),
+            xmlns_attrs: XmlnsAttrs::worksheet_default(),
             dimension: Some(Dimension::default()),
             sheet_views: SheetViews::default(),
             sheet_format_pr: SheetFormatPr::default(),

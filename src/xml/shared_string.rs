@@ -27,17 +27,17 @@ pub(crate) struct StringItem {
 }
 
 impl SharedString {
-    pub(crate) fn add_text(&mut self, text: &str) -> usize {
+    pub(crate) fn add_text(&mut self, text: &str) -> u32 {
         let item = StringItem { text: String::from(text), phonetic_pr: None };
         for i in 0..self.string_item.len() {
             if self.string_item[i].text == item.text {
-                return i;
+                return i as u32;
             }
         }
         self.count += 1;
         self.unique_count += 1;
         self.string_item.push(item);
-        self.string_item.len() - 1
+        self.string_item.len() as u32 - 1
     }
 }
 impl XmlIo<SharedString> for SharedString {

@@ -27,7 +27,7 @@ pub(crate) struct Cell {
     #[serde(rename = "@t", skip_serializing_if = "Option::is_none")]
     pub(crate) text_type: Option<String>,
     #[serde(rename = "v", skip_serializing_if = "Option::is_none")]
-    pub(crate) text: Option<String>,
+    pub(crate) text: Option<u32>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -107,20 +107,20 @@ impl Row {
         cell
     }
 
-    pub(crate) fn create_cell(&mut self, row_id: u32, col_id: u32) -> &mut Cell {
-        self.cells.push(Cell::new(row_id, col_id));
+    pub(crate) fn create_cell(&mut self, row_id: u32, col_id: u32, text_id: Option<u32>, style_id: Option<u32>, text_type: &str) -> &mut Cell {
+        self.cells.push(Cell::new(row_id, col_id, text_id, style_id, text_type));
         self.cells.last_mut().unwrap()
     }
 }
 
 
 impl Cell {
-    fn new(row: u32, col: u32) -> Cell {
+    fn new(row: u32, col: u32, text_id: Option<u32>, style_id: Option<u32>, text_type: &str) -> Cell {
         Cell {
             loc: CellLocation::new(row, col), // num_2_col(col) + &row.to_string(),
-            style: None,
-            text_type: Some("s".to_string()),
-            text: None,
+            style: style_id,
+            text_type: Some(String::from(text_type)),
+            text: text_id,
         }
     }
 }

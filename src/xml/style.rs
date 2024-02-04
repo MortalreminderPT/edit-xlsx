@@ -2,11 +2,11 @@ use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
+use crate::Format;
 use crate::xml::common::{Element, ExtLst, XmlnsAttrs};
 use crate::xml::manage::XmlIo;
 
 #[derive(Debug, Deserialize, Serialize)]
-#[serde(rename="sst")]
 pub(crate) struct StyleSheet {
     #[serde(flatten)]
     xmlns_attrs: XmlnsAttrs,
@@ -41,38 +41,72 @@ struct Fonts {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Font {
-    sz: Element,
+pub(crate) struct Font {
+    sz: Element<u8>,
     #[serde(skip_serializing_if = "Option::is_none")]
     color: Option<Color>,
-    name: Element,
+    name: Element<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    family: Option<Element>,
+    family: Option<Element<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    charset: Option<Element>,
+    charset: Option<Element<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    scheme: Option<Element>,
+    scheme: Option<Element<String>>,
     #[serde(rename = "b", skip_serializing_if = "Option::is_none")]
-    bold: Option<Bold>,
+    pub(crate) bold: Option<Bold>,
     #[serde(rename = "i", skip_serializing_if = "Option::is_none")]
-    italic: Option<Italic>,
+    pub(crate) italic: Option<Italic>,
     #[serde(rename = "u", skip_serializing_if = "Option::is_none")]
-    underline: Option<Underline>,
+    pub(crate) underline: Option<Underline>,
+}
+
+impl Font {
+    pub(crate) fn default() -> Font {
+        Font {
+            sz: Element::from_val(11),
+            color: None,
+            name: Element::from_val("Calibri".to_string()),
+            family: None,
+            charset: None,
+            scheme: None,
+            bold: None,
+            italic: None,
+            underline: None,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Bold {
+pub(crate) struct Bold {
 
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct Italic {
-
+impl Bold {
+    pub(crate) fn default() -> Bold {
+        Bold {}
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Underline {
+pub(crate) struct Italic {
 
+}
+
+impl Italic {
+    pub(crate) fn default() -> Italic {
+        Italic {}
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub(crate) struct Underline {
+
+}
+
+impl Underline {
+    pub(crate) fn default() -> Underline {
+        Underline {}
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -106,6 +140,15 @@ struct Borders {
     #[serde(rename = "@count", default)]
     count: u32,
     border: Vec<Border>
+}
+
+impl Borders {
+    fn default() -> Borders {
+        Borders {
+            count: 0,
+            border: vec![],
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -161,6 +204,19 @@ struct Xf {
     apply_font: Option<u32>,
 }
 
+impl Xf {
+    fn default() -> Xf {
+        Xf {
+            num_fmt_id: 0,
+            font_id: 0,
+            fill_id: 0,
+            border_id: 0,
+            xf_id: Some(0),
+            apply_font: None,
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 struct CellStyles {
     #[serde(rename = "@count", default)]
@@ -193,6 +249,24 @@ struct TableStyles {
     default_table_style: String,
     #[serde(rename = "@defaultPivotStyle")]
     default_pivot_style: String,
+}
+
+impl StyleSheet {
+    pub(crate) fn add_format(&mut self, format: Format) -> u32 {
+        // update font format
+        let font_id =
+            if let Some(font) = format.font {
+                self.fonts.fonts.push(font);
+                self.fonts.count += 1;
+                self.fonts.count - 1
+            } else { 0 };
+        // update cell xfs and return the xf index
+        let mut xf = Xf::default();
+        xf.font_id = font_id;
+        self.cell_xfs.xf.push(xf);
+        self.cell_xfs.count += 1;
+        self.cell_xfs.count - 1
+    }
 }
 
 impl XmlIo<StyleSheet> for StyleSheet {

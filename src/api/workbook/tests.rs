@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use crate::workbook::Workbook;
+    use super::super::Workbook;
 
     #[test]
     fn test_from() {
