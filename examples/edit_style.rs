@@ -5,7 +5,7 @@ fn main() {
     let mut worksheet = workbook.get_worksheet(1).unwrap();
     let bold_format = Format::new().set_bold().set_underline().set_italic();
     worksheet.write_with_format(1, 1, "An example of text font style", bold_format);
-    let border_format = Format::new().set_border(FormatBorder::None);
+    let border_format = Format::new().set_border_bottom(FormatBorder::MediumDashed);
     worksheet.write_with_format(1, 2, "An example of border style", border_format);
     for row in 3..9 {
         for col in 3..9 {

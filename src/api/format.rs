@@ -78,4 +78,32 @@ impl Format {
         border.bottom = BorderElement::new(style, 64);
         self
     }
+
+    pub fn set_border_left(mut self, format_border: FormatBorder) -> Format {
+        let border = self.border.get_or_insert(Border::default());
+        let style = format_border.to_str();
+        border.left = BorderElement::new(style, 64);
+        self
+    }
+
+    pub fn set_border_right(mut self, format_border: FormatBorder) -> Format {
+        let border = self.border.get_or_insert(Border::default());
+        let style = format_border.to_str();
+        border.right = BorderElement::new(style, 64);
+        self
+    }
+
+    pub fn set_border_top(mut self, format_border: FormatBorder) -> Format {
+        let border = self.border.get_or_insert(Border::default());
+        let style = format_border.to_str();
+        border.top = BorderElement::new(style, 64);
+        self
+    }
+
+    pub fn set_border_bottom(mut self, format_border: FormatBorder) -> Format {
+        let border = self.border.get_or_insert(Border::default());
+        let style = format_border.to_str();
+        border.bottom = BorderElement::new(style, 64);
+        self
+    }
 }

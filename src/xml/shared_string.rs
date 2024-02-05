@@ -40,6 +40,7 @@ impl SharedString {
         self.string_item.len() as u32 - 1
     }
 }
+
 impl XmlIo<SharedString> for SharedString {
     fn from_path<P: AsRef<Path>>(file_path: P) -> SharedString {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SharedStringFile).unwrap();

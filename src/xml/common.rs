@@ -1,3 +1,5 @@
+extern crate proc_macro;
+use proc_macro::TokenStream;
 use serde::{Deserialize, Deserializer, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
