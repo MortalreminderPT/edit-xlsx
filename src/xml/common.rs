@@ -95,6 +95,38 @@ impl<T: Clone + PartialEq + Eq + Hash> Element<T> {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+pub(crate) struct Color {
+    #[serde(rename = "@indexed", skip_serializing_if = "Option::is_none")]
+    indexed: Option<u32>,
+    #[serde(rename = "@rgb", skip_serializing_if = "Option::is_none")]
+    rgb: Option<String>,
+    #[serde(rename = "@theme", skip_serializing_if = "Option::is_none")]
+    theme: Option<u32>,
+    #[serde(rename = "@tint", skip_serializing_if = "Option::is_none")]
+    tint: Option<f64>
+}
+
+impl Color {
+    pub(crate) fn default() -> Color {
+        Color {
+            indexed: Some(64),
+            rgb: None,
+            theme: None,
+            tint: None,
+        }
+    }
+
+    pub(crate) fn from_rgb(rgb: &str) -> Color {
+        Color {
+            indexed: None,
+            rgb: Some(rgb.to_string()),
+            theme: None,
+            tint: None,
+        }
+    }
+}
+
 impl XmlnsAttrs {
     pub(crate) fn worksheet_default() -> XmlnsAttrs {
         XmlnsAttrs {

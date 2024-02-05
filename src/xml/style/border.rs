@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use crate::xml::common::Color;
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct Border {
@@ -26,14 +27,14 @@ pub(crate) struct BorderElement {
     #[serde(rename = "@style", skip_serializing_if = "Option::is_none")]
     style: Option<String>,
     #[serde(rename = "color", skip_serializing_if = "Option::is_none")]
-    color: Option<BorderColor>,
+    color: Option<Color>,
 }
 
 impl BorderElement {
     pub(crate) fn new(style: &str, color: u32) -> BorderElement {
         BorderElement {
             style: Some(String::from(style)),
-            color: Some(BorderColor::new(color)),
+            color: Some(Color::default()),
         }
     }
 
@@ -41,20 +42,6 @@ impl BorderElement {
         BorderElement {
             style: None,
             color: None,
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
-struct BorderColor {
-    #[serde(rename = "@indexed")]
-    indexed: u32,
-}
-
-impl BorderColor {
-    fn new(indexed: u32) -> BorderColor {
-        BorderColor {
-            indexed
         }
     }
 }

@@ -49,6 +49,7 @@ impl Sheet {
             let shared_string = binding.borrow_shared_string_mut();
             text_id = Some(shared_string.add_text(text));
             let style_sheet = binding.borrow_style_sheet_mut();
+            // todo get default format from cell
             style_id = Some(style_sheet.add_format(format));
         }
         self.write_with_id(row_id, col_id, text_id, style_id)?;

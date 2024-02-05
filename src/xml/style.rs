@@ -1,5 +1,6 @@
 pub(crate) mod font;
 pub(crate) mod border;
+pub(crate) mod fill;
 
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
@@ -11,6 +12,7 @@ use crate::Format;
 use crate::xml::common::{ExtLst, XmlnsAttrs};
 use crate::xml::manage::XmlIo;
 use crate::xml::style::border::Border;
+use crate::xml::style::fill::Fill;
 use crate::xml::style::font::Font;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -68,23 +70,31 @@ struct Fills {
     fills: Vec<Fill>
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct Fill {
-    #[serde(rename = "patternFill")]
-    pattern_fill: PatternFill
-}
+impl Fills {
+    fn default() -> Fills {
+        Fills {
+            count: 0,
+            fills: vec![],
+        }
+    }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct PatternFill {
-    #[serde(rename = "@patternType")]
-    pattern_type: String,
+    pub(crate) fn add_fill(&mut self, fill: &Fill) -> u32 {
+        for i in 0..self.fills.len() {
+            if self.fills[i] == *fill {
+                return i as u32;
+            }
+        }
+        self.count += 1;
+        self.fills.push(fill.clone());
+        self.fills.len() as u32 - 1
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Borders {
     #[serde(rename = "@count", default)]
     count: u32,
-    border: Vec<Border>
+    border: Vec<Border>,
 }
 
 impl Borders {
@@ -209,10 +219,16 @@ impl StyleSheet {
             Some(border) => self.borders.add_border(border),
             None => 0
         };
+        // update fill format
+        let fill_id = match &format.fill {
+            Some(fill) => self.fills.add_fill(fill),
+            None => 0
+        };
         // update cell xfs and return the xf index
         let mut xf = Xf::default();
         xf.font_id = font_id;
         xf.border_id = border_id;
+        xf.fill_id = fill_id;
         self.cell_xfs.add_xf(&xf)
     }
 }

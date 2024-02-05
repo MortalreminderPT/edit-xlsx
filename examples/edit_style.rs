@@ -1,4 +1,4 @@
-use edit_xlsx::{Format, FormatBorder, Workbook};
+use edit_xlsx::{Color, Format, FormatBorder, Workbook};
 
 fn main() {
     let mut workbook = Workbook::from_path("examples/xlsx/edit_style.xlsx");
@@ -12,6 +12,7 @@ fn main() {
     let bold_underline_format = Format::new().set_bold().set_underline();
     for row in 3..20 {
         for col in 3..20 {
+            let bold_underline_format = Format::new().set_bold().set_underline().set_background_color(Color::RGB("FF00B0F0"));
             worksheet.write_with_format(
                 row,
                 col,

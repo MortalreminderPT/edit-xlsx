@@ -1,10 +1,13 @@
 use std::fmt::Debug;
 use crate::xml::style::border::{Border, BorderElement};
+use crate::xml::style::fill::Fill;
+use crate::xml::common::Color as XmlColor;
 use crate::xml::style::font::{Bold, Font, Italic, Underline};
 
 pub struct Format {
     pub(crate) font: Option<Font>,
     pub(crate) border: Option<Border>,
+    pub(crate) fill: Option<Fill>,
 }
 
 pub enum FormatBorder {
@@ -22,6 +25,10 @@ pub enum FormatBorder {
     DashDotDot,
     MediumDashDotDot,
     SlantDashDot,
+}
+
+pub enum Color<'a> {
+    RGB(&'a str)
 }
 
 impl FormatBorder {
@@ -49,7 +56,8 @@ impl Format {
     pub fn new() -> Format {
         Format {
             font: None,
-            border: None
+            border: None,
+            fill: None,
         }
     }
 
@@ -105,5 +113,16 @@ impl Format {
         let style = format_border.to_str();
         border.bottom = BorderElement::new(style, 64);
         self
+    }
+
+    pub fn set_background_color(mut self, color: Color) -> Format {
+        match color {
+            Color::RGB(rgb) => {
+                let fill = self.fill.get_or_insert(Fill::default());
+                fill.pattern_fill.pattern_type = "solid".to_string();
+                fill.pattern_fill.fg_color = Some(XmlColor::from_rgb(rgb));
+                self
+            },
+        }
     }
 }
