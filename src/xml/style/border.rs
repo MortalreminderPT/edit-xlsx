@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct Border {
     pub(crate) left: BorderElement,
     pub(crate) right: BorderElement,
@@ -21,7 +21,7 @@ impl Border {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct BorderElement {
     #[serde(rename = "@style", skip_serializing_if = "Option::is_none")]
     style: Option<String>,
@@ -45,7 +45,7 @@ impl BorderElement {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 struct BorderColor {
     #[serde(rename = "@indexed")]
     indexed: u32,

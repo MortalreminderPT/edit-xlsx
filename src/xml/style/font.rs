@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 use crate::xml::common::Element;
+use crate::xml::style::Rearrange;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct Font {
     sz: Element<u8>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -37,7 +38,7 @@ impl Font {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct Bold {
 
 }
@@ -48,7 +49,7 @@ impl Bold {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct Italic {
 
 }
@@ -59,7 +60,7 @@ impl Italic {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct Underline {
 
 }
@@ -70,7 +71,7 @@ impl Underline {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 struct Color {
     #[serde(rename = "@theme")]
     theme: u32

@@ -41,7 +41,7 @@ impl Sheet {
         Ok(())
     }
 
-    pub fn write_with_format(&mut self, row_id: u32, col_id: u32, text: &str, format: Format) -> SheetResult<()> {
+    pub fn write_with_format(&mut self, row_id: u32, col_id: u32, text: &str, format: &Format) -> SheetResult<()> {
         let mut text_id: Option<u32> = None;
         let mut style_id: Option<u32> = None;
         {

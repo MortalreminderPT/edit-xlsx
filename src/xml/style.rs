@@ -1,6 +1,8 @@
 pub(crate) mod font;
 pub(crate) mod border;
 
+use std::collections::{HashMap, HashSet};
+use std::hash::Hash;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
@@ -45,6 +47,19 @@ struct Fonts {
     fonts: Vec<Font>,
 }
 
+impl Fonts {
+    pub(crate) fn add_font(&mut self, font: &Font) -> u32 {
+        for i in 0..self.fonts.len() {
+            if self.fonts[i] == *font {
+                return i as u32;
+            }
+        }
+        self.count += 1;
+        self.fonts.push(font.clone());
+        self.fonts.len() as u32 - 1
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 struct Fills {
     #[serde(rename = "@count", default)]
@@ -79,6 +94,17 @@ impl Borders {
             border: vec![],
         }
     }
+
+    pub(crate) fn add_border(&mut self, border: &Border) -> u32 {
+        for i in 0..self.border.len() {
+            if self.border[i] == *border {
+                return i as u32;
+            }
+        }
+        self.count += 1;
+        self.border.push(border.clone());
+        self.border.len() as u32 - 1
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -95,7 +121,20 @@ struct CellXfs {
     xf: Vec<Xf>
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+impl CellXfs {
+    pub(crate) fn add_xf(&mut self, xf: &Xf) -> u32 {
+        for i in 0..self.xf.len() {
+            if self.xf[i] == *xf {
+                return i as u32;
+            }
+        }
+        self.count += 1;
+        self.xf.push(xf.clone());
+        self.xf.len() as u32 - 1
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
 struct Xf {
     #[serde(rename = "@numFmtId", default)]
     num_fmt_id: u32,
@@ -159,26 +198,47 @@ struct TableStyles {
 }
 
 impl StyleSheet {
-    pub(crate) fn add_format(&mut self, format: Format) -> u32 {
+    pub(crate) fn add_format(&mut self, format: &Format) -> u32 {
         // update font format
-        let font_id = if let Some(font) = format.font {
-            self.fonts.fonts.push(font);
-            self.fonts.count += 1;
-            self.fonts.count - 1
-        } else { 0 };
+        let font_id = match &format.font {
+            Some(font) => self.fonts.add_font(font),
+            None => 0
+        };
         // update border format
-        let border_id = if let Some(border) = format.border {
-            self.borders.border.push(border);
-            self.borders.count += 1;
-            self.borders.count - 1
-        } else { 0 };
+        let border_id = match &format.border {
+            Some(border) => self.borders.add_border(border),
+            None => 0
+        };
         // update cell xfs and return the xf index
         let mut xf = Xf::default();
         xf.font_id = font_id;
         xf.border_id = border_id;
-        self.cell_xfs.xf.push(xf);
-        self.cell_xfs.count += 1;
-        self.cell_xfs.count - 1
+        self.cell_xfs.add_xf(&xf)
+    }
+}
+
+trait Rearrange<E: Clone + Eq + Hash> {
+    fn distinct(elements: &Vec<E>) -> (Vec<E>, HashMap<usize, usize>) {
+        let mut distinct_elements = HashMap::new();
+        for i in 0..elements.len() {
+            let e = &elements[i];
+            if !distinct_elements.contains_key(e) {
+                distinct_elements.insert(e, Vec::new());
+            }
+            distinct_elements.get_mut(e).unwrap().push(i);
+        }
+        let mut index_map = HashMap::new();
+        let distinct_elements: Vec<(&E, &Vec<usize>)> = distinct_elements
+            .iter()
+            .map(|(&e, ids)| (e, ids))
+            .collect();
+        for i in 0..distinct_elements.len() {
+            let (e, ids) = distinct_elements[i];
+            ids.iter().for_each(|&id| { index_map.insert(id, i); });
+        }
+        // let distinct_elements: Vec<E> = distinct_elements.iter().map(|&e| e.0.clone()).collect();
+        let elements = distinct_elements.iter().map(|&e| e.0.clone()).collect::<Vec<E>>();
+        (elements, index_map)
     }
 }
 

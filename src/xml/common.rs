@@ -1,5 +1,6 @@
 extern crate proc_macro;
 use proc_macro::TokenStream;
+use std::hash::Hash;
 use serde::{Deserialize, Deserializer, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -80,13 +81,13 @@ struct X15TimelineStyles {
     default_timeline_style: Option<String>
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct Element<T> {
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
+pub(crate) struct Element<T: Clone + PartialEq + Eq + Hash> {
     #[serde(rename = "@val")]
     val: T
 }
 
-impl<T> Element<T> {
+impl<T: Clone + PartialEq + Eq + Hash> Element<T> {
     pub(crate) fn from_val(val: T) -> Element<T> {
         Element {
             val
