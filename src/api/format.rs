@@ -1,9 +1,48 @@
-use crate::xml::style::border::Border;
+use std::fmt::Debug;
+use crate::xml::style::border::{Border, BorderElement};
 use crate::xml::style::font::{Bold, Font, Italic, Underline};
 
 pub struct Format {
     pub(crate) font: Option<Font>,
     pub(crate) border: Option<Border>,
+}
+
+pub enum FormatBorder {
+    None,
+    Thin,
+    Medium,
+    Dashed,
+    Dotted,
+    Thick,
+    Double,
+    Hair,
+    MediumDashed,
+    DashDot,
+    MediumDashDot,
+    DashDotDot,
+    MediumDashDotDot,
+    SlantDashDot,
+}
+
+impl FormatBorder {
+    fn to_str(&self) -> &str {
+        match self {
+            FormatBorder::None => "none",
+            FormatBorder::Thin => "thin",
+            FormatBorder::Medium => "medium",
+            FormatBorder::Dashed => "dashed",
+            FormatBorder::Dotted => "dotted",
+            FormatBorder::Thick => "thick",
+            FormatBorder::Double => "double",
+            FormatBorder::Hair => "hair",
+            FormatBorder::MediumDashed => "mediumDashed",
+            FormatBorder::DashDot => "dashDot",
+            FormatBorder::MediumDashDot => "mediumDashDot",
+            FormatBorder::DashDotDot => "dashDotDot",
+            FormatBorder::MediumDashDotDot => "mediumDashDotDot",
+            FormatBorder::SlantDashDot => "slantDashDot",
+        }
+    }
 }
 
 impl Format {
@@ -30,8 +69,13 @@ impl Format {
         self
     }
 
-    pub fn set_border(mut self) -> Format {
+    pub fn set_border(mut self, format_border: FormatBorder) -> Format {
         let border = self.border.get_or_insert(Border::default());
+        let style = format_border.to_str();
+        border.left = BorderElement::new(style, 64);
+        border.right = BorderElement::new(style, 64);
+        border.top = BorderElement::new(style, 64);
+        border.bottom = BorderElement::new(style, 64);
         self
     }
 }

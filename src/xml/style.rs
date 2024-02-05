@@ -161,15 +161,21 @@ struct TableStyles {
 impl StyleSheet {
     pub(crate) fn add_format(&mut self, format: Format) -> u32 {
         // update font format
-        let font_id =
-            if let Some(font) = format.font {
-                self.fonts.fonts.push(font);
-                self.fonts.count += 1;
-                self.fonts.count - 1
-            } else { 0 };
+        let font_id = if let Some(font) = format.font {
+            self.fonts.fonts.push(font);
+            self.fonts.count += 1;
+            self.fonts.count - 1
+        } else { 0 };
+        // update border format
+        let border_id = if let Some(border) = format.border {
+            self.borders.border.push(border);
+            self.borders.count += 1;
+            self.borders.count - 1
+        } else { 0 };
         // update cell xfs and return the xf index
         let mut xf = Xf::default();
         xf.font_id = font_id;
+        xf.border_id = border_id;
         self.cell_xfs.xf.push(xf);
         self.cell_xfs.count += 1;
         self.cell_xfs.count - 1
