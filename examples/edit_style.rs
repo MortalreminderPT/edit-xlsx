@@ -1,29 +1,20 @@
-use edit_xlsx::{Color, Format, FormatBorder, Workbook};
-
-fn main() {
+use edit_xlsx::{Format, Workbook, WorkbookResult, FormatAlign, FormatBorder, Color};
+fn main() -> WorkbookResult<()> {
     let mut workbook = Workbook::from_path("examples/xlsx/edit_style.xlsx");
-    let mut worksheet = workbook.get_worksheet(1).unwrap();
-    let bold_format = Format::new().set_bold().set_underline().set_italic();
-
-    worksheet.write_with_format(1, 1, "An example of text font style", &bold_format);
-    let border_format = Format::new().set_border(FormatBorder::MediumDashed);
-    worksheet.write_with_format(1, 2, "An example of border style", &border_format);
-    let underline_italic_format = Format::new().set_underline().set_italic();
-    let bold_underline_format = Format::new().set_bold().set_underline();
-    for row in 3..20 {
-        for col in 3..20 {
-            let bold_underline_format = Format::new().set_bold().set_underline().set_background_color(Color::RGB("FF00B0F0"));
-            worksheet.write_with_format(
-                row,
-                col,
-                &format!("writing in ({}, {}) from sheet1", row, col),
-                match row % 3 {
-                    0 => &bold_format,
-                    1 => &bold_format,
-                    2.. => &bold_underline_format,
-                }
-            );
-        }
-    }
-    workbook.save_as("examples/output/edit_style.xlsx");
+    let mut worksheet = workbook.get_worksheet(1)?;
+    // adjust the text align
+    let center = Format::new().set_align(FormatAlign::VerticalCenter).set_align(FormatAlign::Center);
+    let left_top = Format::new().set_align(FormatAlign::Left).set_align(FormatAlign::Top);
+    let right_bottom = Format::new().set_align(FormatAlign::Right).set_align(FormatAlign::Bottom);
+    worksheet.write_with_format(1, 1, "center", &center)?;
+    worksheet.write_with_format(1, 2, "left top", &left_top)?;
+    worksheet.write_with_format(1, 3, "right bottom", &right_bottom)?;
+    // add borders
+    let thin_border = Format::new().set_border(FormatBorder::Thin);
+    worksheet.write_with_format(2, 1, "bordered text", &thin_border)?;
+    // add background
+    let red_background = Format::new().set_background_color(Color::RGB("00FF7777"));
+    worksheet.write_with_format(3, 1, "red", &red_background)?;
+    workbook.save_as("examples/output/edit_style.xlsx")?;
+    Ok(())
 }

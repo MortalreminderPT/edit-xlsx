@@ -55,6 +55,10 @@ impl Sheet {
         self.write_with_id(row_id, col_id, text_id, style_id)?;
         Ok(())
     }
+
+    pub fn id(&self) -> u32 {
+        self.id
+    }
 }
 
 impl Sheet {

@@ -166,3 +166,7 @@ impl XmlnsAttrs {
         }
     }
 }
+
+pub(crate) fn is_zero(num: &u32) -> bool {
+    num.eq(&0)
+}

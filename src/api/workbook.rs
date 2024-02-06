@@ -7,7 +7,7 @@ use std::path::Path;
 use std::rc::Rc;
 use crate::api::sheet::Sheet;
 use crate::utils::zip_util;
-use crate::result::WorkbookResult;
+use crate::result::{SheetError, WorkbookError, WorkbookResult};
 use crate::xml::manage::{Borrow, Create, XmlIo, XmlManager};
 
 #[derive(Debug)]
@@ -19,11 +19,17 @@ pub struct Workbook {
 }
 
 impl Workbook {
-    pub fn get_worksheet(&mut self, id: u32) -> Option<&mut Sheet> {
-        self.sheets.iter_mut().find(|sheet| sheet.id == id)
+    pub fn get_worksheet(&mut self, id: u32) -> WorkbookResult<&mut Sheet> {
+        let sheet = self.sheets
+            .iter_mut()
+            .find(|sheet| sheet.id == id);
+        match sheet {
+            Some(sheet) => Ok(sheet),
+            None => Err(WorkbookError::SheetError(SheetError::FileNotFound))
+        }
     }
 
-    pub fn add_worksheet(&mut self) -> Option<&mut Sheet> {
+    pub fn add_worksheet(&mut self) -> WorkbookResult<&mut Sheet> {
         let (sheet_id, worksheet) = self.xml_manager.borrow_mut().create_worksheet();
         let sheet = Sheet::from_xml(sheet_id, Rc::clone(&self.xml_manager));
         self.sheets.push(sheet);

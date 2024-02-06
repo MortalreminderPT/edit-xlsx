@@ -36,6 +36,7 @@ pub type WorkbookResult<T> = Result<T, WorkbookError>;
 pub enum WorkbookError {
     Io(io::Error),
     ZipError(ZipError),
+    SheetError(SheetError),
     FileNotFound,
 }
 
@@ -48,5 +49,11 @@ impl From<io::Error> for WorkbookError {
 impl From<ZipError> for WorkbookError {
     fn from(err: ZipError) -> WorkbookError {
         WorkbookError::ZipError(err)
+    }
+}
+
+impl From<SheetError> for WorkbookError {
+    fn from(err: SheetError) -> WorkbookError {
+        WorkbookError::SheetError(err)
     }
 }

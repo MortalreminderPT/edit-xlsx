@@ -1,8 +1,10 @@
 pub(crate) mod font;
 pub(crate) mod border;
 pub(crate) mod fill;
+pub(crate) mod alignment;
+pub(crate) mod xf;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::hash::Hash;
 use std::path::Path;
 use quick_xml::{de, se};
@@ -11,9 +13,10 @@ use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::Format;
 use crate::xml::common::{ExtLst, XmlnsAttrs};
 use crate::xml::manage::XmlIo;
-use crate::xml::style::border::Border;
-use crate::xml::style::fill::Fill;
-use crate::xml::style::font::Font;
+use crate::xml::style::border::Borders;
+use crate::xml::style::fill::Fills;
+use crate::xml::style::font::Fonts;
+use crate::xml::style::xf::Xf;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct StyleSheet {
@@ -40,84 +43,6 @@ pub(crate) struct StyleSheet {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Fonts {
-    #[serde(rename = "@count", default)]
-    count: u32,
-    #[serde(rename(serialize = "@x14ac:knownFonts", deserialize = "@knownFonts"), default)]
-    x14ac_known_fonts: u32,
-    #[serde(rename = "font", default)]
-    fonts: Vec<Font>,
-}
-
-impl Fonts {
-    pub(crate) fn add_font(&mut self, font: &Font) -> u32 {
-        for i in 0..self.fonts.len() {
-            if self.fonts[i] == *font {
-                return i as u32;
-            }
-        }
-        self.count += 1;
-        self.fonts.push(font.clone());
-        self.fonts.len() as u32 - 1
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Fills {
-    #[serde(rename = "@count", default)]
-    count: u32,
-    #[serde(rename = "fill", default)]
-    fills: Vec<Fill>
-}
-
-impl Fills {
-    fn default() -> Fills {
-        Fills {
-            count: 0,
-            fills: vec![],
-        }
-    }
-
-    pub(crate) fn add_fill(&mut self, fill: &Fill) -> u32 {
-        for i in 0..self.fills.len() {
-            if self.fills[i] == *fill {
-                return i as u32;
-            }
-        }
-        self.count += 1;
-        self.fills.push(fill.clone());
-        self.fills.len() as u32 - 1
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Borders {
-    #[serde(rename = "@count", default)]
-    count: u32,
-    border: Vec<Border>,
-}
-
-impl Borders {
-    fn default() -> Borders {
-        Borders {
-            count: 0,
-            border: vec![],
-        }
-    }
-
-    pub(crate) fn add_border(&mut self, border: &Border) -> u32 {
-        for i in 0..self.border.len() {
-            if self.border[i] == *border {
-                return i as u32;
-            }
-        }
-        self.count += 1;
-        self.border.push(border.clone());
-        self.border.len() as u32 - 1
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
 struct CellStyleXfs {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -141,35 +66,6 @@ impl CellXfs {
         self.count += 1;
         self.xf.push(xf.clone());
         self.xf.len() as u32 - 1
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
-struct Xf {
-    #[serde(rename = "@numFmtId", default)]
-    num_fmt_id: u32,
-    #[serde(rename = "@fontId", default)]
-    font_id: u32,
-    #[serde(rename = "@fillId", default)]
-    fill_id: u32,
-    #[serde(rename = "@borderId", default)]
-    border_id: u32,
-    #[serde(rename = "@xfId", skip_serializing_if = "Option::is_none")]
-    xf_id: Option<u32>,
-    #[serde(rename = "@applyFont", skip_serializing_if = "Option::is_none")]
-    apply_font: Option<u32>,
-}
-
-impl Xf {
-    fn default() -> Xf {
-        Xf {
-            num_fmt_id: 0,
-            font_id: 0,
-            fill_id: 0,
-            border_id: 0,
-            xf_id: Some(0),
-            apply_font: None,
-        }
     }
 }
 
@@ -225,7 +121,10 @@ impl StyleSheet {
             None => 0
         };
         // update cell xfs and return the xf index
-        let mut xf = Xf::default();
+        let mut xf = match &format.xf {
+            Some(xf) => xf.clone(),
+            None => Xf::default(),
+        };
         xf.font_id = font_id;
         xf.border_id = border_id;
         xf.fill_id = fill_id;

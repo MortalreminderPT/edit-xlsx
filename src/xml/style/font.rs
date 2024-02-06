@@ -1,12 +1,35 @@
 use serde::{Deserialize, Serialize};
-use crate::xml::common::Element;
+use crate::xml::common::{Color, Element};
 use crate::xml::style::Rearrange;
+
+#[derive(Debug, Deserialize, Serialize)]
+pub(crate) struct Fonts {
+    #[serde(rename = "@count", default)]
+    count: u32,
+    #[serde(rename(serialize = "@x14ac:knownFonts", deserialize = "@knownFonts"), default)]
+    x14ac_known_fonts: u32,
+    #[serde(rename = "font", default)]
+    fonts: Vec<Font>,
+}
+
+impl Fonts {
+    pub(crate) fn add_font(&mut self, font: &Font) -> u32 {
+        for i in 0..self.fonts.len() {
+            if self.fonts[i] == *font {
+                return i as u32;
+            }
+        }
+        self.count += 1;
+        self.fonts.push(font.clone());
+        self.fonts.len() as u32 - 1
+    }
+}
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct Font {
-    sz: Element<u8>,
+    pub(crate) sz: Element<u8>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    color: Option<Color>,
+    pub(crate) color: Option<Color>,
     name: Element<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     family: Option<Element<u8>>,
@@ -71,8 +94,8 @@ impl Underline {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
-struct Color {
-    #[serde(rename = "@theme")]
-    theme: u32
-}
+// #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+// struct Color {
+//     #[serde(rename = "@theme")]
+//     theme: u32
+// }

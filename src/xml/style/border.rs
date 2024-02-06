@@ -1,6 +1,34 @@
 use serde::{Deserialize, Serialize};
 use crate::xml::common::Color;
 
+
+#[derive(Debug, Deserialize, Serialize)]
+pub(crate) struct Borders {
+    #[serde(rename = "@count", default)]
+    count: u32,
+    border: Vec<Border>,
+}
+
+impl Borders {
+    pub(crate) fn default() -> Borders {
+        Borders {
+            count: 0,
+            border: vec![],
+        }
+    }
+
+    pub(crate) fn add_border(&mut self, border: &Border) -> u32 {
+        for i in 0..self.border.len() {
+            if self.border[i] == *border {
+                return i as u32;
+            }
+        }
+        self.count += 1;
+        self.border.push(border.clone());
+        self.border.len() as u32 - 1
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct Border {
     pub(crate) left: BorderElement,
