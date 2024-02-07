@@ -1,3 +1,3 @@
-pub enum Color<'a> {
+pub enum FormatColor<'a> {
     RGB(&'a str)
 }

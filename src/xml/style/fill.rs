@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use crate::xml::common::Color;
+use crate::xml::style::color::Color;
 
 
 #[derive(Debug, Deserialize, Serialize)]

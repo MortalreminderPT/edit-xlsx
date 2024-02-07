@@ -1,4 +1,4 @@
-use edit_xlsx::{Format, Workbook, WorkbookResult, Color};
+use edit_xlsx::{Format, Workbook, WorkbookResult, FormatColor};
 fn main() -> WorkbookResult<()> {
     let mut workbook = Workbook::from_path("examples/xlsx/edit_cell.xlsx");
     let mut worksheet = workbook.get_worksheet(1)?;
@@ -14,9 +14,9 @@ fn main() -> WorkbookResult<()> {
     worksheet.write_with_format(2, 2, -456, &medium)?;
     worksheet.write_with_format(2, 3, 55555555555555u128, &big)?;
     // Change font color
-    let red = Format::new().set_color(Color::RGB("00FF7777"));
-    let green = Format::new().set_color(Color::RGB("0077FF77"));
-    let blue = Format::new().set_color(Color::RGB("007777FF"));
+    let red = Format::new().set_color(FormatColor::RGB("00FF7777"));
+    let green = Format::new().set_color(FormatColor::RGB("0077FF77"));
+    let blue = Format::new().set_color(FormatColor::RGB("007777FF"));
     worksheet.write_with_format(3, 1, 1.23464651, &red)?;
     worksheet.write_with_format(3, 2, std::f64::consts::PI, &green)?;
     worksheet.write_with_format(3, 3, false, &blue)?;

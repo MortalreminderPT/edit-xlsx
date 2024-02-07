@@ -2,4 +2,5 @@ pub mod workbook;
 pub mod sheet;
 pub mod format;
 mod color;
-mod alignment;
+mod align;
+pub mod border;

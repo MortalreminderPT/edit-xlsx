@@ -3,6 +3,7 @@ pub(crate) mod border;
 pub(crate) mod fill;
 pub(crate) mod alignment;
 pub(crate) mod xf;
+pub(crate) mod color;
 
 use std::collections::HashMap;
 use std::hash::Hash;

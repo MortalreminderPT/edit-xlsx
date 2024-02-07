@@ -1,7 +1,9 @@
 extern crate proc_macro;
-use proc_macro::TokenStream;
 use std::hash::Hash;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::ser::SerializeTuple;
+use crate::FormatColor;
+use crate::xml::sheet_data::cell_values::CellValues;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct PhoneticPr {
@@ -95,37 +97,20 @@ impl<T: Clone + PartialEq + Eq + Hash> Element<T> {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
-pub(crate) struct Color {
-    #[serde(rename = "@indexed", skip_serializing_if = "Option::is_none")]
-    indexed: Option<u32>,
-    #[serde(rename = "@rgb", skip_serializing_if = "Option::is_none")]
-    rgb: Option<String>,
-    #[serde(rename = "@theme", skip_serializing_if = "Option::is_none")]
-    theme: Option<u32>,
-    #[serde(rename = "@tint", skip_serializing_if = "Option::is_none")]
-    tint: Option<f64>
-}
-
-impl Color {
-    pub(crate) fn default() -> Color {
-        Color {
-            indexed: Some(64),
-            rgb: None,
-            theme: None,
-            tint: None,
-        }
-    }
-
-    pub(crate) fn from_rgb(rgb: &str) -> Color {
-        Color {
-            indexed: None,
-            rgb: Some(rgb.to_string()),
-            theme: None,
-            tint: None,
+impl<T:Clone + PartialEq + Eq + Hash + Default> Default for Element<T> {
+    fn default() -> Self {
+        Element {
+            val: T::default(),
         }
     }
 }
+
+impl<T: Clone + PartialEq + Eq + Hash + Default> FromFormat<T> for Element<T> {
+    fn set_attrs_by_format(&mut self, format: &T) {
+        self.val = format.clone();
+    }
+}
+
 
 impl XmlnsAttrs {
     pub(crate) fn worksheet_default() -> XmlnsAttrs {
@@ -169,4 +154,12 @@ impl XmlnsAttrs {
 
 pub(crate) fn is_zero(num: &u32) -> bool {
     num.eq(&0)
+}
+pub(crate) trait FromFormat<T>: Default {
+    fn set_attrs_by_format(&mut self, format: &T);
+    fn from_format(format: &T) -> Self {
+        let mut def = Self::default();
+        def.set_attrs_by_format(format);
+        def
+    }
 }

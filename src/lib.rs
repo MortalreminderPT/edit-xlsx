@@ -1,4 +1,3 @@
-mod cell;
 mod file;
 mod xml;
 mod result;
@@ -11,5 +10,5 @@ pub use api::format::Format;
 
 pub use api::format::FormatBorder;
 pub use api::format::FormatAlign;
-pub use api::format::Color;
+pub use api::format::FormatColor;
 pub use result::WorkbookResult;

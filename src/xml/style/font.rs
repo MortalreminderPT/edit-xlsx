@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use crate::xml::common::{Color, Element};
-use crate::xml::style::Rearrange;
+use crate::xml::common::Element;
+use crate::xml::style::color::Color;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Fonts {
