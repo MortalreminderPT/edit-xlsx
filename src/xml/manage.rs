@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::path::Path;
 use crate::result::{CellResult, RowResult};
-use crate::xml::sheet_data::{Cell, Row};
 use crate::xml::shared_string::SharedString;
+use crate::xml::sheet_data::{Cell, Row};
 use crate::xml::style::StyleSheet;
 use crate::xml::workbook::{Sheet, Workbook};
 use crate::xml::workbook_rel::Relationships;

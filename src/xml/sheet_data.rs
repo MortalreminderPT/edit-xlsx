@@ -1,8 +1,11 @@
+pub(crate) mod cell;
+pub(crate) mod cell_values;
+
 use serde::{Deserialize, Serialize};
 use crate::result::{RowError, RowResult};
-use crate::utils::col_helper;
-use crate::utils::col_helper::to_col_name;
 use crate::xml::manage::EditRow;
+pub(crate) use crate::xml::sheet_data::cell::Cell;
+use crate::xml::sheet_data::cell_values::{CellDisplay, CellType};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct SheetData {
@@ -14,42 +17,6 @@ impl SheetData {
     pub(crate) fn default() -> SheetData {
         SheetData {
             rows: vec![]
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct Cell {
-    #[serde(flatten)]
-    loc: CellLocation,
-    #[serde(rename = "@s", skip_serializing_if = "Option::is_none")]
-    pub(crate) style: Option<u32>,
-    #[serde(rename = "@t", skip_serializing_if = "Option::is_none")]
-    pub(crate) text_type: Option<String>,
-    #[serde(rename = "v", skip_serializing_if = "Option::is_none")]
-    pub(crate) text: Option<u32>,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct CellLocation {
-    #[serde(rename = "@r")]
-    location: String,
-    #[serde(skip)]
-    col: Option<u32>,
-}
-
-impl CellLocation {
-    fn new(row: u32, col: u32) -> CellLocation {
-        CellLocation {
-            location: to_col_name(col) + &row.to_string(),
-            col: Some(col)
-        }
-    }
-
-    fn col(&self) -> u32 {
-        match self.col {
-            Some(col) => col,
-            None => col_helper::to_col(&self.location)
         }
     }
 }
@@ -107,20 +74,20 @@ impl Row {
         cell
     }
 
-    pub(crate) fn create_cell(&mut self, row_id: u32, col_id: u32, text_id: Option<u32>, style_id: Option<u32>, text_type: &str) -> &mut Cell {
-        self.cells.push(Cell::new(row_id, col_id, text_id, style_id, text_type));
+    pub(crate) fn create_cell<T: CellDisplay + CellType>(&mut self, col_id: u32, text: T, style_id: Option<u32>) -> &mut Cell {
+        self.cells.push(Cell::new(self.row, col_id, text, style_id));
         self.cells.last_mut().unwrap()
     }
-}
 
-
-impl Cell {
-    fn new(row: u32, col: u32, text_id: Option<u32>, style_id: Option<u32>, text_type: &str) -> Cell {
-        Cell {
-            loc: CellLocation::new(row, col), // num_2_col(col) + &row.to_string(),
-            style: style_id,
-            text_type: Some(String::from(text_type)),
-            text: text_id,
+    pub(crate) fn update_or_create_cell<T: CellDisplay + CellType>(&mut self, col_id: u32, text: T, style_id: Option<u32>) {
+        let cell = self.get_cell(col_id);
+        match cell {
+            Some(cell) => {
+                cell.update_value(text, style_id);
+            }
+            None => {
+                self.create_cell(col_id, text, style_id);
+            }
         }
     }
 }
