@@ -1,3 +1,4 @@
+use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
@@ -42,12 +43,12 @@ impl SharedString {
 }
 
 impl XmlIo<SharedString> for SharedString {
-    fn from_path<P: AsRef<Path>>(file_path: P) -> SharedString {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SharedStringFile).unwrap();
+    fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<SharedString> {
+        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SharedStringFile)?;
         let mut xml = String::new();
         file.read_to_string(&mut xml).unwrap();
         let shared_string = de::from_str(&xml).unwrap();
-        shared_string
+        Ok(shared_string)
     }
 
     fn save<P: AsRef<Path>>(&mut self, file_path: P) {

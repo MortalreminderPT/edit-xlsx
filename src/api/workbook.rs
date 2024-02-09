@@ -1,9 +1,5 @@
-mod tests;
-mod fill;
-
 use std::fs;
 use std::cell::RefCell;
-use std::io::{Read, Seek, Write};
 use std::path::Path;
 use std::rc::Rc;
 use crate::api::sheet::Sheet;
@@ -39,19 +35,19 @@ impl Workbook {
 }
 
 impl Workbook {
-    pub fn from_path<P: AsRef<Path>>(file_path: P) -> Workbook {
-        let tmp_path = Workbook::create_tmp_dir(&file_path).unwrap();
-        let xml_manager = XmlManager::from_path(&tmp_path);
+    pub fn from_path<P: AsRef<Path>>(file_path: P) -> WorkbookResult<Workbook> {
+        let tmp_path = Workbook::create_tmp_dir(&file_path)?;
+        let xml_manager = XmlManager::from_path(&tmp_path)?;
         let xml_manager = Rc::new(RefCell::new(xml_manager));
         let sheets = xml_manager.borrow().borrow_workbook().sheets.sheets.iter().map(
             |sheet_xml| Sheet::from_xml(sheet_xml.sheet_id, Rc::clone(&xml_manager))
         ).collect();
-        Workbook {
+        Ok(Workbook {
             xml_manager,
             sheets,
             tmp_path,
             file_path: file_path.as_ref().to_str().unwrap().to_string(),
-        }
+        })
     }
 
     fn create_tmp_dir<P: AsRef<Path>>(file_path: P) -> WorkbookResult<String> {

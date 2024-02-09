@@ -1,3 +1,4 @@
+use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
@@ -69,14 +70,14 @@ impl Relationships {
 }
 
 impl XmlIo<Relationships> for Relationships {
-    fn from_path<P: AsRef<Path>>(file_path: P) -> Relationships {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::WorkbookRels).unwrap();
+    fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<Relationships> {
+        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::WorkbookRels)?;
         let mut xml = String::new();
         file.read_to_string(&mut xml).unwrap();
         let mut rel: Relationships = de::from_str(&xml).unwrap();
         rel.last_sheet_id = rel.last_sheet_id().unwrap_or(0);
         rel.sheet_offset = 0;
-        rel
+        Ok(rel)
     }
 
     fn save<P: AsRef<Path>>(&mut self, file_path: P) {

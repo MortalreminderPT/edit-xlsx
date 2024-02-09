@@ -2,8 +2,6 @@ extern crate proc_macro;
 use std::hash::Hash;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::ser::SerializeTuple;
-use crate::FormatColor;
-use crate::xml::sheet_data::cell_values::CellValues;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct PhoneticPr {

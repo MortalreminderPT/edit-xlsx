@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use crate::api::format::FormatFill;
+use crate::xml::common::FromFormat;
 use crate::xml::style::color::Color;
 
 
@@ -44,6 +46,22 @@ impl Fill {
     }
 }
 
+impl Default for Fill {
+    fn default() -> Self {
+        Self {
+            pattern_fill: Default::default(),
+        }
+    }
+}
+
+impl FromFormat<FormatFill<'_>> for Fill {
+    fn set_attrs_by_format(&mut self, format: &FormatFill) {
+        let fg_color = Color::from_format(&format.fg_color);
+        self.pattern_fill.fg_color = Some(fg_color);
+        self.pattern_fill.pattern_type = String::from(format.pattern_type);
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct PatternFill {
     #[serde(rename = "@patternType")]
@@ -54,7 +72,7 @@ pub(crate) struct PatternFill {
     pub(crate) bg_color: Option<Color>,
 }
 
-impl PatternFill {
+impl Default for PatternFill {
     fn default() -> PatternFill {
         PatternFill {
             pattern_type: "none".to_string(),

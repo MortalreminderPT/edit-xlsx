@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::io;
 use std::path::Path;
 use crate::result::{CellResult, RowResult};
 use crate::xml::shared_string::SharedString;
@@ -18,7 +19,7 @@ pub(crate) struct XmlManager {
 }
 
 pub(crate) trait XmlIo<T> {
-    fn from_path<P: AsRef<Path>>(file_path: P) -> T;
+    fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<T>;
     fn save<P: AsRef<Path>>(&mut self, file_path: P);
 }
 
@@ -42,20 +43,20 @@ pub(crate) trait Borrow {
 }
 
 impl XmlIo<XmlManager> for XmlManager {
-     fn from_path<P: AsRef<Path>>(path: P) -> XmlManager {
-         let workbook = Workbook::from_path(&path);
-         let workbook_rel = Relationships::from_path(&path);
-         let shared_string = SharedString::from_path(&path);
-         let style_sheet = StyleSheet::from_path(&path);
+     fn from_path<P: AsRef<Path>>(path: P) -> io::Result<XmlManager> {
+         let workbook = Workbook::from_path(&path)?;
+         let workbook_rel = Relationships::from_path(&path)?;
+         let shared_string = SharedString::from_path(&path)?;
+         let style_sheet = StyleSheet::from_path(&path)?;
          let worksheets: HashMap<u32, WorkSheet> = workbook.sheets.sheets.iter()
              .map(|sheet| (sheet.sheet_id, WorkSheet::from_path(&path, sheet.sheet_id))).collect();
-         XmlManager {
+         Ok(XmlManager {
              workbook,
              workbook_rel,
              worksheets,
              shared_string,
              style_sheet,
-         }
+         })
      }
     fn save<P: AsRef<Path>>(&mut self, file_path: P) {
         self.workbook.save(&file_path);

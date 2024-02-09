@@ -29,6 +29,7 @@ impl Color {
 impl FromFormat<FormatColor<'_>> for Color {
     fn set_attrs_by_format(&mut self, format: &FormatColor) {
         match format {
+            FormatColor::Default => return,
             FormatColor::RGB(color) => {
                 *self = Color::from_rgb(color)
             }

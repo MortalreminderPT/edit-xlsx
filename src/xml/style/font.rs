@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
-use crate::xml::common::Element;
+use crate::xml::common::{Element, FromFormat};
 use crate::xml::style::color::Color;
+use crate::api::format::FormatFont;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Fonts {
@@ -45,8 +46,8 @@ pub(crate) struct Font {
     pub(crate) underline: Option<Underline>,
 }
 
-impl Font {
-    pub(crate) fn default() -> Font {
+impl Default for Font {
+    fn default() -> Font {
         Font {
             sz: Element::from_val(11),
             color: None,
@@ -58,6 +59,16 @@ impl Font {
             italic: None,
             underline: None,
         }
+    }
+}
+
+impl FromFormat<FormatFont<'_>> for Font {
+    fn set_attrs_by_format(&mut self, format: &FormatFont) {
+        self.color = Some(Color::from_format(&format.color));
+        self.sz = Element::from_val(format.size);
+        self.bold = if format.bold { Some(Bold::default()) } else { None };
+        self.underline = if format.underline { Some(Underline::default()) } else { None };
+        self.italic = if format.italic { Some(Italic::default()) } else { None };
     }
 }
 

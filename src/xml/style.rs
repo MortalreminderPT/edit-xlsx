@@ -7,16 +7,18 @@ pub(crate) mod color;
 
 use std::collections::HashMap;
 use std::hash::Hash;
+use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
+use crate::api::format::Format;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::Format;
-use crate::xml::common::{ExtLst, XmlnsAttrs};
+use crate::xml::common::{ExtLst, FromFormat, XmlnsAttrs};
 use crate::xml::manage::XmlIo;
-use crate::xml::style::border::Borders;
-use crate::xml::style::fill::Fills;
-use crate::xml::style::font::Fonts;
+use crate::xml::style::alignment::Alignment;
+use crate::xml::style::border::{Border, Borders};
+use crate::xml::style::fill::{Fill, Fills};
+use crate::xml::style::font::{Font, Fonts};
 use crate::xml::style::xf::Xf;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -106,26 +108,15 @@ struct TableStyles {
 
 impl StyleSheet {
     pub(crate) fn add_format(&mut self, format: &Format) -> u32 {
-        // update font format
-        let font_id = match &format.font {
-            Some(font) => self.fonts.add_font(font),
-            None => 0
-        };
-        // update border format
-        let border_id = match &format.border {
-            Some(border) => self.borders.add_border(border),
-            None => 0
-        };
-        // update fill format
-        let fill_id = match &format.fill {
-            Some(fill) => self.fills.add_fill(fill),
-            None => 0
-        };
-        // update cell xfs and return the xf index
-        let mut xf = match &format.xf {
-            Some(xf) => xf.clone(),
-            None => Xf::default(),
-        };
+        let font = Font::from_format(&format.font);
+        let font_id = self.fonts.add_font(&font);
+        let border = Border::from_format(&format.border);
+        let border_id = self.borders.add_border(&border);
+        let fill = Fill::from_format(&format.fill);
+        let fill_id = self.fills.add_fill(&fill);
+        let mut xf = Xf::default();
+        let align = Alignment::from_format(&format.align);
+        xf.alignment = Some(align);
         xf.font_id = font_id;
         xf.border_id = border_id;
         xf.fill_id = fill_id;
@@ -159,12 +150,12 @@ trait Rearrange<E: Clone + Eq + Hash> {
 }
 
 impl XmlIo<StyleSheet> for StyleSheet {
-    fn from_path<P: AsRef<Path>>(file_path: P) -> StyleSheet {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::StylesFile).unwrap();
+    fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<StyleSheet> {
+        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::StylesFile)?;
         let mut xml = String::new();
         file.read_to_string(&mut xml).unwrap();
         let style_sheet = de::from_str(&xml).unwrap();
-        style_sheet
+        Ok(style_sheet)
     }
 
     fn save<P: AsRef<Path>>(&mut self, file_path: P) {

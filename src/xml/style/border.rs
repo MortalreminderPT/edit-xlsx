@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use crate::api::border::FormatBorder;
-pub(crate) use crate::xml::common::FromFormat;
+use crate::api::format::border::{FormatBorder, FormatBorderElement};
+use crate::xml::common::FromFormat;
 use crate::xml::style::color::Color;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -79,19 +79,19 @@ impl Default for Borders {
     }
 }
 
-impl FromFormat<FormatBorder> for Border {
+impl FromFormat<FormatBorder<'_>> for Border {
     fn set_attrs_by_format(&mut self, format: &FormatBorder) {
-        let style = format.to_str();
-        self.left = BorderElement::new(style, 64);
-        self.right = BorderElement::new(style, 64);
-        self.top = BorderElement::new(style, 64);
-        self.bottom = BorderElement::new(style, 64);
+        self.left = BorderElement::from_format(&format.left);
+        self.right = BorderElement::from_format(&format.right);
+        self.top = BorderElement::from_format(&format.top);
+        self.bottom = BorderElement::from_format(&format.bottom);
+        self.diagonal = BorderElement::from_format(&format.diagonal);
     }
 }
 
-impl FromFormat<FormatBorder> for BorderElement {
-    fn set_attrs_by_format(&mut self, format: &FormatBorder) {
-        let style = format.to_str();
-        *self = BorderElement::new(style, 64);
+impl FromFormat<FormatBorderElement<'_>> for BorderElement {
+    fn set_attrs_by_format(&mut self, format: &FormatBorderElement) {
+        self.style = Some(String::from(format.border_type.to_str()));
+        self.color = Some(Color::from_format(&format.color));
     }
 }

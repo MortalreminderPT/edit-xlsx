@@ -1,3 +1,4 @@
+use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
@@ -115,12 +116,12 @@ struct XrRevisionPtr {
 
 
 impl XmlIo<Workbook> for Workbook {
-    fn from_path<P: AsRef<Path>>(file_path: P) -> Workbook {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::WorkbookFile).unwrap();
+    fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<Workbook> {
+        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::WorkbookFile)?;
         let mut xml = String::new();
         file.read_to_string(&mut xml).unwrap();
         let work_book = de::from_str(&xml).unwrap();
-        work_book
+        Ok(work_book)
     }
 
     fn save<P: AsRef<Path>>(&mut self, file_path: P) {
