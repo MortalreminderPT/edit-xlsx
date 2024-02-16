@@ -19,6 +19,17 @@ pub(crate) struct SharedString {
     pub string_item: Vec<StringItem>,
 }
 
+impl Default for SharedString {
+    fn default() -> Self {
+        Self {
+            xmlns_attrs: XmlnsAttrs::shared_string_default(),
+            count: 0,
+            unique_count: 0,
+            string_item: vec![],
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct StringItem {
     #[serde(rename = "t")]

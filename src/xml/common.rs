@@ -49,6 +49,14 @@ pub(crate) struct ExtLst {
     ext: Vec<Ext>,
 }
 
+impl Default for ExtLst {
+    fn default() -> Self {
+        ExtLst {
+            ext: vec![Default::default()],
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 struct Ext {
     #[serde(rename = "@uri")]
@@ -63,10 +71,45 @@ struct Ext {
     x15_timeline_styles: Option<X15TimelineStyles>,
 }
 
+impl Default for Ext {
+    fn default() -> Self {
+        Ext {
+            uri: String::from("{140A7094-0E35-4892-8432-C4D2E57EDEB5}"),
+            xmlns_attrs: XmlnsAttrs {
+                xmlns: None,
+                xmlns_r: None,
+                xmlns_mc: None,
+                mc_ignorable: None,
+                xmlns_x14: None,
+                xmlns_x14ac: None,
+                xmlns_x15: Some("http://schemas.microsoft.com/office/spreadsheetml/2010/11/main".to_string()),
+                xmlns_xr: None,
+                xmlns_xr6: None,
+                xmlns_xr10: None,
+                xmlns_xr2: None,
+                xmlns_xr3: None,
+                xmlns_x16r2: None,
+                xr_uid: None,
+            },
+            x15_workbook_pr: Default::default(),
+            x14_slicer_styles: None,
+            x15_timeline_styles: None,
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 struct X15WorkbookPr {
     #[serde(rename = "@chartTrackingRefBase", skip_serializing_if = "Option::is_none")]
     chart_tracking_ref_base: Option<u32>
+}
+
+impl Default for X15WorkbookPr {
+    fn default() -> Self {
+        X15WorkbookPr {
+            chart_tracking_ref_base: Some(1),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -111,6 +154,25 @@ impl<T: Clone + PartialEq + Eq + Hash + Default> FromFormat<T> for Element<T> {
 
 
 impl XmlnsAttrs {
+    pub(crate) fn workbook_default() -> XmlnsAttrs {
+        XmlnsAttrs {
+            xmlns: Some("http://schemas.openxmlformats.org/spreadsheetml/2006/main".to_string()),
+            xmlns_r: Some("http://schemas.openxmlformats.org/officeDocument/2006/relationships".to_string()),
+            xmlns_mc: Some("http://schemas.openxmlformats.org/markup-compatibility/2006".to_string()),
+            mc_ignorable: Some("x15".to_string()),
+            xmlns_x14: None,
+            xmlns_x14ac: None,
+            xmlns_x15: Some("http://schemas.microsoft.com/office/spreadsheetml/2010/11/main".to_string()),
+            xmlns_xr: None,
+            xmlns_xr6: None,
+            xmlns_xr10: None,
+            xmlns_xr2: None,
+            xmlns_xr3: None,
+            xmlns_x16r2: None,
+            xr_uid: None,
+        }
+    }
+    
     pub(crate) fn worksheet_default() -> XmlnsAttrs {
         XmlnsAttrs {
             xmlns: Some("http://schemas.openxmlformats.org/spreadsheetml/2006/main".to_string()),
@@ -145,6 +207,25 @@ impl XmlnsAttrs {
             xmlns_xr2: None,
             xmlns_xr3: None,
             xmlns_x16r2: Some("http://schemas.microsoft.com/office/spreadsheetml/2015/02/main".to_string()),
+            xr_uid: None,
+        }
+    }
+    
+    pub(crate) fn shared_string_default() -> XmlnsAttrs {
+        XmlnsAttrs {
+            xmlns: Some("http://schemas.openxmlformats.org/spreadsheetml/2006/main".to_string()),
+            xmlns_r: None,
+            xmlns_mc: None,
+            mc_ignorable: None,
+            xmlns_x14: None,
+            xmlns_x14ac: None,
+            xmlns_x15: None,
+            xmlns_xr: None,
+            xmlns_xr6: None,
+            xmlns_xr10: None,
+            xmlns_xr2: None,
+            xmlns_xr3: None,
+            xmlns_x16r2: None,
             xr_uid: None,
         }
     }

@@ -39,6 +39,17 @@ struct FileVersion {
     rup_build: Option<String>,
 }
 
+impl Default for FileVersion {
+    fn default() -> Self {
+        FileVersion {
+            app_name: "xl".to_string(),
+            last_edited: None,
+            lowest_edited: None,
+            rup_build: Some(String::from("14420")),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 struct WorkbookPr {
     #[serde(rename = "@filterPrivacy", skip_serializing_if = "Option::is_none")]
@@ -47,10 +58,27 @@ struct WorkbookPr {
     default_theme_version: String,
 }
 
+impl Default for WorkbookPr {
+    fn default() -> Self {
+        WorkbookPr {
+            filter_privacy: None,
+            default_theme_version: String::from("164011"),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 struct BookViews {
     #[serde(rename = "workbookView")]
     book_views: Vec<WorkbookView>
+}
+
+impl Default for BookViews {
+    fn default() -> Self {
+        BookViews {
+            book_views: vec![Default::default()],
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -67,10 +95,30 @@ struct WorkbookView {
     active_tab: Option<u32>
 }
 
+impl Default for WorkbookView {
+    fn default() -> Self {
+        WorkbookView {
+            x_window: 0,
+            y_window: 0,
+            window_width: 22260,
+            window_height: 12645,
+            active_tab: None,
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Sheets {
     #[serde(rename = "sheet")]
     pub(crate) sheets: Vec<Sheet>
+}
+
+impl Default for Sheets {
+    fn default() -> Self {
+        Sheets {
+            sheets: vec![],
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -81,6 +129,16 @@ pub(crate) struct Sheet {
     pub(crate) sheet_id: u32,
     #[serde(rename(serialize = "@r:id", deserialize = "@id"))]
     r_id: String,
+}
+
+impl Default for Sheet {
+    fn default() -> Sheet {
+        Sheet {
+            name: format!("sheet1"),
+            sheet_id: 1,
+            r_id: format!("rId1"),
+        }
+    }
 }
 
 impl Sheet {
@@ -99,6 +157,13 @@ struct CalcPr {
     calc_id: String,
 }
 
+impl Default for CalcPr {
+    fn default() -> Self {
+        CalcPr {
+            calc_id: String::from("162913"),
+        }
+    }
+}
 
 #[derive(Debug, Deserialize, Serialize)]
 struct XrRevisionPtr {
@@ -114,6 +179,20 @@ struct XrRevisionPtr {
     xr10_uid_last_save: Option<String>,
 }
 
+impl Default for Workbook {
+    fn default() -> Self {
+        Workbook {
+            xmlns_attrs: XmlnsAttrs::workbook_default(),
+            file_version: Default::default(),
+            workbook_pr: Default::default(),
+            xr_revision_ptr: None,
+            book_views: Default::default(),
+            sheets: Default::default(),
+            calc_pr: Default::default(),
+            ext_lst: Some(Default::default()),
+        }
+    }
+}
 
 impl XmlIo<Workbook> for Workbook {
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<Workbook> {

@@ -1,4 +1,4 @@
 /target
 .idea
-*.zip
-*.xlsx
+/examples/**/*.zip
+/examples/**/*.xlsx

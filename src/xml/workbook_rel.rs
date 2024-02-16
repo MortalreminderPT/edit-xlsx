@@ -29,6 +29,30 @@ struct RelationShip {
 }
 
 impl RelationShip {
+    fn styles_default() -> RelationShip {
+        RelationShip {
+            id: "rId3".to_string(),
+            rel_type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles".to_string(),
+            target: "styles.xml".to_string(),
+        }
+    }
+
+    fn theme_default() -> RelationShip {
+        RelationShip {
+            id: "rId2".to_string(),
+            rel_type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme".to_string(),
+            target: "theme/theme1.xml".to_string(),
+        }
+    }
+
+    fn sheet_default() -> RelationShip {
+        RelationShip {
+            id: "rId1".to_string(),
+            rel_type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet".to_string(),
+            target: "worksheets/sheet1.xml".to_string(),
+        }
+    }
+
     fn new_sheet(sheet_id: u32) -> RelationShip {
         RelationShip {
             id: format!("rId{sheet_id}"),
@@ -66,6 +90,17 @@ impl Relationships {
                 rel.id = format!("rId{new_id}");
             });
         self.sheet_offset = 0;
+    }
+}
+
+impl Default for Relationships {
+    fn default() -> Self {
+        Relationships {
+            xmlns: "http://schemas.openxmlformats.org/package/2006/relationships".to_string(),
+            relationship: vec![RelationShip::styles_default(), RelationShip::theme_default(), RelationShip::sheet_default()],
+            last_sheet_id: 0,
+            sheet_offset: 0,
+        }
     }
 }
 

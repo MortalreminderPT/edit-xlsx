@@ -2,7 +2,7 @@ use edit_xlsx::{Format, Workbook, WorkbookResult, FormatAlignType, FormatBorderT
 
 
 fn main() -> WorkbookResult<()> {
-    let mut workbook = Workbook::from_path("examples/xlsx/edit_style.xlsx")?;
+    let mut workbook = Workbook::from_path("examples/xlsx/edit.xlsx")?;
     let mut worksheet = workbook.get_worksheet(1)?;
     // adjust the text align
     let center = Format::default().set_align(FormatAlignType::VerticalCenter).set_align(FormatAlignType::Center);

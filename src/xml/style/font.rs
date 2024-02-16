@@ -13,6 +13,16 @@ pub(crate) struct Fonts {
     fonts: Vec<Font>,
 }
 
+impl Default for Fonts {
+    fn default() -> Self {
+        Fonts {
+            count: 1,
+            x14ac_known_fonts: 1,
+            fonts: vec![Default::default()],
+        }
+    }
+}
+
 impl Fonts {
     pub(crate) fn add_font(&mut self, font: &Font) -> u32 {
         for i in 0..self.fonts.len() {

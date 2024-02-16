@@ -9,7 +9,7 @@ use crate::xml::workbook::{Sheet, Workbook};
 use crate::xml::workbook_rel::Relationships;
 use crate::xml::worksheet::WorkSheet;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct XmlManager {
     workbook: Workbook,
     workbook_rel: Relationships,
@@ -46,7 +46,7 @@ impl XmlIo<XmlManager> for XmlManager {
      fn from_path<P: AsRef<Path>>(path: P) -> io::Result<XmlManager> {
          let workbook = Workbook::from_path(&path)?;
          let workbook_rel = Relationships::from_path(&path)?;
-         let shared_string = SharedString::from_path(&path)?;
+         let shared_string = SharedString::from_path(&path).unwrap_or_default();
          let style_sheet = StyleSheet::from_path(&path)?;
          let worksheets: HashMap<u32, WorkSheet> = workbook.sheets.sheets.iter()
              .map(|sheet| (sheet.sheet_id, WorkSheet::from_path(&path, sheet.sheet_id))).collect();

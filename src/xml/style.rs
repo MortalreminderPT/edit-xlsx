@@ -52,11 +52,29 @@ struct CellStyleXfs {
     xf: Vec<Xf>
 }
 
+impl Default for CellStyleXfs {
+    fn default() -> Self {
+        CellStyleXfs {
+            count: 1,
+            xf: vec![Xf::default()],
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 struct CellXfs {
     #[serde(rename = "@count", default)]
     count: u32,
     xf: Vec<Xf>
+}
+
+impl Default for CellXfs {
+    fn default() -> Self {
+        CellXfs {
+            count: 1,
+            xf: vec![Xf::default()],
+        }
+    }
 }
 
 impl CellXfs {
@@ -80,6 +98,15 @@ struct CellStyles {
     cell_styles: Vec<CellStyle>
 }
 
+impl Default for CellStyles {
+    fn default() -> Self {
+        CellStyles {
+            count: 1,
+            cell_styles: vec![Default::default()],
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 struct CellStyle {
     #[serde(rename = "@name")]
@@ -90,7 +117,17 @@ struct CellStyle {
     builtin_id: u32,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+impl Default for CellStyle {
+    fn default() -> Self {
+        CellStyle {
+            name: "Normal".to_string(),
+            xf_id: 0,
+            builtin_id: 0,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, Default)]
 struct Dxfs {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -104,6 +141,33 @@ struct TableStyles {
     default_table_style: String,
     #[serde(rename = "@defaultPivotStyle")]
     default_pivot_style: String,
+}
+
+impl Default for TableStyles {
+    fn default() -> Self {
+        TableStyles {
+            count: 1,
+            default_table_style: "TableStyleMedium2".to_string(),
+            default_pivot_style: "PivotStyleLight16".to_string(),
+        }
+    }
+}
+
+impl Default for StyleSheet {
+    fn default() -> Self {
+        StyleSheet {
+            xmlns_attrs: XmlnsAttrs::stylesheet_default(),
+            fonts: Default::default(),
+            fills: Default::default(),
+            borders: Default::default(),
+            cell_style_xfs: CellStyleXfs::default(),
+            cell_xfs: Default::default(),
+            cell_styles: Default::default(),
+            dxfs: Dxfs::default(),
+            table_styles: Default::default(),
+            ext_lst: None,
+        }
+    }
 }
 
 impl StyleSheet {

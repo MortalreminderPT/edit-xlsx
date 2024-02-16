@@ -16,6 +16,12 @@ pub struct Workbook {
 }
 
 impl Workbook {
+    pub fn new() -> Workbook {
+        let mut wb = Self::from_path("resource/new.xlsx").unwrap();
+        wb.file_path = String::from("./new.xlsx");
+        wb
+    }
+    
     pub fn get_worksheet(&mut self, id: u32) -> WorkbookResult<&mut Sheet> {
         let sheet = self.sheets
             .iter_mut()
@@ -36,7 +42,7 @@ impl Workbook {
 
 impl Workbook {
     pub fn from_path<P: AsRef<Path>>(file_path: P) -> WorkbookResult<Workbook> {
-        let tmp_path = Workbook::create_tmp_dir(&file_path)?;
+        let tmp_path = Workbook::extract_tmp_dir(&file_path)?;
         let xml_manager = XmlManager::from_path(&tmp_path)?;
         let xml_manager = Rc::new(RefCell::new(xml_manager));
         let sheets = xml_manager.borrow().borrow_workbook().sheets.sheets.iter().map(
@@ -50,7 +56,12 @@ impl Workbook {
         })
     }
 
-    fn create_tmp_dir<P: AsRef<Path>>(file_path: P) -> WorkbookResult<String> {
+    // fn create_tmp_dir<P: AsRef<Path>>(file_path: P) -> WorkbookResult<String> {
+    //
+    //     Ok(zip_util::extract_dir(file_path)?)
+    // }
+
+    fn extract_tmp_dir<P: AsRef<Path>>(file_path: P) -> WorkbookResult<String> {
         Ok(zip_util::extract_dir(file_path)?)
     }
 
@@ -69,6 +80,6 @@ impl Workbook {
 
 impl Drop for Workbook {
     fn drop(&mut self) {
-        fs::remove_dir_all(&self.tmp_path).unwrap();
+        fs::remove_dir_all(&self.tmp_path);
     }
 }
