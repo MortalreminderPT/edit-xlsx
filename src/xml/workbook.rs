@@ -18,7 +18,7 @@ pub(crate) struct Workbook {
     #[serde(rename(serialize = "xr:revisionPtr", deserialize = "revisionPtr"), skip_serializing_if = "Option::is_none")]
     xr_revision_ptr: Option<XrRevisionPtr>,
     #[serde(rename = "bookViews")]
-    book_views: BookViews,
+    pub(crate) book_views: BookViews,
     #[serde(rename = "sheets")]
     pub(crate) sheets: Sheets,
     #[serde(rename = "calcPr")]
@@ -68,9 +68,9 @@ impl Default for WorkbookPr {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct BookViews {
+pub(crate) struct BookViews {
     #[serde(rename = "workbookView")]
-    book_views: Vec<WorkbookView>
+    pub(crate) book_views: Vec<WorkbookView>
 }
 
 impl Default for BookViews {
@@ -82,15 +82,17 @@ impl Default for BookViews {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct WorkbookView {
+pub(crate) struct WorkbookView {
     #[serde(rename = "@xWindow")]
     x_window: u32,
     #[serde(rename = "@yWindow")]
     y_window: u32,
     #[serde(rename = "@windowWidth")]
-    window_width: u32,
+    pub(crate) window_width: u32,
     #[serde(rename = "@windowHeight")]
-    window_height: u32,
+    pub(crate) window_height: u32,
+    #[serde(rename = "@tabRatio")]
+    pub(crate) tab_ratio: Option<u32>,
     #[serde(rename = "@activeTab", skip_serializing_if = "Option::is_none")]
     active_tab: Option<u32>
 }
@@ -102,6 +104,7 @@ impl Default for WorkbookView {
             y_window: 0,
             window_width: 22260,
             window_height: 12645,
+            tab_ratio: None,
             active_tab: None,
         }
     }
@@ -142,9 +145,17 @@ impl Default for Sheet {
 }
 
 impl Sheet {
-    pub(crate) fn new(id: u32) -> Sheet {
+    pub(crate) fn by_id(id: u32) -> Sheet {
         Sheet {
-            name: format!("sheet{id}"),
+            name: format!("Sheet{id}"),
+            sheet_id: id,
+            r_id: format!("rId{id}"),
+        }
+    }
+
+    pub(crate) fn by_name(id: u32, name: &str) -> Sheet {
+        Sheet {
+            name: String::from(name),
             sheet_id: id,
             r_id: format!("rId{id}"),
         }

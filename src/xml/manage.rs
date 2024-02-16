@@ -24,7 +24,8 @@ pub(crate) trait XmlIo<T> {
 }
 
 pub(crate) trait Create {
-    fn create_worksheet(&mut self) -> (u32, &mut WorkSheet);
+    fn create_worksheet(&mut self) -> (u32, String);
+    fn create_worksheet_by_name(&mut self, name: &str) -> u32;
 }
 
 pub(crate) trait Borrow {
@@ -68,14 +69,20 @@ impl XmlIo<XmlManager> for XmlManager {
 }
 
 impl Create for XmlManager {
-    fn create_worksheet(&mut self) -> (u32, &mut WorkSheet) {
+    fn create_worksheet(&mut self) -> (u32, String) {
         let id = self.workbook_rel.add_worksheet();
         let work_sheet = WorkSheet::new();
         self.worksheets.insert(id, work_sheet);
-        self.workbook.sheets.sheets.push(
-            Sheet::new(id)
-        );
-        (id, self.worksheets.get_mut(&id).unwrap())
+        self.workbook.sheets.sheets.push(Sheet::by_id(id));
+        (id, format!("Sheet{id}"))
+    }
+
+    fn create_worksheet_by_name(&mut self, name: &str) -> u32 {
+        let id = self.workbook_rel.add_worksheet();
+        let work_sheet = WorkSheet::new();
+        self.worksheets.insert(id, work_sheet);
+        self.workbook.sheets.sheets.push(Sheet::by_name(id, name));
+        id
     }
 }
 

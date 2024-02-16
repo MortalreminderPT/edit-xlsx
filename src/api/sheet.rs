@@ -8,6 +8,7 @@ use crate::xml::sheet_data::cell_values::{CellDisplay, CellType};
 #[derive(Debug)]
 pub struct Sheet {
     pub(crate) id: u32,
+    pub(crate) name: String,
     xml_manager: Rc<RefCell<XmlManager>>,
 }
 
@@ -48,13 +49,14 @@ impl Sheet {
 
 impl Sheet {
     pub(crate) fn new(xml_manager: Rc<RefCell<XmlManager>>) -> Sheet {
-        let (id, worksheet) = xml_manager.borrow_mut().create_worksheet();
-        Self::from_xml(id, Rc::clone(&xml_manager))
+        let (id, name) = xml_manager.borrow_mut().create_worksheet();
+        Self::from_xml(id, &name, Rc::clone(&xml_manager))
     }
 
-    pub(crate) fn from_xml(sheet_id: u32, xml_manager: Rc<RefCell<XmlManager>>) -> Sheet {
+    pub(crate) fn from_xml(sheet_id: u32, name: &str, xml_manager: Rc<RefCell<XmlManager>>) -> Sheet {
         Sheet {
             id: sheet_id,
+            name: String::from(name),
             xml_manager,
         }
     }
