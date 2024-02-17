@@ -1,8 +1,11 @@
+use std::fmt::format;
 use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
+use crate::result::{SheetError, WorkbookError};
+use crate::WorkbookResult;
 use crate::xml::common::{ExtLst, XmlnsAttrs};
 use crate::xml::manage::XmlIo;
 
@@ -27,6 +30,27 @@ pub(crate) struct Workbook {
     calc_pr: CalcPr,
     #[serde(rename = "extLst", skip_serializing_if = "Option::is_none")]
     ext_lst: Option<ExtLst>,
+}
+
+impl Workbook {
+    pub(crate) fn add_worksheet(&mut self) -> WorkbookResult<(u32, String)> {
+        let id = 1 + self.sheets.sheets.iter().max_by_key(|s| { s.sheet_id }).unwrap().sheet_id;
+        let name = format!("Sheet{id}");
+        if let Some(_) = self.sheets.sheets.iter().find(|s| { s.name == name }) {
+            return Err(WorkbookError::SheetError(SheetError::DuplicatedSheets));
+        }
+        self.sheets.sheets.push(Sheet::by_name(id, &name));
+        Ok((id, name))
+    }
+
+    pub(crate) fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<(u32)> {
+        let id = 1 + self.sheets.sheets.iter().max_by_key(|s| { s.sheet_id }).unwrap().sheet_id;
+        if let Some(_) = self.sheets.sheets.iter().find(|s| { s.name == name }) {
+            return Err(WorkbookError::SheetError(SheetError::DuplicatedSheets));
+        }
+        self.sheets.sheets.push(Sheet::by_name(id, name));
+        Ok(id)
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -181,7 +205,7 @@ impl Sheet {
             state: None,
         }
     }
-    
+
     pub(crate) fn change_id(&mut self, id: u32) {
         self.sheet_id = id;
         self.r_id = format!("rId{id}");

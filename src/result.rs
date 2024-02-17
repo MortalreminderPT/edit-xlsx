@@ -27,13 +27,20 @@ pub enum SheetError {
     ZipError(ZipError),
     FileNotFound,
     RowError(RowError),
-    ColError,
+    ColError(ColError),
     DuplicatedSheets,
 }
 
 impl From<RowError> for SheetError {
     fn from(err: RowError) -> SheetError {
         SheetError::RowError(err)
+    }
+}
+
+
+impl From<ColError> for SheetError {
+    fn from(err: ColError) -> SheetError {
+        SheetError::ColError(err)
     }
 }
 

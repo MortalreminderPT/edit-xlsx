@@ -2,15 +2,20 @@ use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::xml::common::{PhoneticPr, XmlnsAttrs};
+use crate::FormatColor;
+use crate::result::ColResult;
+use crate::xml::common::{FromFormat, PhoneticPr, XmlnsAttrs};
 use crate::xml::merge_cells::MergeCells;
 use crate::xml::sheet_data::SheetData;
+use crate::xml::style::color::Color;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="worksheet")]
 pub(crate) struct WorkSheet {
     #[serde(flatten)]
     xmlns_attrs: XmlnsAttrs,
+    #[serde(rename = "sheetPr", skip_serializing_if = "Option::is_none")]
+    sheet_pr: Option<SheetPr>,
     #[serde(rename = "dimension", skip_serializing_if = "Option::is_none")]
     dimension: Option<Dimension>,
     #[serde(rename = "sheetViews")]
@@ -30,13 +35,13 @@ pub(crate) struct WorkSheet {
 }
 
 impl WorkSheet {
-    pub(crate) fn create_col(&mut self, min: u32, max: u32, width: Option<f64>, style: Option<u32>, best_fit: u8) -> &mut Col {
+    pub(crate) fn create_col(&mut self, min: u32, max: u32, width: Option<f64>, style: Option<u32>, best_fit: u8) -> ColResult<&mut Col> {
         let mut col = Col::new(min, max, 1, width, style, best_fit);
         if let None = width {
             col.custom_width = 0;
         }
         self.cols.col.push(col);
-        self.cols.col.last_mut().unwrap()
+        Ok(self.cols.col.last_mut().unwrap())
     }
 
     pub(crate) fn create_merge_cells(&mut self) {
@@ -57,8 +62,17 @@ impl WorkSheet {
         })
     }
 
-    fn get_name(&self) {
-
+    pub(crate) fn set_tab_color(&mut self, tab_color: &FormatColor) {
+        let sheet_pr = match self.sheet_pr.take() {
+            Some(mut sheet_pr) => {
+                sheet_pr.tab_color = Color::from_format(tab_color);
+                sheet_pr
+            },
+            None => {
+                SheetPr::new(tab_color)
+            }
+        };
+        self.sheet_pr = Some(sheet_pr);
     }
 
     // pub(crate) fn borrow_sheet_data(&mut self) -> Option<&mut SheetData> {
@@ -79,6 +93,20 @@ impl WorkSheet {
     //     };
     //     self.borrow_sheet_data().unwrap()
     // }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct SheetPr {
+    #[serde(rename = "tabColor")]
+    tab_color: Color
+}
+
+impl SheetPr {
+    fn new(color: &FormatColor) -> SheetPr {
+        SheetPr {
+            tab_color: Color::from_format(color),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -233,6 +261,7 @@ impl WorkSheet {
     pub(crate) fn new() -> WorkSheet {
         WorkSheet {
             xmlns_attrs: XmlnsAttrs::worksheet_default(),
+            sheet_pr: None,
             dimension: Some(Dimension::default()),
             sheet_views: SheetViews::default(),
             sheet_format_pr: SheetFormatPr::default(),

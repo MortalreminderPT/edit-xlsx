@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::manage::XmlIo;
 const SHEET_TYPE_STRING: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet";
+const THEME_TYPE_STRING: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme";
+const STYLES_TYPE_STRING: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles";
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Relationships {
@@ -32,7 +34,7 @@ impl RelationShip {
     fn styles_default() -> RelationShip {
         RelationShip {
             id: "rId3".to_string(),
-            rel_type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles".to_string(),
+            rel_type: STYLES_TYPE_STRING.to_string(),
             target: "styles.xml".to_string(),
         }
     }
@@ -40,7 +42,7 @@ impl RelationShip {
     fn theme_default() -> RelationShip {
         RelationShip {
             id: "rId2".to_string(),
-            rel_type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme".to_string(),
+            rel_type: THEME_TYPE_STRING.to_string(),
             target: "theme/theme1.xml".to_string(),
         }
     }
@@ -48,48 +50,33 @@ impl RelationShip {
     fn sheet_default() -> RelationShip {
         RelationShip {
             id: "rId1".to_string(),
-            rel_type: "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet".to_string(),
+            rel_type: SHEET_TYPE_STRING.to_string(),
             target: "worksheets/sheet1.xml".to_string(),
         }
     }
 
-    fn new_sheet(sheet_id: u32) -> RelationShip {
+    fn new_sheet(id: u32, offset: u32) -> RelationShip {
         RelationShip {
-            id: format!("rId{sheet_id}"),
-            rel_type: String::from(SHEET_TYPE_STRING),
-            target: format!("worksheets/sheet{sheet_id}.xml"),
+            id: format!("rId{}", id + offset),
+            rel_type: SHEET_TYPE_STRING.to_string(),
+            target: format!("worksheets/sheet{id}.xml"),
         }
     }
-}
 
-impl Relationships {
-    pub(crate) fn add_worksheet(&mut self) -> u32 {
-        let id = self.last_sheet_id + 1;
-        self.relationship.push(
-            RelationShip::new_sheet(id)
-        );
-        self.last_sheet_id += 1;
-        self.sheet_offset += 1;
-        id
+    fn new_theme(id: u32, offset: u32) -> RelationShip {
+        RelationShip {
+            id: format!("rId{}", id + offset),
+            rel_type: THEME_TYPE_STRING.to_string(),
+            target: format!("theme/theme{id}.xml"),
+        }
     }
 
-    fn last_sheet_id(&self) -> Option<u32> {
-        self.relationship
-            .iter()
-            .filter(|rel| { rel.target.starts_with("worksheets") })
-            .map(|r| r.id[3..].parse::<u32>().unwrap())
-            .max()
-    }
-
-    fn reset_offset(&mut self) {
-        self.relationship
-            .iter_mut()
-            .filter(|rel| { !rel.target.starts_with("worksheets") })
-            .for_each(|rel| {
-                let new_id = self.sheet_offset + &rel.id[3..].parse::<u32>().unwrap();
-                rel.id = format!("rId{new_id}");
-            });
-        self.sheet_offset = 0;
+    fn new_styles(id: u32, offset: u32) -> RelationShip {
+        RelationShip {
+            id: format!("rId{}", id + offset),
+            rel_type: STYLES_TYPE_STRING.to_string(),
+            target: String::from("styles.xml"),
+        }
     }
 }
 
@@ -104,19 +91,40 @@ impl Default for Relationships {
     }
 }
 
+impl Relationships {
+    pub(crate) fn update(&mut self, worksheet_size: u32, theme_size: u32, style_sheet_size: u32) {
+        self.relationship = Vec::new();
+        let mut offset = 0;
+        for id in 1..=worksheet_size {
+            self.relationship.push(
+                RelationShip::new_sheet(id, offset)
+            )
+        }
+        offset += worksheet_size;
+        for id in worksheet_size..=theme_size {
+            self.relationship.push(
+                RelationShip::new_theme(id, offset)
+            )
+        }
+        offset += theme_size;
+        for id in theme_size..=style_sheet_size {
+            self.relationship.push(
+                RelationShip::new_styles(id, offset)
+            )
+        }
+    }
+}
+
 impl XmlIo<Relationships> for Relationships {
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<Relationships> {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::WorkbookRels)?;
         let mut xml = String::new();
         file.read_to_string(&mut xml).unwrap();
-        let mut rel: Relationships = de::from_str(&xml).unwrap();
-        rel.last_sheet_id = rel.last_sheet_id().unwrap_or(0);
-        rel.sheet_offset = 0;
+        let rel: Relationships = de::from_str(&xml).unwrap();
         Ok(rel)
     }
 
     fn save<P: AsRef<Path>>(&mut self, file_path: P) {
-        self.reset_offset();
         let xml = se::to_string_with_root("Relationships", &self).unwrap();
         let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
         let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::WorkbookRels).unwrap();

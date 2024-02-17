@@ -1,7 +1,9 @@
+use std::cell::{Ref, RefCell, RefMut};
 use std::collections::HashMap;
 use std::io;
 use std::path::Path;
-use crate::result::{CellResult, RowResult, SheetError, SheetResult};
+use std::rc::Rc;
+use crate::result::{CellResult, SheetError, SheetResult};
 use crate::xml::shared_string::SharedString;
 use crate::xml::sheet_data::{Cell, Row};
 use crate::xml::style::StyleSheet;
@@ -11,11 +13,11 @@ use crate::xml::worksheet::WorkSheet;
 
 #[derive(Debug, Default)]
 pub(crate) struct XmlManager {
-    workbook: Workbook,
-    workbook_rel: Relationships,
-    worksheets: HashMap<u32, WorkSheet>,
+    pub(crate) workbook: Rc<RefCell<Workbook>>,
+    pub(crate) workbook_rel: Rc<RefCell<Relationships>>,
+    pub(crate) worksheets: Rc<RefCell<HashMap<u32, WorkSheet>>>,
     shared_string: SharedString,
-    style_sheet: StyleSheet,
+    pub(crate) style_sheet: Rc<RefCell<StyleSheet>>,
 }
 
 pub(crate) trait XmlIo<T> {
@@ -23,123 +25,9 @@ pub(crate) trait XmlIo<T> {
     fn save<P: AsRef<Path>>(&mut self, file_path: P);
 }
 
-pub(crate) trait Create {
-    fn create_worksheet(&mut self) -> (u32, String);
-    fn create_worksheet_by_name(&mut self, name: &str) -> SheetResult<u32>;
-}
-
-pub(crate) trait Borrow {
-    fn borrow_workbook(&self) -> &Workbook;
-    fn borrow_worksheets(&self) -> &HashMap<u32, WorkSheet>;
-    fn borrow_worksheet(&self, id: u32) -> &WorkSheet;
-    fn borrow_shared_string(&self) -> &SharedString;
-
-    fn borrow_style_sheet(&self) -> &StyleSheet;
-
-    fn borrow_workbook_mut(&mut self) -> &mut Workbook;
-    fn borrow_worksheets_mut(&mut self) -> &mut HashMap<u32, WorkSheet>;
-    fn borrow_worksheet_mut(&mut self, id: u32) -> &mut WorkSheet;
-    fn borrow_shared_string_mut(&mut self) -> &mut SharedString;
-    fn borrow_style_sheet_mut(&mut self) -> &mut StyleSheet;
-}
-
-impl XmlIo<XmlManager> for XmlManager {
-     fn from_path<P: AsRef<Path>>(path: P) -> io::Result<XmlManager> {
-         let workbook = Workbook::from_path(&path)?;
-         let workbook_rel = Relationships::from_path(&path)?;
-         let shared_string = SharedString::from_path(&path).unwrap_or_default();
-         let style_sheet = StyleSheet::from_path(&path)?;
-         let worksheets: HashMap<u32, WorkSheet> = workbook.sheets.sheets.iter()
-             .map(|sheet| (sheet.sheet_id, WorkSheet::from_path(&path, sheet.sheet_id))).collect();
-         Ok(XmlManager {
-             workbook,
-             workbook_rel,
-             worksheets,
-             shared_string,
-             style_sheet,
-         })
-     }
-    fn save<P: AsRef<Path>>(&mut self, file_path: P) {
-        self.workbook.save(&file_path);
-        self.worksheets.iter_mut().for_each(|(id, worksheet)| worksheet.save(&file_path, *id));
-        self.shared_string.save(&file_path);
-        self.style_sheet.save(&file_path);
-        self.workbook_rel.save(&file_path);
-    }
-}
-
-impl Create for XmlManager {
-    fn create_worksheet(&mut self) -> (u32, String) {
-        let id = self.workbook_rel.add_worksheet();
-        let work_sheet = WorkSheet::new();
-        self.worksheets.insert(id, work_sheet);
-        self.workbook.sheets.sheets.push(Sheet::by_id(id));
-        (id, format!("Sheet{id}"))
-    }
-
-    fn create_worksheet_by_name(&mut self, name: &str) -> SheetResult<u32> {
-        {
-            let name = self.workbook.sheets.sheets.iter().find(|s| { s.name == name });
-            if let Some(_) = name {
-                return Err(SheetError::DuplicatedSheets);
-            }
-        }
-        let id = self.workbook_rel.add_worksheet();
-        let work_sheet = WorkSheet::new();
-        self.worksheets.insert(id, work_sheet);
-        self.workbook.sheets.sheets.push(Sheet::by_name(id, name));
-        Ok(id)
-    }
-}
-
-impl Borrow for XmlManager {
-    fn borrow_workbook(&self) -> &Workbook {
-        &self.workbook
-    }
-    fn borrow_worksheets(&self) -> &HashMap<u32, WorkSheet> {
-        &self.worksheets
-    }
-    fn borrow_worksheet(&self, id: u32) -> &WorkSheet {
-        self.worksheets.get(&id).unwrap()
-    }
-    fn borrow_shared_string(&self) -> &SharedString {
-        &self.shared_string
-    }
-
-    fn borrow_style_sheet(&self) -> &StyleSheet {
-        &self.style_sheet
-    }
-
-    fn borrow_workbook_mut(&mut self) -> &mut Workbook {
-        &mut self.workbook
-    }
-    fn borrow_worksheets_mut(&mut self) -> &mut HashMap<u32, WorkSheet> {
-        &mut self.worksheets
-    }
-    fn borrow_worksheet_mut(&mut self, id: u32) -> &mut WorkSheet {
-        self.worksheets.get_mut(&id).unwrap()
-    }
-
-    fn borrow_shared_string_mut(&mut self) -> &mut SharedString {
-        &mut self.shared_string
-    }
-
-    fn borrow_style_sheet_mut(&mut self) -> &mut StyleSheet {
-        &mut self.style_sheet
-    }
-}
-
 trait EditSheet {
     
 }
-
-// pub(crate) trait EditRow {
-//     fn get(&mut self, row_id: u32) -> RowResult<&mut Row>;
-//     fn create(&mut self, row_id: u32) -> RowResult<&mut Row>;
-//     fn update(&mut self, row_id: u32) -> RowResult<&mut Row>;
-//     fn delete(&mut self, row_id: u32) -> RowResult<()>;
-//     fn sort(&mut self);
-// }
 
 pub(crate) trait EditCell {
     fn get(&mut self, col_id: u32) -> CellResult<&mut Cell>;
