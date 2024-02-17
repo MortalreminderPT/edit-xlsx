@@ -2,11 +2,12 @@ use std::{fs, slice};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::Path;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use crate::api::sheet::Sheet;
 use crate::utils::zip_util;
 use crate::result::{SheetError, WorkbookError, WorkbookResult};
 use crate::xml;
+use crate::xml::content_types::ContentTypes;
 use crate::xml::manage::XmlIo;
 use crate::xml::style::StyleSheet;
 use crate::xml::workbook_rel::Relationships;
@@ -21,6 +22,8 @@ pub struct Workbook {
     style_sheet: Rc<RefCell<xml::style::StyleSheet>>,
     workbook_rel: Rc<RefCell<xml::workbook_rel::Relationships>>,
     worksheets: Rc<RefCell<HashMap<u32, WorkSheet>>>,
+    worksheets_rel: Rc<RefCell<HashMap<u32, xml::worksheet_rel::Relationships>>>,
+    content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
 }
 
 impl Workbook {
@@ -49,7 +52,9 @@ impl Workbook {
             &name,
             Rc::clone(&self.workbook),
             Rc::clone(&self.worksheets),
-            Rc::clone(&self.style_sheet)
+            Rc::clone(&self.worksheets_rel),
+            Rc::clone(&self.style_sheet),
+            Rc::clone(&self.content_types),
         );
         self.sheets.push(sheet);
         self.get_worksheet(id)
@@ -63,7 +68,9 @@ impl Workbook {
             name,
             Rc::clone(&self.workbook),
             Rc::clone(&self.worksheets),
-            Rc::clone(&self.style_sheet)
+            Rc::clone(&self.worksheets_rel),
+            Rc::clone(&self.style_sheet),
+            Rc::clone(&self.content_types),
         );
         self.sheets.push(sheet);
         self.get_worksheet(id)
@@ -119,13 +126,19 @@ impl Workbook {
         let workbook = crate::xml::workbook::Workbook::from_path(&tmp_path)?;
         let workbook_rel = Relationships::from_path(&tmp_path)?;
         let style_sheet = StyleSheet::from_path(&tmp_path)?;
+        let content_types = ContentTypes::from_path(&tmp_path)?;
         let worksheets: HashMap<u32, WorkSheet> = workbook.sheets.sheets.iter()
             .map(|sheet| (sheet.sheet_id, WorkSheet::from_path(&tmp_path, sheet.sheet_id)))
+            .collect();
+        let worksheets_rel: HashMap<u32, xml::worksheet_rel::Relationships> = workbook.sheets.sheets.iter()
+            .map(|sheet| (sheet.sheet_id, xml::worksheet_rel::Relationships::from_path(&tmp_path, sheet.sheet_id).unwrap_or_default()))
             .collect();
         let workbook = Rc::new(RefCell::new(workbook));
         let workbook_rel = Rc::new(RefCell::new(workbook_rel));
         let style_sheet = Rc::new(RefCell::new(style_sheet));
         let worksheets = Rc::new(RefCell::new(worksheets));
+        let worksheets_rel = Rc::new(RefCell::new(worksheets_rel));
+        let content_types = Rc::new(RefCell::new(content_types));
 
         let sheets = workbook.borrow().sheets.sheets.iter().map(
             |sheet_xml| {
@@ -135,7 +148,9 @@ impl Workbook {
                     &sheet_xml.name,
                     Rc::clone(&workbook),
                     Rc::clone(&worksheets),
-                    Rc::clone(&style_sheet)
+                    Rc::clone(&worksheets_rel),
+                    Rc::clone(&style_sheet),
+                    Rc::clone(&content_types),
                 )
             }).collect();
         Ok(Workbook {
@@ -145,7 +160,9 @@ impl Workbook {
             workbook: Rc::clone(&workbook),
             workbook_rel: Rc::clone(&workbook_rel),
             worksheets: Rc::clone(&worksheets),
-            style_sheet: Rc::clone(&style_sheet)
+            worksheets_rel: Rc::clone(&worksheets_rel),
+            style_sheet: Rc::clone(&style_sheet),
+            content_types: Rc::clone(&content_types),
         })
     }
 
@@ -160,6 +177,8 @@ impl Workbook {
         self.style_sheet.borrow_mut().save(&self.tmp_path);
         self.workbook_rel.borrow_mut().update(self.worksheets.borrow_mut().len() as u32, 1, 1);
         self.workbook_rel.borrow_mut().save(&self.tmp_path);
+        self.worksheets_rel.borrow_mut().iter_mut().for_each(|(id, worksheet_rel)| worksheet_rel.save(&self.tmp_path, *id));
+        self.content_types.borrow_mut().save(&self.tmp_path);
         // package files
         zip_util::zip_dir(&self.tmp_path, file_path)?;
         Ok(())

@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io;
+use std::{fs, io};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 
@@ -9,6 +9,8 @@ pub enum XlsxFileType {
     SharedStringFile,
     StylesFile,
     WorkbookRels,
+    WorksheetRels(u32),
+    ContentTypes,
 }
 
 pub struct XlsxFileReader {
@@ -42,7 +44,12 @@ impl XlsxFileWriter {
     pub(crate) fn from_path<P: AsRef<Path>>(base_path: P, file_type: XlsxFileType) -> io::Result<XlsxFileWriter> {
         let file_path = parse_path(base_path, &file_type);
         Ok(XlsxFileWriter {
-            file: File::create(&file_path)?,
+            file: {
+                let mut dirs = file_path.clone();
+                dirs.pop();
+                fs::create_dir_all(&dirs).unwrap_or_else(|_| {});
+                File::create(&file_path)?
+            },
             file_type,
             file_path,
         })
@@ -69,6 +76,12 @@ fn parse_path<P: AsRef<Path>>(base_path: P, file_type: &XlsxFileType) -> PathBuf
         }
         XlsxFileType::WorkbookRels => {
             base_path.as_ref().join("xl/_rels/workbook.xml.rels")
+        },
+        XlsxFileType::WorksheetRels(id) => {
+            base_path.as_ref().join(format!("xl/worksheets/_rels/sheet{id}.xml.rels"))
+        },
+        XlsxFileType::ContentTypes => {
+            base_path.as_ref().join("[Content_Types].xml")
         }
     }
 }

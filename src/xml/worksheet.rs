@@ -32,6 +32,8 @@ pub(crate) struct WorkSheet {
     phonetic_pr: Option<PhoneticPr>,
     #[serde(rename = "pageMargins")]
     page_margins: PageMargins,
+    #[serde(rename = "picture", skip_serializing_if = "Option::is_none")]
+    picture: Option<Picture>,
 }
 
 impl WorkSheet {
@@ -73,6 +75,14 @@ impl WorkSheet {
             }
         };
         self.sheet_pr = Some(sheet_pr);
+    }
+
+    pub(crate) fn set_background(&mut self, filename: &str) -> u32 {
+        let id = 1;
+        if let None = self.picture {
+            self.picture = Some(Picture::from_id(id))
+        }
+        id
     }
 
     // pub(crate) fn borrow_sheet_data(&mut self) -> Option<&mut SheetData> {
@@ -200,8 +210,8 @@ struct PageMargins {
     footer: f64,
 }
 
-impl PageMargins {
-    pub(crate) fn default() -> PageMargins {
+impl Default for PageMargins {
+    fn default() -> PageMargins {
         PageMargins {
             left: 0.7,
             right: 0.7,
@@ -209,6 +219,20 @@ impl PageMargins {
             bottom: 0.75,
             header: 0.3,
             footer: 0.3,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Picture {
+    #[serde(rename(serialize = "@r:id", deserialize = "@id"))]
+    id: String,
+}
+
+impl Picture {
+    fn from_id(id: u32) -> Picture {
+        Picture {
+            id: format!("rId{id}"),
         }
     }
 }
@@ -251,7 +275,6 @@ impl Cols {
     fn add_col(&mut self, col: Col) {
         self.col.push(col)
     }
-
     fn is_empty(&self) -> bool {
         self.col.is_empty()
     }
@@ -270,6 +293,7 @@ impl WorkSheet {
             merge_cells: None,
             phonetic_pr: None,
             page_margins: PageMargins::default(),
+            picture: None,
         }
     }
     

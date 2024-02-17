@@ -8,5 +8,5 @@ pub(crate) mod style;
 pub(crate) mod workbook_rel;
 mod properties;
 mod merge_cells;
-mod worksheet_rel;
-mod rel;
+pub(crate) mod worksheet_rel;
+pub(crate) mod content_types;

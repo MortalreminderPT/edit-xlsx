@@ -1,13 +1,14 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
 use crate::api::format::Format;
-use crate::FormatColor;
+use crate::{FormatColor, xml};
 use crate::result::SheetResult;
 use crate::xml::worksheet::WorkSheet;
 use crate::xml::workbook::Workbook;
 use crate::xml::sheet_data::cell_values::{CellDisplay, CellType};
 use crate::xml::style::StyleSheet;
+use crate::xml::worksheet_rel::Relationships;
 
 #[derive(Debug)]
 pub struct Sheet {
@@ -15,7 +16,9 @@ pub struct Sheet {
     pub(crate) name: String,
     workbook: Rc<RefCell<Workbook>>,
     worksheets: Rc<RefCell<HashMap<u32, WorkSheet>>>,
+    worksheets_rel: Rc<RefCell<HashMap<u32, xml::worksheet_rel::Relationships>>>,
     style_sheet: Rc<RefCell<StyleSheet>>,
+    content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
 }
 
 /// style
@@ -165,6 +168,19 @@ impl Sheet {
         worksheet.set_tab_color(tab_color);
     }
 
+    pub fn set_background(&mut self, filename: &str) {
+        let worksheets = &mut self.worksheets.borrow_mut();
+        let worksheet = worksheets.get_mut(&self.id).unwrap();
+        let mut worksheets_rel = self.worksheets_rel.borrow_mut();
+        if let None = worksheets_rel.get_mut(&self.id) {
+            self.worksheets_rel.borrow_mut().insert(self.id, Relationships::default());
+        }
+        let worksheet_rel = worksheets_rel.get_mut(&self.id).unwrap();
+        let id = worksheet.set_background(filename);
+        self.content_types.borrow_mut().add_png();
+        worksheet_rel.add_image(id);
+    }
+
     pub fn id(&self) -> u32 {
         self.id
     }
@@ -177,14 +193,18 @@ impl Sheet {
         name: &str,
         workbook: Rc<RefCell<Workbook>>,
         worksheets: Rc<RefCell<HashMap<u32, WorkSheet>>>,
+        worksheets_rel: Rc<RefCell<HashMap<u32, xml::worksheet_rel::Relationships>>>,
         style_sheet: Rc<RefCell<StyleSheet>>,
+        content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
     ) -> Sheet {
         Sheet {
             id: sheet_id,
             name: String::from(name),
             workbook,
             worksheets,
+            worksheets_rel,
             style_sheet,
+            content_types,
         }
     }
 }
