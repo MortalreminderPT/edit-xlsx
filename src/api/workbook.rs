@@ -40,7 +40,7 @@ impl Workbook {
     }
 
     pub fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<&mut Sheet> {
-        let sheet_id = self.xml_manager.borrow_mut().create_worksheet_by_name(name);
+        let sheet_id = self.xml_manager.borrow_mut().create_worksheet_by_name(name)?;
         let sheet = Sheet::from_xml(sheet_id, name, Rc::clone(&self.xml_manager));
         self.sheets.push(sheet);
         self.get_worksheet(sheet_id)
@@ -80,6 +80,15 @@ impl Workbook {
             Some(sheet) => Ok(sheet),
             None => Err(WorkbookError::SheetError(SheetError::FileNotFound))
         }
+    }
+
+    pub fn read_only_recommended(&mut self) -> WorkbookResult<()> {
+        let mut binding = self.xml_manager.borrow_mut();
+        let workbook = binding.borrow_workbook_mut();
+        let mut file_sharing = workbook.file_sharing.take().unwrap_or_default();
+        file_sharing.read_only_recommended = 1;
+        workbook.file_sharing = Some(file_sharing);
+        Ok(())
     }
 }
 

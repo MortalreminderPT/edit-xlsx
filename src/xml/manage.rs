@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::io;
 use std::path::Path;
-use crate::result::{CellResult, RowResult};
+use crate::result::{CellResult, RowResult, SheetError, SheetResult};
 use crate::xml::shared_string::SharedString;
 use crate::xml::sheet_data::{Cell, Row};
 use crate::xml::style::StyleSheet;
@@ -25,7 +25,7 @@ pub(crate) trait XmlIo<T> {
 
 pub(crate) trait Create {
     fn create_worksheet(&mut self) -> (u32, String);
-    fn create_worksheet_by_name(&mut self, name: &str) -> u32;
+    fn create_worksheet_by_name(&mut self, name: &str) -> SheetResult<u32>;
 }
 
 pub(crate) trait Borrow {
@@ -77,12 +77,18 @@ impl Create for XmlManager {
         (id, format!("Sheet{id}"))
     }
 
-    fn create_worksheet_by_name(&mut self, name: &str) -> u32 {
+    fn create_worksheet_by_name(&mut self, name: &str) -> SheetResult<u32> {
+        {
+            let name = self.workbook.sheets.sheets.iter().find(|s| { s.name == name });
+            if let Some(_) = name {
+                return Err(SheetError::DuplicatedSheets);
+            }
+        }
         let id = self.workbook_rel.add_worksheet();
         let work_sheet = WorkSheet::new();
         self.worksheets.insert(id, work_sheet);
         self.workbook.sheets.sheets.push(Sheet::by_name(id, name));
-        id
+        Ok(id)
     }
 }
 
@@ -127,13 +133,13 @@ trait EditSheet {
     
 }
 
-pub(crate) trait EditRow {
-    fn get(&mut self, row_id: u32) -> RowResult<&mut Row>;
-    fn create(&mut self, row_id: u32) -> RowResult<&mut Row>;
-    fn update(&mut self, row_id: u32) -> RowResult<&mut Row>;
-    fn delete(&mut self, row_id: u32) -> RowResult<()>;
-    fn sort(&mut self);
-}
+// pub(crate) trait EditRow {
+//     fn get(&mut self, row_id: u32) -> RowResult<&mut Row>;
+//     fn create(&mut self, row_id: u32) -> RowResult<&mut Row>;
+//     fn update(&mut self, row_id: u32) -> RowResult<&mut Row>;
+//     fn delete(&mut self, row_id: u32) -> RowResult<()>;
+//     fn sort(&mut self);
+// }
 
 pub(crate) trait EditCell {
     fn get(&mut self, col_id: u32) -> CellResult<&mut Cell>;

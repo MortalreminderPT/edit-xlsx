@@ -13,6 +13,8 @@ pub(crate) struct Workbook {
     xmlns_attrs: XmlnsAttrs,
     #[serde(rename = "fileVersion")]
     file_version: FileVersion,
+    #[serde(rename = "fileSharing", skip_serializing_if = "Option::is_none")]
+    pub(crate) file_sharing: Option<FileSharing>,
     #[serde(rename = "workbookPr")]
     workbook_pr: WorkbookPr,
     #[serde(rename(serialize = "xr:revisionPtr", deserialize = "revisionPtr"), skip_serializing_if = "Option::is_none")]
@@ -46,6 +48,20 @@ impl Default for FileVersion {
             last_edited: None,
             lowest_edited: None,
             rup_build: Some(String::from("14420")),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub(crate) struct FileSharing {
+    #[serde(rename = "@readOnlyRecommended")]
+    pub(crate) read_only_recommended: u8,
+}
+
+impl Default for FileSharing {
+    fn default() -> Self {
+        Self {
+            read_only_recommended: 0,
         }
     }
 }
@@ -91,10 +107,10 @@ pub(crate) struct WorkbookView {
     pub(crate) window_width: u32,
     #[serde(rename = "@windowHeight")]
     pub(crate) window_height: u32,
-    #[serde(rename = "@tabRatio")]
+    #[serde(rename = "@tabRatio", skip_serializing_if = "Option::is_none")]
     pub(crate) tab_ratio: Option<u32>,
     #[serde(rename = "@activeTab", skip_serializing_if = "Option::is_none")]
-    active_tab: Option<u32>
+    pub(crate) active_tab: Option<u32>
 }
 
 impl Default for WorkbookView {
@@ -131,7 +147,9 @@ pub(crate) struct Sheet {
     #[serde(rename = "@sheetId")]
     pub(crate) sheet_id: u32,
     #[serde(rename(serialize = "@r:id", deserialize = "@id"))]
-    r_id: String,
+    pub(crate) r_id: String,
+    #[serde(rename = "@state", skip_serializing_if = "Option::is_none")]
+    pub(crate) state: Option<String>,
 }
 
 impl Default for Sheet {
@@ -140,6 +158,7 @@ impl Default for Sheet {
             name: format!("sheet1"),
             sheet_id: 1,
             r_id: format!("rId1"),
+            state: None,
         }
     }
 }
@@ -150,6 +169,7 @@ impl Sheet {
             name: format!("Sheet{id}"),
             sheet_id: id,
             r_id: format!("rId{id}"),
+            state: None,
         }
     }
 
@@ -158,7 +178,13 @@ impl Sheet {
             name: String::from(name),
             sheet_id: id,
             r_id: format!("rId{id}"),
+            state: None,
         }
+    }
+    
+    pub(crate) fn change_id(&mut self, id: u32) {
+        self.sheet_id = id;
+        self.r_id = format!("rId{id}");
     }
 }
 
@@ -195,6 +221,7 @@ impl Default for Workbook {
         Workbook {
             xmlns_attrs: XmlnsAttrs::workbook_default(),
             file_version: Default::default(),
+            file_sharing: None,
             workbook_pr: Default::default(),
             xr_revision_ptr: None,
             book_views: Default::default(),
