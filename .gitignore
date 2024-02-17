@@ -1,4 +1,7 @@
 /target
 .idea
-/examples/**/*.zip
-/examples/**/*.xlsx
+*.zip
+*.xlsx
+!/resource/new.xlsx
+!/examples/**/*.zip
+!/examples/**/*.xlsx
