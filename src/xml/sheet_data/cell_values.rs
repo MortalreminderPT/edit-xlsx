@@ -49,11 +49,12 @@ impl CellValues {
     }
 }
 
-
+/// 可以被展示的Cell文字内容
 pub(crate) trait CellDisplay {
     fn to_display(&self) -> String;
 }
 
+/// Cell文字内容的类型
 pub(crate) trait CellType {
     fn to_cell_val(&self) -> CellValues {
         CellValues::String

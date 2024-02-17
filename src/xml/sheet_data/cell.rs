@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use crate::utils::col_helper;
 use crate::utils::col_helper::to_col_name;
@@ -18,14 +18,22 @@ pub(crate) struct Cell {
 
 impl Cell {
     pub(crate) fn new<T: CellDisplay + CellType>(row: u32, col: u32, text: T, style_id: Option<u32>) -> Cell {
+        let loc = CellLocation::new(row, col);
         Cell {
-            loc: CellLocation::new(row, col), // num_2_col(col) + &row.to_string(),
+            loc,
             style: style_id,
             cell_values: text.to_cell_val(),
             text: Some(text.to_display()),
         }
     }
 
+    ///
+    /// 更新当前Cell中的内容，包括text及style
+    /// # Arguments
+    ///
+    /// * `text`: 更新的文字内容，必须是同时实现CellDisplay和CellType
+    /// * `style_id`: 更新的style id
+    ///
     pub(crate) fn update_value<T: CellDisplay + CellType>(&mut self, text: T, style_id: Option<u32>) {
         self.cell_values = text.to_cell_val();
         self.text = Some(text.to_display());
@@ -43,9 +51,10 @@ pub(crate) struct CellLocation {
 
 impl CellLocation {
     fn new(row: u32, col: u32) -> CellLocation {
+        let location = to_col_name(col) + &row.to_string();
         CellLocation {
-            location: to_col_name(col) + &row.to_string(),
-            col: Some(col)
+            col: Some(col_helper::to_col(&location)),
+            location,
         }
     }
 

@@ -2,8 +2,8 @@ use edit_xlsx::{Format, Workbook, WorkbookResult, FormatAlignType, FormatBorderT
 
 
 fn main() -> WorkbookResult<()> {
-    let mut workbook = Workbook::from_path("examples/xlsx/edit.xlsx")?;
-    let mut worksheet = workbook.get_worksheet(1)?;
+    let mut workbook = Workbook::from_path("examples/xlsx/new.xlsx")?;
+    let worksheet = workbook.get_worksheet(1)?;
     // adjust the text align
     let center = Format::default().set_align(FormatAlignType::VerticalCenter).set_align(FormatAlignType::Center);
     let left_top = Format::default().set_align(FormatAlignType::Left).set_align(FormatAlignType::Top);
@@ -21,6 +21,7 @@ fn main() -> WorkbookResult<()> {
     // add background
     let red_background = Format::default().set_background_color(FormatColor::RGB("00FF7777"));
     worksheet.write_with_format(3, 1, "red", &red_background)?;
-    workbook.save_as("examples/output/edit_style.xlsx")?;
+    // workbook.save_as("examples/xlsx/edit_style.xlsx")?;
+    workbook.save()?;
     Ok(())
 }

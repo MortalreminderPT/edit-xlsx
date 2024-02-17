@@ -7,3 +7,4 @@ pub(crate) mod sheet_data;
 pub(crate) mod style;
 pub(crate) mod workbook_rel;
 mod properties;
+mod merge_cells;

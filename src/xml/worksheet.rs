@@ -3,7 +3,7 @@ use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
-use crate::xml::manage::{EditRow, XmlIo};
+use crate::xml::merge_cells::MergeCells;
 use crate::xml::sheet_data::SheetData;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -14,13 +14,15 @@ pub(crate) struct WorkSheet {
     #[serde(rename = "dimension", skip_serializing_if = "Option::is_none")]
     dimension: Option<Dimension>,
     #[serde(rename = "sheetViews")]
-    sheet_views: SheetViews,
+    pub(crate) sheet_views: SheetViews,
     #[serde(rename = "sheetFormatPr")]
     sheet_format_pr: SheetFormatPr,
-    #[serde(rename = "cols", skip_serializing_if = "Option::is_none")]
-    cols: Option<Cols>,
-    #[serde(rename = "sheetData", default = "SheetData::default")]
+    #[serde(rename = "cols", default, skip_serializing_if = "Cols::is_empty")]
+    pub(crate) cols: Cols,
+    #[serde(rename = "sheetData", default)]
     pub(crate) sheet_data: SheetData,
+    #[serde(rename = "mergeCells", skip_serializing_if = "Option::is_none")]
+    pub(crate) merge_cells: Option<MergeCells>,
     #[serde(rename = "phoneticPr", skip_serializing_if = "Option::is_none")]
     phonetic_pr: Option<PhoneticPr>,
     #[serde(rename = "pageMargins")]
@@ -28,6 +30,37 @@ pub(crate) struct WorkSheet {
 }
 
 impl WorkSheet {
+    pub(crate) fn create_col(&mut self, min: u32, max: u32, width: Option<f64>, style: Option<u32>, best_fit: u8) -> &mut Col {
+        let mut col = Col::new(min, max, 1, width, style, best_fit);
+        if let None = width {
+            col.custom_width = 0;
+        }
+        self.cols.col.push(col);
+        self.cols.col.last_mut().unwrap()
+    }
+
+    pub(crate) fn create_merge_cells(&mut self) {
+        self.merge_cells = Some(MergeCells::default());
+    }
+
+    pub(crate) fn add_merge_cell(&mut self, first_row: u32, first_col: u32, last_row: u32, last_col: u32) {
+        let mut merge_cells = self.merge_cells.take().unwrap_or_default();
+        merge_cells.add_merge_cell(first_row, first_col, last_row, last_col);
+        self.merge_cells = Some(merge_cells);
+    }
+
+    pub(crate) fn autofit_cols(&mut self) {
+        self.cols.col.iter_mut().for_each(|c| {
+            c.custom_width = 0;
+            c.width = None;
+            c.best_fit = 1
+        })
+    }
+
+    fn get_name(&self) {
+
+    }
+
     // pub(crate) fn borrow_sheet_data(&mut self) -> Option<&mut SheetData> {
     //     match &mut self.sheet_data {
     //         Some(sheet_data) => Some(sheet_data),
@@ -63,9 +96,9 @@ impl Dimension {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct SheetView {
+pub(crate) struct SheetView {
     #[serde(rename = "@tabSelected", skip_serializing_if = "Option::is_none")]
-    tab_selected: Option<u32>,
+    pub(crate) tab_selected: Option<u32>,
     #[serde(rename = "@workbookViewId")]
     workbook_view_id: u32,
     #[serde(rename = "selection", skip_serializing_if = "Option::is_none")]
@@ -91,9 +124,9 @@ struct Selection {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct SheetViews {
+pub(crate) struct SheetViews {
     #[serde(rename = "sheetView")]
-    sheet_view: Vec<SheetView>
+    pub(crate) sheet_view: Vec<SheetView>
 }
 
 impl SheetViews {
@@ -152,21 +185,48 @@ impl PageMargins {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Default)]
 pub struct Col {
     #[serde(rename = "@min")]
     min: u32,
     #[serde(rename = "@max")]
     max: u32,
+    #[serde(rename = "@width", skip_serializing_if = "Option::is_none")]
+    width: Option<f64>,
+    #[serde(rename = "@style", skip_serializing_if = "Option::is_none")]
+    style: Option<u32>,
+    #[serde(rename = "@bestFit", default)]
+    best_fit: u8,
     #[serde(rename = "@customWidth")]
-    custom_width: bool,
-    #[serde(rename = "@width")]
-    width: f64,
+    custom_width: u8,
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+impl Col {
+    fn new(min: u32, max: u32, custom_width: u8, width: Option<f64>, style: Option<u32>, best_fit: u8) -> Col {
+        Col {
+            min,
+            max,
+            custom_width,
+            width,
+            style,
+            best_fit,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, Default)]
 pub struct Cols {
     col: Vec<Col>
+}
+
+impl Cols {
+    fn add_col(&mut self, col: Col) {
+        self.col.push(col)
+    }
+
+    fn is_empty(&self) -> bool {
+        self.col.is_empty()
+    }
 }
 
 impl WorkSheet {
@@ -176,8 +236,9 @@ impl WorkSheet {
             dimension: Some(Dimension::default()),
             sheet_views: SheetViews::default(),
             sheet_format_pr: SheetFormatPr::default(),
-            cols: None,
+            cols: Cols::default(),
             sheet_data: SheetData::default(),
+            merge_cells: None,
             phonetic_pr: None,
             page_margins: PageMargins::default(),
         }
@@ -192,7 +253,7 @@ impl WorkSheet {
     }
 
     pub(crate) fn save<P: AsRef<Path>>(&mut self, file_path: P, sheet_id: u32) {
-        self.sheet_data.sort();
+        self.sheet_data.sort_row();
         let xml = se::to_string_with_root("worksheet", &self).unwrap();
         let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
         let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::SheetFile(sheet_id)).unwrap();

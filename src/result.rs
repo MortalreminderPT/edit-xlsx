@@ -14,6 +14,12 @@ pub enum RowError {
     CellError(CellError),
 }
 
+pub type ColResult<T> = Result<T, ColError>;
+#[derive(Debug)]
+pub enum ColError {
+    ColNotFound,
+}
+
 pub type SheetResult<T> = Result<T, SheetError>;
 #[derive(Debug)]
 pub enum SheetError {
@@ -22,6 +28,7 @@ pub enum SheetError {
     FileNotFound,
     RowError(RowError),
     ColError,
+    DuplicatedSheets,
 }
 
 impl From<RowError> for SheetError {
