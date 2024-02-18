@@ -3,8 +3,8 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 use crate::api::format::Format;
-use crate::{FormatColor, xml};
-use crate::result::SheetResult;
+use crate::{FormatColor, WorkbookResult, xml};
+use crate::result::{SheetError, SheetResult, WorkbookError};
 use crate::xml::worksheet::WorkSheet;
 use crate::xml::workbook::Workbook;
 use crate::xml::sheet_data::cell_values::{CellDisplay, CellType};
@@ -142,16 +142,32 @@ impl Sheet {
     }
 
     pub fn set_first_sheet(&mut self) {
-        self.change_id(1);
+        self.change_id(1).unwrap();
     }
 
-    fn change_id(&mut self, id: u32) {
+    fn change_id(&mut self, id: u32) -> WorkbookResult<()> {
+        // swap sheet
+        let sheet_target = self.worksheets.borrow_mut().remove(&id).ok_or(SheetError::FileNotFound)?;
+        let sheet = self.worksheets.borrow_mut().remove(&self.id).ok_or(SheetError::FileNotFound)?;
+        self.worksheets.borrow_mut().insert(id, sheet);
+        self.worksheets.borrow_mut().insert(self.id, sheet_target);
+        // swap sheet rel
+        let sheet_rel_target = self.worksheets_rel.borrow_mut().remove(&id);
+        let sheet_rel = self.worksheets_rel.borrow_mut().remove(&self.id);
+        if let Some(sheet_rel_target) = sheet_rel_target {
+            self.worksheets_rel.borrow_mut().insert(self.id, sheet_rel_target);
+        }
+        if let Some(sheet_rel) = sheet_rel {
+            self.worksheets_rel.borrow_mut().insert(id, sheet_rel);
+        }
+        // swap workbook sheet
         let loc = (self.id - 1) as usize;
         let workbook = &mut self.workbook.borrow_mut();
         let sheets = &mut workbook.sheets.sheets;
         sheets[loc].change_id(id);
         sheets[0].change_id(self.id);
         sheets.swap(0, loc);
+        Ok(())
     }
 
     pub fn merge_range<T: CellDisplay + CellType>(&mut self, first_row: u32, first_col:u32, last_row:u32 , last_col:u32, data: T, format:&Format) -> SheetResult<()> {

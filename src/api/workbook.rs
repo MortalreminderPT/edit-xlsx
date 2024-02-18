@@ -1,4 +1,4 @@
-use std::{fs, slice};
+use std::{fs, io, slice};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::Path;
@@ -19,6 +19,7 @@ pub struct Workbook {
     pub sheets: Vec<Sheet>,
     pub(crate) tmp_path: String,
     pub(crate) file_path: String,
+    closed: bool,
     workbook: Rc<RefCell<xml::workbook::Workbook>>,
     style_sheet: Rc<RefCell<xml::style::StyleSheet>>,
     workbook_rel: Rc<RefCell<xml::workbook_rel::Relationships>>,
@@ -164,6 +165,7 @@ impl Workbook {
             sheets,
             tmp_path,
             file_path: file_path.as_ref().to_str().unwrap().to_string(),
+            closed: false,
             workbook: Rc::clone(&workbook),
             workbook_rel: Rc::clone(&workbook_rel),
             worksheets: Rc::clone(&worksheets),
@@ -178,7 +180,7 @@ impl Workbook {
         Ok(zip_util::extract_dir(file_path)?)
     }
 
-    pub fn save_as<P: AsRef<Path>>(&mut self, file_path: P) -> WorkbookResult<()> {
+    pub fn save_as<P: AsRef<Path>>(&self, file_path: P) -> WorkbookResult<()> {
         // save files
         self.workbook.borrow_mut().save(&self.tmp_path);
         self.worksheets.borrow_mut().iter_mut().for_each(|(id, worksheet)| worksheet.save(&self.tmp_path, *id));
@@ -193,13 +195,20 @@ impl Workbook {
         Ok(())
     }
 
-    pub fn save(&mut self) -> WorkbookResult<()> {
+    pub fn save(&self) -> WorkbookResult<()> {
         self.save_as(&self.file_path.clone())
+    }
+
+    pub fn finish(&mut self) {
+        if !self.closed {
+            fs::remove_dir_all(&self.tmp_path).unwrap();
+            self.closed = true;
+        }
     }
 }
 
 impl Drop for Workbook {
     fn drop(&mut self) {
-        fs::remove_dir_all(&self.tmp_path).unwrap();
+        self.finish();
     }
 }

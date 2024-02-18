@@ -1,4 +1,3 @@
-use std::fmt::format;
 use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
