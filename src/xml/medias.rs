@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::xml::manage::Io;
+use crate::xml::io::Io;
 
 #[derive(Debug)]
 pub(crate) struct Medias {
@@ -57,8 +57,6 @@ impl Media {
 
 impl Io<Media> for Media {
     fn from_path<P: AsRef<Path>>(_file_path: P) -> std::io::Result<Media> {
-        // let media = Media::from_path(file_path);
-        // Ok(media)
         todo!()
     }
 

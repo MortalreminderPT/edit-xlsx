@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use crate::api::format::Format;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::common::{ExtLst, FromFormat, XmlnsAttrs};
-use crate::xml::manage::Io;
+use crate::xml::io::Io;
 use crate::xml::style::alignment::Alignment;
 use crate::xml::style::border::{Border, Borders};
 use crate::xml::style::fill::{Fill, Fills};

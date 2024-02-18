@@ -6,7 +6,7 @@ use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::result::{SheetError, WorkbookError};
 use crate::WorkbookResult;
 use crate::xml::common::{ExtLst, XmlnsAttrs};
-use crate::xml::manage::Io;
+use crate::xml::io::Io;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="workbook")]

@@ -6,10 +6,10 @@ use crate::api::format::Format;
 use crate::{FormatColor, WorkbookResult, xml};
 use crate::result::{SheetError, SheetResult};
 use crate::utils::col_helper;
-use crate::xml::sheet_data::cell::Formula;
+use crate::xml::sheet_data::cell::formula::FormulaType;
 use crate::xml::worksheet::WorkSheet;
 use crate::xml::workbook::Workbook;
-use crate::xml::sheet_data::cell_values::{CellDisplay, CellType};
+use crate::xml::sheet_data::cell::values::{CellDisplay, CellValue};
 use crate::xml::style::StyleSheet;
 use crate::xml::worksheet_rel::Relationships;
 
@@ -34,20 +34,15 @@ impl Sheet {
 }
 
 impl Sheet {
-    
-    fn write_all<T: CellDisplay + CellType>(&mut self, row_id: u32, col: u32, text: T, style_id: Option<u32>) -> SheetResult<()> {
+    fn write_all<T: CellDisplay + CellValue>(&mut self, row_id: u32, col: u32, text: T, style_id: Option<u32>) -> SheetResult<()> {
         let worksheets = &mut self.worksheets.borrow_mut();
         let sheet_xml = worksheets.get_mut(&self.id).unwrap();
         let sheet_data = &mut sheet_xml.sheet_data;
-        let row = match sheet_data.get_row(row_id) {
-            Ok(row) => row,
-            Err(_) => sheet_data.create_row(row_id)
-        };
-        row.update_or_create_cell(col, text, None, style_id);
+        sheet_data.write_display(row_id, col, text, style_id);
         Ok(())
     }
 
-    pub fn write<T: CellDisplay + CellType>(&mut self, row: u32, col: u32, text: T) -> SheetResult<()> {
+    pub fn write<T: CellDisplay + CellValue>(&mut self, row: u32, col: u32, text: T) -> SheetResult<()> {
         self.write_all(row, col, text, None)
     }
 
@@ -71,11 +66,7 @@ impl Sheet {
         let worksheets = &mut self.worksheets.borrow_mut();
         let sheet_xml = worksheets.get_mut(&self.id).unwrap();
         let sheet_data = &mut sheet_xml.sheet_data;
-        let row = match sheet_data.get_row(row) {
-            Ok(row) => row,
-            Err(_) => sheet_data.create_row(row)
-        };
-        row.update_or_create_cell(col, "", Some(Formula::from_formula(String::from(text))), None);
+        sheet_data.write_formula(row, col, text, FormulaType::Formula, None);
         Ok(())
     }
 
@@ -83,11 +74,7 @@ impl Sheet {
         let worksheets = &mut self.worksheets.borrow_mut();
         let sheet_xml = worksheets.get_mut(&self.id).unwrap();
         let sheet_data = &mut sheet_xml.sheet_data;
-        let sheet_data_row = match sheet_data.get_row(row) {
-            Ok(row) => row,
-            Err(_) => sheet_data.create_row(row)
-        };
-        sheet_data_row.update_or_create_cell(col, "", Some(Formula::from_array_formula(String::from(text), row, col)), None);
+        sheet_data.write_formula(row, col, text, FormulaType::ArrayFormula(col_helper::to_ref(row, col)), None);
         Ok(())
     }
 
@@ -96,15 +83,11 @@ impl Sheet {
         let sheet_xml = worksheets.get_mut(&self.id).unwrap();
         let sheet_data = &mut sheet_xml.sheet_data;
         let (row, col) = col_helper::to_loc(loc_ref.split_once(':').unwrap().0);
-        let sheet_data_row = match sheet_data.get_row(row) {
-            Ok(row) => row,
-            Err(_) => sheet_data.create_row(row)
-        };
-        sheet_data_row.update_or_create_cell(col, "", Some(Formula::from_ref_formula(String::from(text), String::from(loc_ref))), None);
+        sheet_data.write_formula(row, col, text, FormulaType::DynamicArrayFormula(loc_ref.to_string()), None);
         Ok(())
     }
 
-    pub fn write_with_format<T: CellDisplay + CellType>(&mut self, row: u32, col: u32, text: T, format: &Format) -> SheetResult<()> {
+    pub fn write_with_format<T: CellDisplay + CellValue>(&mut self, row: u32, col: u32, text: T, format: &Format) -> SheetResult<()> {
         let style_id: u32 = self.add_format(format);
         self.write_all(row, col, text, Some(style_id))?;
         Ok(())
@@ -114,7 +97,7 @@ impl Sheet {
         let worksheets = &mut self.worksheets.borrow_mut();
         let sheet_xml = worksheets.get_mut(&self.id).unwrap();
         let sheet_data = &mut sheet_xml.sheet_data;
-        sheet_data.update_or_create_row(row, height, None)?;
+        sheet_data.set_row(row, height, None)?;
         Ok(())
     }
 
@@ -123,7 +106,7 @@ impl Sheet {
         let worksheets = &mut self.worksheets.borrow_mut();
         let sheet_xml = worksheets.get_mut(&self.id).unwrap();
         let sheet_data = &mut sheet_xml.sheet_data;
-        sheet_data.update_or_create_row(row, height, Some(style_id))?;
+        sheet_data.set_row(row, height, Some(style_id))?;
         Ok(())
     }
 
@@ -226,7 +209,7 @@ impl Sheet {
         Ok(())
     }
 
-    pub fn merge_range<T: CellDisplay + CellType>(&mut self, first_row: u32, first_col:u32, last_row:u32 , last_col:u32, data: T, format:&Format) -> SheetResult<()> {
+    pub fn merge_range<T: CellDisplay + CellValue>(&mut self, first_row: u32, first_col:u32, last_row:u32, last_col:u32, data: T, format:&Format) -> SheetResult<()> {
         {
             let worksheets = &mut self.worksheets.borrow_mut();
             let worksheet = worksheets.get_mut(&self.id).unwrap();

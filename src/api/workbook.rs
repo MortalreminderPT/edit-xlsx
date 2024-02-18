@@ -8,7 +8,7 @@ use crate::utils::zip_util;
 use crate::result::{SheetError, WorkbookError, WorkbookResult};
 use crate::xml;
 use crate::xml::content_types::ContentTypes;
-use crate::xml::manage::Io;
+use crate::xml::io::Io;
 use crate::xml::medias::Medias;
 use crate::xml::style::StyleSheet;
 use crate::xml::workbook_rel::Relationships;

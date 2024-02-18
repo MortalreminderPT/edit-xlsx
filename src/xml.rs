@@ -1,4 +1,4 @@
-pub(crate) mod manage;
+pub(crate) mod io;
 pub(crate) mod common;
 pub(crate) mod workbook;
 pub(crate) mod worksheet;
@@ -6,7 +6,6 @@ mod shared_string;
 pub(crate) mod sheet_data;
 pub(crate) mod style;
 pub(crate) mod workbook_rel;
-mod properties;
 mod merge_cells;
 pub(crate) mod worksheet_rel;
 pub(crate) mod content_types;

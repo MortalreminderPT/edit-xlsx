@@ -1,88 +1,68 @@
 pub(crate) mod cell;
-pub(crate) mod cell_values;
+mod row;
 
 use std::cmp::max;
 use serde::{Deserialize, Serialize};
 use crate::result::{RowError, RowResult};
 pub(crate) use crate::xml::sheet_data::cell::Cell;
-use crate::xml::sheet_data::cell::Formula;
-use crate::xml::sheet_data::cell_values::{CellDisplay, CellType};
+use crate::xml::sheet_data::cell::formula::FormulaType;
+use crate::xml::sheet_data::cell::values::{CellDisplay, CellValue};
+use crate::xml::sheet_data::row::Row;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct SheetData {
     #[serde(rename = "row", default = "Vec::new")]
     pub(crate) rows: Vec<Row>,
     #[serde(skip)]
-    pub(crate) max_row_id: u32,
+    max_row: u32,
     #[serde(skip)]
-    pub(crate) max_col_id: Option<u32>,
+    max_col: Option<u32>,
 }
 
 impl Default for SheetData {
     fn default() -> SheetData {
         SheetData {
             rows: vec![],
-            max_row_id: 0,
-            max_col_id: None,
+            max_row: 0,
+            max_col: None,
         }
     }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct Row {
-    #[serde(rename = "c")]
-    pub(crate) cells: Vec<Cell>,
-    #[serde(rename = "@r")]
-    pub(crate) row: u32,
-    #[serde(rename = "@ht")]
-    pub(crate) height: f64,
-    #[serde(rename = "@s", skip_serializing_if = "Option::is_none")]
-    pub(crate) style: Option<u32>,
-    #[serde(rename = "@customFormat", skip_serializing_if = "Option::is_none")]
-    custom_format: Option<u32>,
-    #[serde(rename = "@customHeight", skip_serializing_if = "Option::is_none")]
-    custom_height: Option<u32>,
-    #[serde(skip)]
-    max_col_id: Option<u32>,
 }
 
 impl SheetData {
-    pub(crate) fn get_row(&mut self, row_id: u32) -> RowResult<&mut Row> {
-        let row = self.rows
+    pub(crate) fn get_row(&mut self, row: u32) -> RowResult<&mut Row> {
+        Ok(self.rows
             .iter_mut()
-            .find(|r| { r.row == row_id })
-            .ok_or(RowError::RowNotFound)?;
-        Ok(row)
+            .find(|r| { r.row == row })
+            .ok_or(RowError::RowNotFound)?)
     }
 
-    pub(crate) fn create_row(&mut self, row_id: u32) -> &mut Row {
-        self.rows.push(Row::new(row_id));
-        self.max_row_id = max(self.max_row_id, row_id);
-        // self.get_row(row_id).unwrap()
+    pub(crate) fn add_row(&mut self, row: u32) -> &mut Row {
+        self.rows.push(Row::new(row));
+        self.max_row = max(self.max_row, row);
         self.rows.last_mut().unwrap()
     }
 
-    pub(crate) fn update_or_create_row(&mut self, row_id: u32, height: f64, style_id: Option<u32>) -> RowResult<&mut Row> {
-        match self.get_row(row_id) {
+    pub(crate) fn set_row(&mut self, row: u32, height: f64, style: Option<u32>) -> RowResult<()> {
+        let sheet_data_row = match self.get_row(row) {
             Ok(row) => row,
-            Err(_) => self.create_row(row_id),
+            Err(_) => self.add_row(row)
         };
-        let row = self.get_row(row_id).unwrap();
-        row.height = height;
-        if let None = row.custom_height {
-            row.custom_height = Some(1);
+        sheet_data_row.height = height;
+        if let None = sheet_data_row.custom_height {
+            sheet_data_row.custom_height = Some(1);
         }
-        if let Some(style_id) = style_id {
-            row.style = Some(style_id);
-            if let None = row.custom_format {
-                row.custom_format = Some(1);
+        if let Some(style) = style {
+            sheet_data_row.style = Some(style);
+            if let None = sheet_data_row.custom_format {
+                sheet_data_row.custom_format = Some(1);
             }
         }
-        Ok(row)
+        Ok(())
     }
 
     pub(crate) fn max_col(&mut self) -> u32 {
-        match self.max_col_id {
+        match self.max_col {
             Some(col) => col,
             None => {
                 let col = self.rows.iter_mut().max_by_key(|r| { r.max_col() });
@@ -98,49 +78,20 @@ impl SheetData {
         self.rows.iter_mut().for_each(|r| r.cells.sort_by_key(|c: &Cell| c.loc.col()));
         self.rows.sort_by_key(|r| r.row)
     }
-}
 
-impl Row {
-    pub(crate) fn new(row: u32) -> Row {
-        Row {
-            cells: vec![],
-            row,
-            height: 15.0,
-            style: None,
-            custom_format: None,
-            custom_height: None,
-            max_col_id: None,
-        }
+    pub(crate) fn write_display<T: CellDisplay + CellValue>(&mut self, row: u32, col: u32, text: T, style: Option<u32>) {
+        let sheet_data_row = match self.get_row(row) {
+            Ok(row) => row,
+            Err(_) => self.add_row(row)
+        };
+        sheet_data_row.add_display_cell(col, text, style);
     }
 
-    pub(crate) fn get_cell(&mut self, col_id: u32) -> Option<&mut Cell> {
-        let cell = self.cells
-            .iter_mut()
-            .find(|r| {
-                r.loc.col() == col_id
-            });
-        cell
-    }
-
-    pub(crate) fn create_cell<T: CellDisplay + CellType>(&mut self, col_id: u32, text: T, formula: Option<Formula>, style_id: Option<u32>) -> &mut Cell {
-        self.cells.push(Cell::new(self.row, col_id, text, formula, style_id));
-        self.max_col_id = max(self.max_col_id, Some(col_id));
-        self.cells.last_mut().unwrap()
-    }
-
-    pub(crate) fn max_col(&self) -> u32 {
-        match self.max_col_id {
-            Some(col) => col,
-            None => self.cells.iter().max_by_key(|&c| { c.loc.col() }).unwrap().loc.col(),
-        }
-    }
-
-    pub(crate) fn update_or_create_cell<T: CellDisplay + CellType>(&mut self, col_id: u32, text: T, formula: Option<Formula>, style_id: Option<u32>) {
-        let cell = self.get_cell(col_id);
-        if let Some(cell) = cell {
-            cell.update_value(text, formula, style_id);
-        } else {
-            self.create_cell(col_id, text, formula, style_id);
-        }
+    pub(crate) fn write_formula(&mut self, row: u32, col: u32, formula: &str, formula_type: FormulaType, style: Option<u32>) {
+        let sheet_data_row = match self.get_row(row) {
+            Ok(row) => row,
+            Err(_) => self.add_row(row)
+        };
+        sheet_data_row.add_formula_cell(col, formula, formula_type, style);
     }
 }

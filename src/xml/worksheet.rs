@@ -46,10 +46,6 @@ impl WorkSheet {
         Ok(self.cols.col.last_mut().unwrap())
     }
 
-    pub(crate) fn create_merge_cells(&mut self) {
-        self.merge_cells = Some(MergeCells::default());
-    }
-
     pub(crate) fn add_merge_cell(&mut self, first_row: u32, first_col: u32, last_row: u32, last_col: u32) {
         let mut merge_cells = self.merge_cells.take().unwrap_or_default();
         merge_cells.add_merge_cell(first_row, first_col, last_row, last_col);

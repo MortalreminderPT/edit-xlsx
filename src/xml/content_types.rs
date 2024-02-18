@@ -5,7 +5,7 @@ use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::xml::manage::Io;
+use crate::xml::io::Io;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct ContentTypes {

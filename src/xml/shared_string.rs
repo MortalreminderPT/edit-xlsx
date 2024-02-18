@@ -4,7 +4,7 @@ use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
-use crate::xml::manage::Io;
+use crate::xml::io::Io;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="sst")]
