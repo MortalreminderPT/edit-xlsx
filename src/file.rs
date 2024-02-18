@@ -11,11 +11,12 @@ pub enum XlsxFileType {
     WorkbookRels,
     WorksheetRels(u32),
     ContentTypes,
+    Medias(String),
 }
 
 pub struct XlsxFileReader {
     file_type: XlsxFileType,
-    file_path: PathBuf,
+    pub(crate) file_path: PathBuf,
     file: File,
 }
 
@@ -42,12 +43,10 @@ impl XlsxFileReader {
 
 impl XlsxFileWriter {
     pub(crate) fn from_path<P: AsRef<Path>>(base_path: P, file_type: XlsxFileType) -> io::Result<XlsxFileWriter> {
-        let file_path = parse_path(base_path, &file_type);
+        let file_path = parse_path(&base_path, &file_type);
         Ok(XlsxFileWriter {
             file: {
-                let mut dirs = file_path.clone();
-                dirs.pop();
-                fs::create_dir_all(&dirs).unwrap_or_else(|_| {});
+                Self::mkdir(&base_path, &file_type)?;
                 File::create(&file_path)?
             },
             file_type,
@@ -55,8 +54,29 @@ impl XlsxFileWriter {
         })
     }
 
-    pub(crate) fn write_all(&mut self, mut buf: &[u8]) -> io::Result<()> {
+    fn mkdir<P: AsRef<Path>>(base_path: P, file_type: &XlsxFileType) -> io::Result<()> {
+        let file_path = parse_path(base_path, &file_type);
+        let mut dirs = file_path.clone();
+        dirs.pop();
+        fs::create_dir_all(&dirs).unwrap_or_else(|_| {});
+        Ok(())
+    }
+
+    pub(crate) fn write_all(&mut self, buf: &[u8]) -> io::Result<()> {
         self.file.write_all(buf)
+    }
+
+    pub(crate) fn copy_from<P, Q>(base_path: P, file_type: XlsxFileType, from: Q) -> io::Result<()>
+        where P: AsRef<Path>,
+              Q: AsRef<Path>
+    {
+        let file_path = parse_path(&base_path, &file_type);
+        Self::mkdir(&base_path, &file_type)?;
+        if from.as_ref().to_path_buf() == file_path.to_path_buf() {
+            return Ok(())
+        }
+        fs::copy(from, file_path)?;
+        Ok(())
     }
 }
 
@@ -82,6 +102,9 @@ fn parse_path<P: AsRef<Path>>(base_path: P, file_type: &XlsxFileType) -> PathBuf
         },
         XlsxFileType::ContentTypes => {
             base_path.as_ref().join("[Content_Types].xml")
+        }
+        XlsxFileType::Medias(name) => {
+            base_path.as_ref().join(format!("xl/media/{name}"))
         }
     }
 }

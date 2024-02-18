@@ -8,7 +8,8 @@ use crate::utils::zip_util;
 use crate::result::{SheetError, WorkbookError, WorkbookResult};
 use crate::xml;
 use crate::xml::content_types::ContentTypes;
-use crate::xml::manage::XmlIo;
+use crate::xml::manage::Io;
+use crate::xml::medias::Medias;
 use crate::xml::style::StyleSheet;
 use crate::xml::workbook_rel::Relationships;
 use crate::xml::worksheet::WorkSheet;
@@ -24,6 +25,7 @@ pub struct Workbook {
     worksheets: Rc<RefCell<HashMap<u32, WorkSheet>>>,
     worksheets_rel: Rc<RefCell<HashMap<u32, xml::worksheet_rel::Relationships>>>,
     content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
+    medias: Rc<RefCell<xml::medias::Medias>>
 }
 
 impl Workbook {
@@ -55,6 +57,7 @@ impl Workbook {
             Rc::clone(&self.worksheets_rel),
             Rc::clone(&self.style_sheet),
             Rc::clone(&self.content_types),
+            Rc::clone(&self.medias),
         );
         self.sheets.push(sheet);
         self.get_worksheet(id)
@@ -71,6 +74,7 @@ impl Workbook {
             Rc::clone(&self.worksheets_rel),
             Rc::clone(&self.style_sheet),
             Rc::clone(&self.content_types),
+            Rc::clone(&self.medias),
         );
         self.sheets.push(sheet);
         self.get_worksheet(id)
@@ -127,6 +131,7 @@ impl Workbook {
         let workbook_rel = Relationships::from_path(&tmp_path)?;
         let style_sheet = StyleSheet::from_path(&tmp_path)?;
         let content_types = ContentTypes::from_path(&tmp_path)?;
+        let medias = Medias::from_path(&tmp_path)?;
         let worksheets: HashMap<u32, WorkSheet> = workbook.sheets.sheets.iter()
             .map(|sheet| (sheet.sheet_id, WorkSheet::from_path(&tmp_path, sheet.sheet_id)))
             .collect();
@@ -139,6 +144,7 @@ impl Workbook {
         let worksheets = Rc::new(RefCell::new(worksheets));
         let worksheets_rel = Rc::new(RefCell::new(worksheets_rel));
         let content_types = Rc::new(RefCell::new(content_types));
+        let medias = Rc::new(RefCell::new(medias));
 
         let sheets = workbook.borrow().sheets.sheets.iter().map(
             |sheet_xml| {
@@ -151,6 +157,7 @@ impl Workbook {
                     Rc::clone(&worksheets_rel),
                     Rc::clone(&style_sheet),
                     Rc::clone(&content_types),
+                    Rc::clone(&medias),
                 )
             }).collect();
         Ok(Workbook {
@@ -163,6 +170,7 @@ impl Workbook {
             worksheets_rel: Rc::clone(&worksheets_rel),
             style_sheet: Rc::clone(&style_sheet),
             content_types: Rc::clone(&content_types),
+            medias: Rc::clone(&medias),
         })
     }
 
@@ -179,6 +187,7 @@ impl Workbook {
         self.workbook_rel.borrow_mut().save(&self.tmp_path);
         self.worksheets_rel.borrow_mut().iter_mut().for_each(|(id, worksheet_rel)| worksheet_rel.save(&self.tmp_path, *id));
         self.content_types.borrow_mut().save(&self.tmp_path);
+        self.medias.borrow_mut().save(&self.tmp_path);
         // package files
         zip_util::zip_dir(&self.tmp_path, file_path)?;
         Ok(())

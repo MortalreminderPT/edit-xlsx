@@ -77,12 +77,10 @@ impl WorkSheet {
         self.sheet_pr = Some(sheet_pr);
     }
 
-    pub(crate) fn set_background(&mut self, filename: &str) -> u32 {
-        let id = 1;
+    pub(crate) fn set_background(&mut self, image_id: u32) {
         if let None = self.picture {
-            self.picture = Some(Picture::from_id(id))
+            self.picture = Some(Picture::from_id(image_id))
         }
-        id
     }
 
     // pub(crate) fn borrow_sheet_data(&mut self) -> Option<&mut SheetData> {

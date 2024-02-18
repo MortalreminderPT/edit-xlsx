@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::rc::{Rc, Weak};
+use std::path::Path;
+use std::rc::Rc;
 use crate::api::format::Format;
 use crate::{FormatColor, xml};
 use crate::result::SheetResult;
@@ -19,6 +20,7 @@ pub struct Sheet {
     worksheets_rel: Rc<RefCell<HashMap<u32, xml::worksheet_rel::Relationships>>>,
     style_sheet: Rc<RefCell<StyleSheet>>,
     content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
+    medias: Rc<RefCell<xml::medias::Medias>>
 }
 
 /// style
@@ -168,17 +170,18 @@ impl Sheet {
         worksheet.set_tab_color(tab_color);
     }
 
-    pub fn set_background(&mut self, filename: &str) {
+    pub fn set_background<P: AsRef<Path>>(&mut self, filename: &P) {
         let worksheets = &mut self.worksheets.borrow_mut();
         let worksheet = worksheets.get_mut(&self.id).unwrap();
         let mut worksheets_rel = self.worksheets_rel.borrow_mut();
         if let None = worksheets_rel.get_mut(&self.id) {
-            self.worksheets_rel.borrow_mut().insert(self.id, Relationships::default());
+            worksheets_rel.insert(self.id, Relationships::default());
         }
         let worksheet_rel = worksheets_rel.get_mut(&self.id).unwrap();
-        let id = worksheet.set_background(filename);
         self.content_types.borrow_mut().add_png();
-        worksheet_rel.add_image(id);
+        let image_id = self.medias.borrow_mut().add_media(filename);
+        worksheet.set_background(image_id);
+        worksheet_rel.add_image(image_id);
     }
 
     pub fn id(&self) -> u32 {
@@ -196,6 +199,7 @@ impl Sheet {
         worksheets_rel: Rc<RefCell<HashMap<u32, xml::worksheet_rel::Relationships>>>,
         style_sheet: Rc<RefCell<StyleSheet>>,
         content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
+        medias: Rc<RefCell<xml::medias::Medias>>,
     ) -> Sheet {
         Sheet {
             id: sheet_id,
@@ -205,6 +209,7 @@ impl Sheet {
             worksheets_rel,
             style_sheet,
             content_types,
+            medias,
         }
     }
 }

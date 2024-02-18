@@ -7,7 +7,7 @@ use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::result::{SheetError, WorkbookError};
 use crate::WorkbookResult;
 use crate::xml::common::{ExtLst, XmlnsAttrs};
-use crate::xml::manage::XmlIo;
+use crate::xml::manage::Io;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="workbook")]
@@ -256,7 +256,7 @@ impl Default for Workbook {
     }
 }
 
-impl XmlIo<Workbook> for Workbook {
+impl Io<Workbook> for Workbook {
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<Workbook> {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::WorkbookFile)?;
         let mut xml = String::new();

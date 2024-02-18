@@ -5,7 +5,7 @@ use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::xml::manage::XmlIo;
+use crate::xml::manage::Io;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct ContentTypes {
@@ -15,7 +15,7 @@ pub(crate) struct ContentTypes {
     content_types: HashSet<ContentType>,
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 enum ContentType{
     Default {
         #[serde(rename = "@Extension")]
@@ -30,8 +30,6 @@ enum ContentType{
         content_type: String,
     }
 }
-
-impl Eq for ContentType {}
 
 impl Hash for ContentType {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -61,7 +59,7 @@ impl ContentType {
     }
 }
 
-impl XmlIo<ContentTypes> for ContentTypes {
+impl Io<ContentTypes> for ContentTypes {
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<ContentTypes> {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::ContentTypes)?;
         let mut xml = String::new();

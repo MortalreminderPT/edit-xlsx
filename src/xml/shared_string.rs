@@ -4,7 +4,7 @@ use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
-use crate::xml::manage::XmlIo;
+use crate::xml::manage::Io;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="sst")]
@@ -53,7 +53,7 @@ impl SharedString {
     }
 }
 
-impl XmlIo<SharedString> for SharedString {
+impl Io<SharedString> for SharedString {
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<SharedString> {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SharedStringFile)?;
         let mut xml = String::new();

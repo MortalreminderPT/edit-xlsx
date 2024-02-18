@@ -3,7 +3,7 @@ use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::xml::manage::XmlIo;
+use crate::xml::manage::Io;
 const SHEET_TYPE_STRING: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet";
 const THEME_TYPE_STRING: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme";
 const STYLES_TYPE_STRING: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles";
@@ -115,7 +115,7 @@ impl Relationships {
     }
 }
 
-impl XmlIo<Relationships> for Relationships {
+impl Io<Relationships> for Relationships {
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<Relationships> {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::WorkbookRels)?;
         let mut xml = String::new();
