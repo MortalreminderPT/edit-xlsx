@@ -1,8 +1,8 @@
-use std::{fs, io, slice};
+use std::{fs, slice};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::Path;
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 use crate::api::sheet::Sheet;
 use crate::utils::zip_util;
 use crate::result::{SheetError, WorkbookError, WorkbookResult};
@@ -39,15 +39,11 @@ impl Workbook {
     pub fn get_worksheet(&mut self, id: u32) -> WorkbookResult<&mut Sheet> {
         let sheet = self.sheets
             .iter_mut()
-            .find(|sheet| sheet.id == id);
-        match sheet {
-            Some(sheet) => Ok(sheet),
-            None => Err(WorkbookError::SheetError(SheetError::FileNotFound))
-        }
+            .find(|sheet| sheet.id == id).ok_or(SheetError::FileNotFound)?;
+        Ok(sheet)
     }
 
     pub fn add_worksheet(&mut self) -> WorkbookResult<&mut Sheet> {
-        // let id = self.workbook_rel.borrow_mut().add_worksheet();
         let (id, name) = self.workbook.borrow_mut().add_worksheet()?;
         self.worksheets.borrow_mut().insert(id, WorkSheet::new());
         let sheet = Sheet::from_xml(
@@ -97,10 +93,10 @@ impl Workbook {
         Ok(())
     }
 
-    fn define_name(&mut self, name: &str, formula: &str) -> WorkbookResult<()> {
-        let book_view = self.workbook.borrow_mut().book_views.book_views.get_mut(0).unwrap();
-        Ok(())
-    }
+    // fn define_name(&mut self, name: &str, formula: &str) -> WorkbookResult<()> {
+    //     let book_view = self.workbook.borrow_mut().book_views.book_views.get_mut(0).unwrap();
+    //     Ok(())
+    // }
 
     pub fn worksheets(&mut self) -> slice::IterMut<Sheet> {
         self.sheets.iter_mut()

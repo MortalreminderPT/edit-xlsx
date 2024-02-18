@@ -40,15 +40,6 @@ pub(crate) struct BorderElement {
     color: Option<Color>,
 }
 
-impl BorderElement {
-    pub(crate) fn new(style: &str, color: u32) -> BorderElement {
-        BorderElement {
-            style: Some(String::from(style)),
-            color: Some(Color::default()),
-        }
-    }
-}
-
 impl Default for BorderElement {
     fn default() -> Self {
         BorderElement {

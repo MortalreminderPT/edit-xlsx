@@ -4,7 +4,9 @@ use std::path::Path;
 use std::rc::Rc;
 use crate::api::format::Format;
 use crate::{FormatColor, WorkbookResult, xml};
-use crate::result::{SheetError, SheetResult, WorkbookError};
+use crate::result::{SheetError, SheetResult};
+use crate::utils::col_helper;
+use crate::xml::sheet_data::cell::Formula;
 use crate::xml::worksheet::WorkSheet;
 use crate::xml::workbook::Workbook;
 use crate::xml::sheet_data::cell_values::{CellDisplay, CellType};
@@ -33,7 +35,7 @@ impl Sheet {
 
 impl Sheet {
     
-    fn write_all<T: CellDisplay + CellType>(&mut self, row_id: u32, col_id: u32, text_id: T, style_id: Option<u32>) -> SheetResult<()> {
+    fn write_all<T: CellDisplay + CellType>(&mut self, row_id: u32, col: u32, text: T, style_id: Option<u32>) -> SheetResult<()> {
         let worksheets = &mut self.worksheets.borrow_mut();
         let sheet_xml = worksheets.get_mut(&self.id).unwrap();
         let sheet_data = &mut sheet_xml.sheet_data;
@@ -41,18 +43,70 @@ impl Sheet {
             Ok(row) => row,
             Err(_) => sheet_data.create_row(row_id)
         };
-        row.update_or_create_cell(col_id, text_id, style_id);
+        row.update_or_create_cell(col, text, None, style_id);
         Ok(())
     }
 
-    pub fn write<T: CellDisplay + CellType>(&mut self, row_id: u32, col_id: u32, text: T) -> SheetResult<()> {
-        self.write_all(row_id, col_id, text, None)?;
+    pub fn write<T: CellDisplay + CellType>(&mut self, row: u32, col: u32, text: T) -> SheetResult<()> {
+        self.write_all(row, col, text, None)
+    }
+
+    pub fn write_string(&mut self, row: u32, col: u32, text: String) -> SheetResult<()> {
+        self.write_all(row, col, text, None)
+    }
+
+    pub fn write_number(&mut self, row: u32, col: u32, text: i32) -> SheetResult<()> {
+        self.write_all(row, col, text, None)
+    }
+
+    pub fn write_double(&mut self, row: u32, col: u32, text: f64) -> SheetResult<()> {
+        self.write_all(row, col, text, None)
+    }
+
+    pub fn write_boolean(&mut self, row: u32, col: u32, text: bool) -> SheetResult<()> {
+        self.write_all(row, col, text, None)
+    }
+
+    pub fn write_formula(&mut self, row: u32, col: u32, text: &str) -> SheetResult<()> {
+        let worksheets = &mut self.worksheets.borrow_mut();
+        let sheet_xml = worksheets.get_mut(&self.id).unwrap();
+        let sheet_data = &mut sheet_xml.sheet_data;
+        let row = match sheet_data.get_row(row) {
+            Ok(row) => row,
+            Err(_) => sheet_data.create_row(row)
+        };
+        row.update_or_create_cell(col, "", Some(Formula::from_formula(String::from(text))), None);
         Ok(())
     }
 
-    pub fn write_with_format<T: CellDisplay + CellType>(&mut self, row_id: u32, col_id: u32, text: T, format: &Format) -> SheetResult<()> {
+    pub fn write_array_formula(&mut self, row: u32, col: u32, text: &str) -> SheetResult<()> {
+        let worksheets = &mut self.worksheets.borrow_mut();
+        let sheet_xml = worksheets.get_mut(&self.id).unwrap();
+        let sheet_data = &mut sheet_xml.sheet_data;
+        let sheet_data_row = match sheet_data.get_row(row) {
+            Ok(row) => row,
+            Err(_) => sheet_data.create_row(row)
+        };
+        sheet_data_row.update_or_create_cell(col, "", Some(Formula::from_array_formula(String::from(text), row, col)), None);
+        Ok(())
+    }
+
+    pub fn write_dynamic_array_formula(&mut self, loc_ref: &str, text: &str) -> SheetResult<()> {
+        let worksheets = &mut self.worksheets.borrow_mut();
+        let sheet_xml = worksheets.get_mut(&self.id).unwrap();
+        let sheet_data = &mut sheet_xml.sheet_data;
+        let (row, col) = col_helper::to_loc(loc_ref.split_once(':').unwrap().0);
+        let sheet_data_row = match sheet_data.get_row(row) {
+            Ok(row) => row,
+            Err(_) => sheet_data.create_row(row)
+        };
+        sheet_data_row.update_or_create_cell(col, "", Some(Formula::from_ref_formula(String::from(text), String::from(loc_ref))), None);
+        Ok(())
+    }
+
+    pub fn write_with_format<T: CellDisplay + CellType>(&mut self, row: u32, col: u32, text: T, format: &Format) -> SheetResult<()> {
         let style_id: u32 = self.add_format(format);
-        self.write_all(row_id, col_id, text, Some(style_id))?;
+        self.write_all(row, col, text, Some(style_id))?;
         Ok(())
     }
 
@@ -107,12 +161,12 @@ impl Sheet {
         sheet_data.max_col()
     }
 
-    fn autofit(&mut self) {
-        todo!();
-        let worksheets = &mut self.worksheets.borrow_mut();
-        let sheet_xml = worksheets.get_mut(&self.id).unwrap();
-        sheet_xml.autofit_cols();
-    }
+    // fn autofit(&mut self) {
+    //     todo!();
+    //     let worksheets = &mut self.worksheets.borrow_mut();
+    //     let sheet_xml = worksheets.get_mut(&self.id).unwrap();
+    //     sheet_xml.autofit_cols();
+    // }
 
     pub fn get_name(&self) -> &str {
         &self.name
@@ -167,6 +221,8 @@ impl Sheet {
         sheets[loc].change_id(id);
         sheets[0].change_id(self.id);
         sheets.swap(0, loc);
+        // change self id
+
         Ok(())
     }
 

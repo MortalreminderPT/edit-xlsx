@@ -3,7 +3,7 @@ use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::xml::manage::Io;
+
 const IMAGE_TYPE_STRING: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -52,7 +52,7 @@ impl Relationships {
 
     pub(crate) fn update(&mut self, image_size: u32) {
         self.relationship = Vec::new();
-        let mut offset = 0;
+        let offset = 0;
         for id in 1..=image_size {
             self.relationship.push(
                 RelationShip::new_image(id, offset)

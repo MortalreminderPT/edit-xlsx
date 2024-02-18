@@ -42,7 +42,7 @@ impl Workbook {
         Ok((id, name))
     }
 
-    pub(crate) fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<(u32)> {
+    pub(crate) fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<u32> {
         let id = 1 + self.sheets.sheets.iter().max_by_key(|s| { s.sheet_id }).unwrap().sheet_id;
         if let Some(_) = self.sheets.sheets.iter().find(|s| { s.name == name }) {
             return Err(WorkbookError::SheetError(SheetError::DuplicatedSheets));

@@ -14,7 +14,7 @@ pub(crate) fn extract_dir<P: AsRef<Path>>(file_path: P) -> zip::result::ZipResul
     let file = File::open(&file_path)?;
     let mut archive = zip::ZipArchive::new(file)?;
     // construct a base path for extracted files
-    let binding = "./.editing-".to_owned() + file_name.to_str().ok_or(ZipError::FileNotFound)?;
+    let binding = "./~$".to_owned() + file_name.to_str().ok_or(ZipError::FileNotFound)?;
     let base_path = Path::new(&binding);
     match fs::create_dir(&base_path) {
         Err(why) => println!("! {:?}", why.kind()),

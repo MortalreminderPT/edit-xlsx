@@ -69,7 +69,6 @@ impl<T: Display> CellDisplay for T {
 
 impl CellType for &str {}
 impl CellType for String {}
-
 impl CellType for i8 {
     fn to_cell_val(&self) -> CellValues {
         CellValues::Number

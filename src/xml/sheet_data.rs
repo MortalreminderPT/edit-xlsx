@@ -5,6 +5,7 @@ use std::cmp::max;
 use serde::{Deserialize, Serialize};
 use crate::result::{RowError, RowResult};
 pub(crate) use crate::xml::sheet_data::cell::Cell;
+use crate::xml::sheet_data::cell::Formula;
 use crate::xml::sheet_data::cell_values::{CellDisplay, CellType};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -80,14 +81,6 @@ impl SheetData {
         Ok(row)
     }
 
-    fn update_row(&mut self, row_id: u32) -> RowResult<&mut Row> {
-        todo!()
-    }
-
-    fn delete_row(&mut self, row_id: u32) -> RowResult<()> {
-        todo!()
-    }
-
     pub(crate) fn max_col(&mut self) -> u32 {
         match self.max_col_id {
             Some(col) => col,
@@ -123,14 +116,14 @@ impl Row {
     pub(crate) fn get_cell(&mut self, col_id: u32) -> Option<&mut Cell> {
         let cell = self.cells
             .iter_mut()
-            .find(|mut r| {
+            .find(|r| {
                 r.loc.col() == col_id
             });
         cell
     }
 
-    pub(crate) fn create_cell<T: CellDisplay + CellType>(&mut self, col_id: u32, text: T, style_id: Option<u32>) -> &mut Cell {
-        self.cells.push(Cell::new(self.row, col_id, text, style_id));
+    pub(crate) fn create_cell<T: CellDisplay + CellType>(&mut self, col_id: u32, text: T, formula: Option<Formula>, style_id: Option<u32>) -> &mut Cell {
+        self.cells.push(Cell::new(self.row, col_id, text, formula, style_id));
         self.max_col_id = max(self.max_col_id, Some(col_id));
         self.cells.last_mut().unwrap()
     }
@@ -142,15 +135,12 @@ impl Row {
         }
     }
 
-    pub(crate) fn update_or_create_cell<T: CellDisplay + CellType>(&mut self, col_id: u32, text: T, style_id: Option<u32>) {
+    pub(crate) fn update_or_create_cell<T: CellDisplay + CellType>(&mut self, col_id: u32, text: T, formula: Option<Formula>, style_id: Option<u32>) {
         let cell = self.get_cell(col_id);
-        match cell {
-            Some(cell) => {
-                cell.update_value(text, style_id);
-            }
-            None => {
-                self.create_cell(col_id, text, style_id);
-            }
+        if let Some(cell) = cell {
+            cell.update_value(text, formula, style_id);
+        } else {
+            self.create_cell(col_id, text, formula, style_id);
         }
     }
 }

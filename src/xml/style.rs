@@ -204,7 +204,7 @@ trait Rearrange<E: Clone + Eq + Hash> {
             .map(|(&e, ids)| (e, ids))
             .collect();
         for i in 0..distinct_elements.len() {
-            let (e, ids) = distinct_elements[i];
+            let (_, ids) = distinct_elements[i];
             ids.iter().for_each(|&id| { index_map.insert(id, i); });
         }
         // let distinct_elements: Vec<E> = distinct_elements.iter().map(|&e| e.0.clone()).collect();

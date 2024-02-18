@@ -21,11 +21,33 @@ pub(crate) fn to_col(col: &str) -> u32 {
     num
 }
 
+pub(crate) fn to_ref(row: u32, col: u32) -> String {
+    format!("{}{}", to_col_name(col), row)
+}
+
+pub(crate) fn to_loc(loc_ref: &str) -> (u32, u32) {
+    let mid = loc_ref.find(|c| { c >= '0' && c <= '9' }).unwrap();
+    let (col_name, row) = loc_ref.split_at(mid);
+    (row.parse().unwrap(), to_col(col_name))
+}
+
 #[test]
 fn test_col () {
     for i in 1..5_000_000 {
         let s = to_col_name(i);
         let r = to_col(&s);
         assert_eq!(i, r)
+    }
+}
+
+#[test]
+fn test_to_loc() {
+    for row in 1..1000 {
+        for col in 1..1000 {
+            let loc_ref = to_ref(row, col);
+            let (r, c) = to_loc(&loc_ref);
+            assert_eq!(r, row);
+            assert_eq!(c, col);
+        }
     }
 }

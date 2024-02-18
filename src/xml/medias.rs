@@ -56,7 +56,7 @@ impl Media {
 }
 
 impl Io<Media> for Media {
-    fn from_path<P: AsRef<Path>>(file_path: P) -> std::io::Result<Media> {
+    fn from_path<P: AsRef<Path>>(_file_path: P) -> std::io::Result<Media> {
         // let media = Media::from_path(file_path);
         // Ok(media)
         todo!()

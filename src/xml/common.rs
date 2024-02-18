@@ -1,7 +1,6 @@
 extern crate proc_macro;
 use std::hash::Hash;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde::ser::SerializeTuple;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct PhoneticPr {

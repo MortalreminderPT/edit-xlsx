@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
@@ -15,7 +15,7 @@ pub(crate) struct ContentTypes {
     content_types: HashSet<ContentType>,
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Hash)]
 enum ContentType{
     Default {
         #[serde(rename = "@Extension")]
@@ -28,19 +28,6 @@ enum ContentType{
         part_name: String,
         #[serde(rename = "@ContentType")]
         content_type: String,
-    }
-}
-
-impl Hash for ContentType {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        match self {
-            ContentType::Default { extension, content_type } => {
-                extension.hash(state)
-            }
-            ContentType::Override { part_name, content_type } => {
-                part_name.hash(state)
-            }
-        }
     }
 }
 
