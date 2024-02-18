@@ -21,6 +21,9 @@ fn main() -> WorkbookResult<()> {
     worksheet.write_formula(9, 1, "=DATEVALUE(\"1-Jan-2013\")")?;
     worksheet.write_array_formula(10, 1, "=SUM(C1:D1*C2:D2)")?;
     worksheet.write_dynamic_array_formula("B11:B13", "LEN(A2:A4)")?;
+    // url
+    worksheet.write_url(11, 1, "https://www.rust-lang.org/")?;
+    worksheet.write_url_with_text(12, 1, "https://www.rust-lang.org/", "rust")?;
     workbook.save()?;
     Ok(())
 }

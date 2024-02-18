@@ -3,8 +3,7 @@ use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-
-const IMAGE_TYPE_STRING: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
+use crate::xml::relationship::{HYPERLINK_TYPE_STRING, RelationShip};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Relationships {
@@ -12,26 +11,6 @@ pub(crate) struct Relationships {
     xmlns: String,
     #[serde(rename = "Relationship")]
     relationship: Vec<RelationShip>,
-}
-
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
-struct RelationShip {
-    #[serde(rename = "@Id")]
-    id: String,
-    #[serde(rename = "@Type")]
-    rel_type: String,
-    #[serde(rename = "@Target")]
-    target: String,
-}
-
-impl RelationShip {
-    fn new_image(id: u32, offset: u32) -> RelationShip {
-        RelationShip {
-            id: format!("rId{}", id + offset),
-            rel_type: IMAGE_TYPE_STRING.to_string(),
-            target: format!("../media/image{id}.png"),
-        }
-    }
 }
 
 impl Default for Relationships {
@@ -44,20 +23,18 @@ impl Default for Relationships {
 }
 
 impl Relationships {
-    pub(crate) fn add_image(&mut self, id: u32) {
+    pub(crate) fn next_id(&self) -> u32 {
+        1 + self.relationship.len() as u32
+    }
+
+    pub(crate) fn add_image(&mut self, r_id: u32, id: u32) {
         self.relationship.push(
-            RelationShip::new_image(id, 0)
+            RelationShip::new_image(r_id, id)
         )
     }
 
-    pub(crate) fn update(&mut self, image_size: u32) {
-        self.relationship = Vec::new();
-        let offset = 0;
-        for id in 1..=image_size {
-            self.relationship.push(
-                RelationShip::new_image(id, offset)
-            )
-        }
+    pub(crate) fn add_hyperlink(&mut self, r_id: u32, target: &str) {
+        self.relationship.push(RelationShip::new_hyperlink(r_id, target));
     }
 }
 

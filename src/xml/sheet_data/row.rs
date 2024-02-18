@@ -76,4 +76,7 @@ impl Row {
             }
         };
     }
+
+    fn add_url_cell(&mut self, col: u32, text: &str, style: Option<u32>) {
+    }
 }

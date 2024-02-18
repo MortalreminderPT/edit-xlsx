@@ -44,7 +44,9 @@ impl Workbook {
     }
 
     pub fn add_worksheet(&mut self) -> WorkbookResult<&mut Sheet> {
-        let (id, name) = self.workbook.borrow_mut().add_worksheet()?;
+        let r_id = self.workbook_rel.borrow().next_id();
+        let (id, name) = self.workbook.borrow_mut().add_worksheet(r_id)?;
+        self.workbook_rel.borrow_mut().add_worksheet(r_id, id);
         self.worksheets.borrow_mut().insert(id, WorkSheet::new());
         let sheet = Sheet::from_xml(
             id,
@@ -61,7 +63,9 @@ impl Workbook {
     }
 
     pub fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<&mut Sheet> {
-        let id = self.workbook.borrow_mut().add_worksheet_by_name(name)?;
+        let r_id = self.workbook_rel.borrow().next_id();
+        let id = self.workbook.borrow_mut().add_worksheet_by_name(r_id, name)?;
+        self.workbook_rel.borrow_mut().add_worksheet(r_id, id);
         self.worksheets.borrow_mut().insert(id, WorkSheet::new());
         let sheet = Sheet::from_xml(
             id,
@@ -181,7 +185,7 @@ impl Workbook {
         self.workbook.borrow_mut().save(&self.tmp_path);
         self.worksheets.borrow_mut().iter_mut().for_each(|(id, worksheet)| worksheet.save(&self.tmp_path, *id));
         self.style_sheet.borrow_mut().save(&self.tmp_path);
-        self.workbook_rel.borrow_mut().update(self.worksheets.borrow_mut().len() as u32, 1, 1);
+        // self.workbook_rel.borrow_mut().update(self.worksheets.borrow_mut().len() as u32, 1, 1);
         self.workbook_rel.borrow_mut().save(&self.tmp_path);
         self.worksheets_rel.borrow_mut().iter_mut().for_each(|(id, worksheet_rel)| worksheet_rel.save(&self.tmp_path, *id));
         self.content_types.borrow_mut().save(&self.tmp_path);
