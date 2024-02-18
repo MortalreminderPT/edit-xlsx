@@ -151,7 +151,6 @@ impl<T: Clone + PartialEq + Eq + Hash + Default> FromFormat<T> for Element<T> {
     }
 }
 
-
 impl XmlnsAttrs {
     pub(crate) fn workbook_default() -> XmlnsAttrs {
         XmlnsAttrs {

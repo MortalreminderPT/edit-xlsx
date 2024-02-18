@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::FormatColor;
 use crate::result::ColResult;
+use crate::utils::col_helper::to_ref;
 use crate::xml::common::{FromFormat, PhoneticPr, XmlnsAttrs};
 use crate::xml::merge_cells::MergeCells;
 use crate::xml::sheet_data::SheetData;
@@ -30,6 +31,8 @@ pub(crate) struct WorkSheet {
     pub(crate) merge_cells: Option<MergeCells>,
     #[serde(rename = "phoneticPr", skip_serializing_if = "Option::is_none")]
     phonetic_pr: Option<PhoneticPr>,
+    #[serde(rename = "hyperlinks", skip_serializing_if = "Option::is_none")]
+    hyperlinks: Option<Hyperlinks>,
     #[serde(rename = "pageMargins")]
     page_margins: PageMargins,
     #[serde(rename = "picture", skip_serializing_if = "Option::is_none")]
@@ -73,30 +76,22 @@ impl WorkSheet {
         self.sheet_pr = Some(sheet_pr);
     }
 
-    pub(crate) fn set_background(&mut self, image_id: u32) {
+    pub(crate) fn set_background(&mut self, r_id: u32) {
         if let None = self.picture {
-            self.picture = Some(Picture::from_id(image_id))
+            self.picture = Some(Picture::from_id(r_id))
         }
     }
 
-    // pub(crate) fn borrow_sheet_data(&mut self) -> Option<&mut SheetData> {
-    //     match &mut self.sheet_data {
-    //         Some(sheet_data) => Some(sheet_data),
-    //         None => None
-    //     }
-    // }
-    // pub fn create_sheet_data(&mut self) -> &mut SheetData {
-    //     self.sheet_data = Some(SheetData::new());
-    //     self.borrow_sheet_data().unwrap()
-    // }
-    //
-    // pub(crate) fn borrow_or_create_sheet_data(&mut self) -> &mut SheetData {
-    //     self.sheet_data = match self.sheet_data.take() {
-    //         Some(sheet_data) => Some(sheet_data),
-    //         None => Some(SheetData::new())
-    //     };
-    //     self.borrow_sheet_data().unwrap()
-    // }
+    pub(crate) fn add_hyperlink(&mut self, row: u32, col: u32, r_id: u32) {
+        let hyperlink = Hyperlink::new(&to_ref(row, col), r_id);
+        if let None = self.hyperlinks {
+            let mut hyperlinks = Hyperlinks::default();
+            hyperlinks.add_hyperlink(hyperlink);
+            self.hyperlinks = Some(hyperlinks);
+        } else {
+            self.hyperlinks.as_mut().unwrap().add_hyperlink(hyperlink);
+        };
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -220,13 +215,13 @@ impl Default for PageMargins {
 #[derive(Debug, Deserialize, Serialize)]
 struct Picture {
     #[serde(rename(serialize = "@r:id", deserialize = "@id"))]
-    id: String,
+    r_id: String,
 }
 
 impl Picture {
-    fn from_id(id: u32) -> Picture {
+    fn from_id(r_id: u32) -> Picture {
         Picture {
-            id: format!("rId{id}"),
+            r_id: format!("rId{r_id}"),
         }
     }
 }
@@ -274,6 +269,38 @@ impl Cols {
     }
 }
 
+
+#[derive(Debug, Deserialize, Serialize, Default)]
+struct Hyperlinks {
+    #[serde(rename = "hyperlink")]
+    hyperlink: Vec<Hyperlink>
+}
+
+impl Hyperlinks {
+    fn add_hyperlink(&mut self, hyperlink: Hyperlink) {
+        self.hyperlink.push(hyperlink)
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Hyperlink {
+    #[serde(rename = "@ref")]
+    hyperlink_ref: String,
+    #[serde(rename(serialize = "@r:id", deserialize = "@id"))]
+    r_id: String,
+    // #[serde(rename(serialize = "@xr:uid", deserialize = "@uid"))]
+    // uid: String,
+}
+
+impl Hyperlink {
+    fn new(hyperlink_ref: &str, r_id: u32) -> Self {
+        Self {
+            hyperlink_ref: String::from(hyperlink_ref),
+            r_id: format!("rId{r_id}"),
+        }
+    }
+}
+
 impl WorkSheet {
     pub(crate) fn new() -> WorkSheet {
         WorkSheet {
@@ -288,6 +315,7 @@ impl WorkSheet {
             phonetic_pr: None,
             page_margins: PageMargins::default(),
             picture: None,
+            hyperlinks: None,
         }
     }
     

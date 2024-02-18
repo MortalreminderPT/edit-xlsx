@@ -62,6 +62,18 @@ impl Sheet {
         self.write_all(row, col, text, None)
     }
 
+    pub fn write_url(&mut self, row: u32, col: u32, url: &str) -> SheetResult<()> {
+        self.write_url_with_text(row, col, url, url)
+    }
+
+    pub fn write_url_with_text(&mut self, row: u32, col: u32, url: &str, text: &str) -> SheetResult<()> {
+        self.write_all(row, col, text, None)?;
+        let r_id = self.worksheets_rel.borrow_mut().get_mut(&self.id).unwrap().next_id();
+        self.worksheets_rel.borrow_mut().get_mut(&self.id).unwrap().add_hyperlink(r_id, url);
+        self.worksheets.borrow_mut().get_mut(&self.id).unwrap().add_hyperlink(row, col, r_id);
+        Ok(())
+    }
+
     pub fn write_formula(&mut self, row: u32, col: u32, text: &str) -> SheetResult<()> {
         let worksheets = &mut self.worksheets.borrow_mut();
         let sheet_xml = worksheets.get_mut(&self.id).unwrap();
@@ -235,8 +247,9 @@ impl Sheet {
         let worksheet_rel = worksheets_rel.get_mut(&self.id).unwrap();
         self.content_types.borrow_mut().add_png();
         let image_id = self.medias.borrow_mut().add_media(filename);
-        worksheet.set_background(image_id);
-        worksheet_rel.add_image(image_id);
+        let r_id = worksheet_rel.next_id();
+        worksheet_rel.add_image(r_id, image_id);
+        worksheet.set_background(r_id);
     }
 
     pub fn id(&self) -> u32 {

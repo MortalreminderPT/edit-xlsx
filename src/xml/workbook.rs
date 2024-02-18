@@ -32,22 +32,26 @@ pub(crate) struct Workbook {
 }
 
 impl Workbook {
-    pub(crate) fn add_worksheet(&mut self) -> WorkbookResult<(u32, String)> {
+    fn add_worksheet_r_id(&mut self, r_id: u32, id: u32, name: &str) {
+        self.sheets.sheets.push(Sheet::by_name(r_id, id, &name));
+    }
+
+    pub(crate) fn add_worksheet(&mut self, r_id: u32) -> WorkbookResult<(u32, String)> {
         let id = 1 + self.sheets.sheets.iter().max_by_key(|s| { s.sheet_id }).unwrap().sheet_id;
         let name = format!("Sheet{id}");
         if let Some(_) = self.sheets.sheets.iter().find(|s| { s.name == name }) {
             return Err(WorkbookError::SheetError(SheetError::DuplicatedSheets));
         }
-        self.sheets.sheets.push(Sheet::by_name(id, &name));
+        self.sheets.sheets.push(Sheet::by_name(r_id, id, &name));
         Ok((id, name))
     }
 
-    pub(crate) fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<u32> {
+    pub(crate) fn add_worksheet_by_name(&mut self, r_id: u32, name: &str) -> WorkbookResult<u32> {
         let id = 1 + self.sheets.sheets.iter().max_by_key(|s| { s.sheet_id }).unwrap().sheet_id;
         if let Some(_) = self.sheets.sheets.iter().find(|s| { s.name == name }) {
             return Err(WorkbookError::SheetError(SheetError::DuplicatedSheets));
         }
-        self.sheets.sheets.push(Sheet::by_name(id, name));
+        self.sheets.sheets.push(Sheet::by_name(r_id, id, &name));
         Ok(id)
     }
 }
@@ -187,20 +191,20 @@ impl Default for Sheet {
 }
 
 impl Sheet {
-    pub(crate) fn by_id(id: u32) -> Sheet {
+    pub(crate) fn by_id(r_id: u32, id: u32) -> Sheet {
         Sheet {
             name: format!("Sheet{id}"),
             sheet_id: id,
-            r_id: format!("rId{id}"),
+            r_id: format!("rId{r_id}"),
             state: None,
         }
     }
 
-    pub(crate) fn by_name(id: u32, name: &str) -> Sheet {
+    pub(crate) fn by_name(r_id: u32, id: u32, name: &str) -> Sheet {
         Sheet {
             name: String::from(name),
             sheet_id: id,
-            r_id: format!("rId{id}"),
+            r_id: format!("rId{r_id}"),
             state: None,
         }
     }

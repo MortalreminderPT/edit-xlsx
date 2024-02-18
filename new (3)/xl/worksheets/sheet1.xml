@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet
+  xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x14ac"
+  xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac">
+  <dimension ref="A1"/>
+  <sheetViews>
+    <sheetView tabSelected="1" workbookViewId="0"/>
+  </sheetViews>
+  <sheetFormatPr defaultRowHeight="15"/>
+  <sheetData>
+    <row r="1" ht="15">
+      <c r="A1" t="str">
+        <v>123456</v>
+      </c>
+      <c r="C1" t="n">
+        <v>1</v>
+      </c>
+      <c r="D1" t="n">
+        <v>2</v>
+      </c>
+    </row>
+    <row r="2" ht="15">
+      <c r="A2" t="n">
+        <v>123456</v>
+      </c>
+      <c r="C2" t="n">
+        <v>3</v>
+      </c>
+      <c r="D2" t="n">
+        <v>4</v>
+      </c>
+    </row>
+    <row r="3" ht="15">
+      <c r="A3" t="n">
+        <v>3.14159265</v>
+      </c>
+    </row>
+    <row r="4" ht="15">
+      <c r="A4" t="str">
+        <f>=COS(2/3*PI())</f>
+      </c>
+    </row>
+    <row r="5" ht="15">
+      <c r="A5" t="str">
+        <f>=C1 + D2</f>
+      </c>
+    </row>
+    <row r="6" ht="15">
+      <c r="A6" t="str">
+        <f>=SUM(B1:B5)</f>
+      </c>
+    </row>
+    <row r="7" ht="15">
+      <c r="A7" t="str">
+        <f>=IF(A3&gt;1,&quot;Yes&quot;, &quot;No&quot;)</f>
+      </c>
+    </row>
+    <row r="8" ht="15">
+      <c r="A8" t="str">
+        <f>=AVERAGE(1, 2, 3, 4)</f>
+      </c>
+    </row>
+    <row r="9" ht="15">
+      <c r="A9" t="str">
+        <f>=DATEVALUE(&quot;1-Jan-2013&quot;)</f>
+      </c>
+    </row>
+    <row r="10" ht="15">
+      <c r="A10" t="str">
+        <f t="array" ref="A10">=SUM(C1:D1*C2:D2)</f>
+      </c>
+    </row>
+    <row r="11" ht="15">
+      <c r="A11" t="str">
+        <v>https://www.rust-lang.org/</v>
+      </c>
+      <c r="B11" t="str">
+        <f t="array" ref="B11:B13">LEN(A2:A4)</f>
+      </c>
+    </row>
+  </sheetData>
+<phoneticPr fontId="1" type="noConversion"/>
+  <hyperlinks>
+    <hyperlink ref="A11" r:id="rId1"/>
+  </hyperlinks>
+  <pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>
+</worksheet>
