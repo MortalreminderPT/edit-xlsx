@@ -26,9 +26,9 @@ pub(crate) fn to_ref(row: u32, col: u32) -> String {
 }
 
 pub(crate) fn to_loc(loc_ref: &str) -> (u32, u32) {
-    let mid = loc_ref.find(|c| { c >= '0' && c <= '9' }).unwrap();
-    let (col_name, row) = loc_ref.split_at(mid);
-    (row.parse().unwrap(), to_col(col_name))
+    let row = loc_ref.chars().filter(|&c| { c >= '0' && c <= '9' }).collect::<String>();
+    let col = loc_ref.chars().filter(|&c| { c >= 'A' && c <= 'Z' }).collect::<String>();
+    (row.parse().unwrap(), to_col(&col))
 }
 
 #[test]

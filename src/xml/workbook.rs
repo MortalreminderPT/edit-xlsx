@@ -1,3 +1,5 @@
+mod bookviews;
+
 use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
@@ -7,6 +9,7 @@ use crate::result::{SheetError, WorkbookError};
 use crate::WorkbookResult;
 use crate::xml::common::{ExtLst, XmlnsAttrs};
 use crate::xml::io::Io;
+use crate::xml::workbook::bookviews::BookViews;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="workbook")]
@@ -93,64 +96,12 @@ impl Default for FileSharing {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 struct WorkbookPr {
     #[serde(rename = "@filterPrivacy", skip_serializing_if = "Option::is_none")]
     filter_privacy: Option<u32>,
-    #[serde(rename = "@defaultThemeVersion")]
-    default_theme_version: String,
-}
-
-impl Default for WorkbookPr {
-    fn default() -> Self {
-        WorkbookPr {
-            filter_privacy: None,
-            default_theme_version: String::from("164011"),
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct BookViews {
-    #[serde(rename = "workbookView")]
-    pub(crate) book_views: Vec<WorkbookView>
-}
-
-impl Default for BookViews {
-    fn default() -> Self {
-        BookViews {
-            book_views: vec![Default::default()],
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct WorkbookView {
-    #[serde(rename = "@xWindow")]
-    x_window: u32,
-    #[serde(rename = "@yWindow")]
-    y_window: u32,
-    #[serde(rename = "@windowWidth")]
-    pub(crate) window_width: u32,
-    #[serde(rename = "@windowHeight")]
-    pub(crate) window_height: u32,
-    #[serde(rename = "@tabRatio", skip_serializing_if = "Option::is_none")]
-    pub(crate) tab_ratio: Option<u32>,
-    #[serde(rename = "@activeTab", skip_serializing_if = "Option::is_none")]
-    pub(crate) active_tab: Option<u32>
-}
-
-impl Default for WorkbookView {
-    fn default() -> Self {
-        WorkbookView {
-            x_window: 0,
-            y_window: 0,
-            window_width: 22260,
-            window_height: 12645,
-            tab_ratio: None,
-            active_tab: None,
-        }
-    }
+    #[serde(rename = "@defaultThemeVersion", skip_serializing_if = "Option::is_none")]
+    default_theme_version: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]

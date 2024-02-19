@@ -11,7 +11,7 @@ pub(crate) struct Row {
     #[serde(rename = "@r")]
     pub(crate) row: u32,
     #[serde(rename = "@ht")]
-    pub(crate) height: f64,
+    pub(crate) height: Option<f64>,
     #[serde(rename = "@s", skip_serializing_if = "Option::is_none")]
     pub(crate) style: Option<u32>,
     #[serde(rename = "@customFormat", skip_serializing_if = "Option::is_none")]
@@ -28,7 +28,7 @@ impl Row {
         Row {
             cells: vec![],
             row,
-            height: 15.0,
+            height: None,
             style: None,
             custom_format: None,
             custom_height: None,

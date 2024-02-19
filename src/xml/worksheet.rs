@@ -22,7 +22,7 @@ pub(crate) struct WorkSheet {
     #[serde(rename = "sheetViews")]
     pub(crate) sheet_views: SheetViews,
     #[serde(rename = "sheetFormatPr")]
-    sheet_format_pr: SheetFormatPr,
+    pub(crate) sheet_format_pr: SheetFormatPr,
     #[serde(rename = "cols", default, skip_serializing_if = "Cols::is_empty")]
     pub(crate) cols: Cols,
     #[serde(rename = "sheetData", default)]
@@ -40,7 +40,7 @@ pub(crate) struct WorkSheet {
 }
 
 impl WorkSheet {
-    pub(crate) fn create_col(&mut self, min: u32, max: u32, width: Option<f64>, style: Option<u32>, best_fit: u8) -> ColResult<&mut Col> {
+    pub(crate) fn create_col(&mut self, min: u32, max: u32, width: Option<f64>, style: Option<u32>, best_fit: Option<u8>) -> ColResult<&mut Col> {
         let mut col = Col::new(min, max, 1, width, style, best_fit);
         if let None = width {
             col.custom_width = 0;
@@ -59,7 +59,7 @@ impl WorkSheet {
         self.cols.col.iter_mut().for_each(|c| {
             c.custom_width = 0;
             c.width = None;
-            c.best_fit = 1
+            c.best_fit = Some(1)
         })
     }
 
@@ -122,32 +122,73 @@ impl Dimension {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Default)]
 pub(crate) struct SheetView {
     #[serde(rename = "@tabSelected", skip_serializing_if = "Option::is_none")]
-    pub(crate) tab_selected: Option<u32>,
+    pub(crate) tab_selected: Option<u8>,
+    #[serde(rename = "@zoomScale", skip_serializing_if = "Option::is_none")]
+    pub(crate) zoom_scale: Option<u16>,
+    #[serde(rename = "@topLeftCell", skip_serializing_if = "Option::is_none")]
+    pub(crate) top_left_cell: Option<String>,
     #[serde(rename = "@workbookViewId")]
     workbook_view_id: u32,
+    #[serde(rename = "pane", skip_serializing_if = "Option::is_none")]
+    pane: Option<Vec<Pane>>,
     #[serde(rename = "selection", skip_serializing_if = "Option::is_none")]
-    selection: Option<Selection>
+    selection: Option<Vec<Selection>>,
 }
 
-impl SheetView {
-    pub(crate) fn default() -> SheetView {
-        SheetView {
-            tab_selected: Some(0),
-            workbook_view_id: 0,
-            selection: None,
-        }
+#[derive(Debug, Deserialize, Serialize, Default)]
+struct Pane {
+    #[serde(rename = "@xSplit", skip_serializing_if = "Option::is_none")]
+    x_split: Option<u32>,
+    #[serde(rename = "@ySplit", skip_serializing_if = "Option::is_none")]
+    y_split: Option<u32>,
+    #[serde(rename = "@topLeftCell", skip_serializing_if = "Option::is_none")]
+    top_left_cell: Option<String>,
+    #[serde(rename = "@activePane", skip_serializing_if = "Option::is_none")]
+    active_pane: Option<String>,
+    #[serde(rename = "@state", skip_serializing_if = "Option::is_none")]
+    state: Option<String>,
+}
+
+impl Pane {
+    fn set_freeze_panes(&mut self, loc_ref: &str) {
+        let mut top_left_cell = self.top_left_cell.take().unwrap_or_default();
+        top_left_cell = loc_ref.to_string();
+        self.x_split = Some(1);
+        self.y_split = Some(1);
+        self.state = Some("frozen".to_string());
+        self.top_left_cell = Some(top_left_cell);
     }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Selection {
+    #[serde(rename = "@pane", skip_serializing_if = "Option::is_none")]
+    pane: Option<String>,
     #[serde(rename = "@activeCell", skip_serializing_if = "Option::is_none")]
     active_cell: Option<String>,
     #[serde(rename = "@sqref", skip_serializing_if = "Option::is_none")]
-    sqref: Option<String>
+    sqref: Option<String>,
+}
+
+impl Selection {
+    fn add_selection(&mut self, loc_ref: &str) {
+        let mut sqref = self.sqref.take().unwrap_or_default();
+        sqref.push_str(&format!(" {}", loc_ref));
+        self.sqref = Some(sqref);
+    }
+}
+
+impl Default for Selection {
+    fn default() -> Self {
+        Self {
+            active_cell: Some(String::new()),
+            sqref: Some(String::new()),
+            pane: None,
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -164,15 +205,44 @@ impl SheetViews {
     }
 }
 
+impl SheetViews {
+    pub(crate) fn set_tab_selected(&mut self, tab_selected: u8) {
+        self.sheet_view[0].tab_selected = Some(tab_selected);
+    }
+
+    pub(crate) fn set_zoom_scale(&mut self, zoom_scale: u16) {
+        self.sheet_view[0].zoom_scale = Some(zoom_scale);
+    }
+
+    pub(crate) fn set_top_left_cell(&mut self, loc_ref: &str) {
+        self.sheet_view[0].top_left_cell = Some(String::from(loc_ref));
+    }
+
+    pub(crate) fn set_selection(&mut self, loc_ref: String) {
+        let selection = self.sheet_view[0].selection.take();
+        let mut selection = selection.unwrap_or_else(|| vec![Selection::default()]);
+        selection.last_mut().unwrap().add_selection(&loc_ref);
+        self.sheet_view[0].selection = Some(selection);
+    }
+
+    pub(crate) fn set_freeze_panes(&mut self, from: &str, loc_ref: &str) {
+        let pane = self.sheet_view[0].pane.take();
+        let mut pane = pane.unwrap_or_else(|| vec![Pane::default()]);
+        pane.last_mut().unwrap().set_freeze_panes(&loc_ref);
+        self.sheet_view[0].top_left_cell = Some(from.to_string());
+        self.sheet_view[0].pane = Some(pane);
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 struct SheetFormat {
     default_row_height: u32
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct SheetFormatPr {
+pub(crate) struct SheetFormatPr {
     #[serde(rename = "@defaultRowHeight")]
-    default_row_height: f64,
+    pub(crate) default_row_height: f64,
 }
 
 impl SheetFormatPr {
@@ -236,14 +306,14 @@ pub struct Col {
     width: Option<f64>,
     #[serde(rename = "@style", skip_serializing_if = "Option::is_none")]
     style: Option<u32>,
-    #[serde(rename = "@bestFit", default)]
-    best_fit: u8,
+    #[serde(rename = "@bestFit", skip_serializing_if = "Option::is_none")]
+    best_fit: Option<u8>,
     #[serde(rename = "@customWidth")]
     custom_width: u8,
 }
 
 impl Col {
-    fn new(min: u32, max: u32, custom_width: u8, width: Option<f64>, style: Option<u32>, best_fit: u8) -> Col {
+    fn new(min: u32, max: u32, custom_width: u8, width: Option<f64>, style: Option<u32>, best_fit: Option<u8>) -> Col {
         Col {
             min,
             max,
@@ -256,7 +326,7 @@ impl Col {
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Default)]
-pub struct Cols {
+pub(crate) struct Cols {
     col: Vec<Col>
 }
 

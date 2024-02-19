@@ -1,4 +1,4 @@
-use edit_xlsx::{Format, Workbook, WorkbookResult, FormatColor};
+use edit_xlsx::{Format, Workbook, WorkbookResult, FormatColor, Row};
 
 fn main() -> WorkbookResult<()> {
     let mut workbook = Workbook::new();

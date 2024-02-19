@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
-use crate::api::sheet::Sheet;
+use crate::api::worksheet::Sheet;
 use crate::utils::zip_util;
 use crate::result::{SheetError, WorkbookError, WorkbookResult};
 use crate::xml;

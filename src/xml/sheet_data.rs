@@ -48,7 +48,7 @@ impl SheetData {
             Ok(row) => row,
             Err(_) => self.add_row(row)
         };
-        sheet_data_row.height = height;
+        sheet_data_row.height = Some(height);
         if let None = sheet_data_row.custom_height {
             sheet_data_row.custom_height = Some(1);
         }

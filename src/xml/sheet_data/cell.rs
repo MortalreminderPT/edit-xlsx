@@ -49,7 +49,9 @@ impl Cell {
 impl Cell {
     pub(crate) fn update_by_display<T: CellDisplay + CellValue>(&mut self, text: T, style: Option<u32>) {
         self.text = Some(text.to_display());
-        self.style = style;
+        if let Some(style) = style {
+            self.style = Some(style);
+        }
         self.cell_type = text.to_cell_type();
         self.formula = None;
     }
