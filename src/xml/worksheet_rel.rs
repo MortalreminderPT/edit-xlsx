@@ -3,13 +3,13 @@ use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::xml::relationship::{HYPERLINK_TYPE_STRING, RelationShip};
+use crate::xml::relationship::RelationShip;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Relationships {
     #[serde(rename = "@xmlns")]
     xmlns: String,
-    #[serde(rename = "Relationship")]
+    #[serde(rename = "Relationship", default)]
     relationship: Vec<RelationShip>,
 }
 

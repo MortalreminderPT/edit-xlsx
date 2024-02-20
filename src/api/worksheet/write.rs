@@ -1,11 +1,13 @@
-use crate::api::location::{Location, LocationRange};
+use crate::api::cell::formula::FormulaType;
+use crate::api::cell::values::{CellDisplay, CellValue};
+use crate::api::cell::location::{Location, LocationRange};
 use crate::api::worksheet::format::_Format;
 use crate::api::worksheet::hyperlink::_Hyperlink;
 use crate::Format;
 use crate::api::worksheet::Sheet;
 use crate::result::SheetResult;
-use crate::xml::sheet_data::cell::formula::FormulaType;
-use crate::xml::sheet_data::cell::values::{CellDisplay, CellValue};
+// use crate::xml::worksheet::sheetdata::cell::formula::FormulaType;
+// use crate::xml::worksheet::sheetdata::cell::values::{CellDisplay, CellValue};
 
 pub trait Write: _Write {
     fn write<L: Location, T: CellDisplay + CellValue>(&mut self, loc: L, data: T) -> SheetResult<()> { self.write_display_all(loc, data, None) }

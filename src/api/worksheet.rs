@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 use crate::{FormatColor, WorkbookResult, xml};
-use crate::api::location::Location;
+use crate::api::cell::location::Location;
 use crate::api::worksheet::col::Col;
 use crate::api::worksheet::image::_Image;
 use crate::api::worksheet::row::Row;
@@ -37,11 +37,18 @@ impl Row for Sheet {}
 impl Col for Sheet {}
 
 impl Sheet {
-    pub fn max_column(&mut self) -> u32 {
+    pub fn max_column(&self) -> u32 {
         let worksheets = &mut self.worksheets.borrow_mut();
         let worksheet = worksheets.get_mut(&self.id).unwrap();
         let sheet_data = &mut worksheet.sheet_data;
         sheet_data.max_col()
+    }
+
+    pub fn max_row(&self) -> u32 {
+        let worksheets = &self.worksheets.borrow();
+        let worksheet = worksheets.get(&self.id).unwrap();
+        let sheet_data = &worksheet.sheet_data;
+        sheet_data.max_row()
     }
 
     // fn autofit(&mut self) {
@@ -101,7 +108,26 @@ impl Sheet {
     pub fn set_default_row(&mut self, height: f64) {
         let worksheets = &mut self.worksheets.borrow_mut();
         let worksheet = worksheets.get_mut(&self.id).unwrap();
-        worksheet.sheet_format_pr.default_row_height = height;
+        worksheet.set_default_row_height(height);
+    }
+
+    pub fn hide_unused_rows(&mut self, hide: bool) {
+        let worksheets = &mut self.worksheets.borrow_mut();
+        let worksheet = worksheets.get_mut(&self.id).unwrap();
+        worksheet.hide_unused_rows(hide);
+    }
+
+    pub fn outline_settings(& self, visible: bool, symbols_below: bool, symbols_right: bool, auto_style: bool) {
+        let worksheets = &mut self.worksheets.borrow_mut();
+        let worksheet = worksheets.get_mut(&self.id).unwrap();
+        worksheet.outline_settings(visible, symbols_below, symbols_right, auto_style)
+    }
+
+    pub fn ignore_errors<L: Location>(&mut self, error_map: HashMap<&str, L>) {
+        let error_map = error_map.iter().map(|(&e, l)| (e, l.to_ref())).collect::<HashMap<&str, String>>();
+        let worksheets = &mut self.worksheets.borrow_mut();
+        let worksheet = worksheets.get_mut(&self.id).unwrap();
+        worksheet.ignore_errors(error_map);
     }
 
     pub fn hide(&mut self) {

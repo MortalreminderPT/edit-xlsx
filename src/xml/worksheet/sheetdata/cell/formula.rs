@@ -1,20 +1,5 @@
 use serde::{Deserialize, Serialize};
-
-pub(crate) enum FormulaType {
-    Formula,
-    ArrayFormula(String),
-    DynamicArrayFormula(String),
-}
-
-impl FormulaType {
-    fn to_formula_ref(self) -> (Option<String>, Option<String>) {
-        match self {
-            FormulaType::Formula => (None, None),
-            FormulaType::ArrayFormula(formula_ref) => (Some(String::from("array")), Some(formula_ref)),
-            FormulaType::DynamicArrayFormula(formula_ref) => (Some(String::from("array")), Some(formula_ref)),
-        }
-    }
-}
+use crate::api::cell::formula::FormulaType;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Formula {

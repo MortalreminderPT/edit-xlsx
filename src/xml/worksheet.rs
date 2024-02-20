@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
@@ -6,9 +7,16 @@ use crate::FormatColor;
 use crate::result::ColResult;
 use crate::utils::col_helper::to_ref;
 use crate::xml::common::{FromFormat, PhoneticPr, XmlnsAttrs};
-use crate::xml::merge_cells::MergeCells;
-use crate::xml::sheet_data::SheetData;
-use crate::xml::style::color::Color;
+use crate::xml::worksheet::mergecells::MergeCells;
+use self::sheetviews::SheetViews;
+use self::sheetdata::SheetData;
+use self::sheetpr::SheetPr;
+
+mod sheetdata;
+mod sheetpr;
+mod sheetformat;
+mod sheetviews;
+mod mergecells;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="worksheet")]
@@ -35,6 +43,8 @@ pub(crate) struct WorkSheet {
     hyperlinks: Option<Hyperlinks>,
     #[serde(rename = "pageMargins")]
     page_margins: PageMargins,
+    #[serde(rename = "ignoredErrors", skip_serializing_if = "Option::is_none")]
+    ignored_errors: Option<IgnoredErrors>,
     #[serde(rename = "picture", skip_serializing_if = "Option::is_none")]
     picture: Option<Picture>,
 }
@@ -64,15 +74,8 @@ impl WorkSheet {
     }
 
     pub(crate) fn set_tab_color(&mut self, tab_color: &FormatColor) {
-        let sheet_pr = match self.sheet_pr.take() {
-            Some(mut sheet_pr) => {
-                sheet_pr.tab_color = Color::from_format(tab_color);
-                sheet_pr
-            },
-            None => {
-                SheetPr::new(tab_color)
-            }
-        };
+        let mut sheet_pr = self.sheet_pr.take().unwrap_or_default();
+        sheet_pr.set_tab_color(tab_color);
         self.sheet_pr = Some(sheet_pr);
     }
 
@@ -92,19 +95,111 @@ impl WorkSheet {
             self.hyperlinks.as_mut().unwrap().add_hyperlink(hyperlink);
         };
     }
+
+    pub(crate) fn set_default_row_height(&mut self, height: f64) {
+        self.sheet_format_pr.custom_height = Some(1);
+        self.sheet_format_pr.default_row_height = height;
+    }
+
+    pub(crate) fn hide_unused_rows(&mut self, hide: bool) {
+        self.sheet_format_pr.zero_height = Some(hide as u8);
+    }
+
+    pub(crate) fn outline_settings(&mut self, visible: bool, symbols_below: bool, symbols_right: bool, auto_style: bool) {
+        let mut sheet_pr = self.sheet_pr.take().unwrap_or_default();
+        sheet_pr.set_outline_pr(visible, symbols_below, symbols_right, auto_style);
+        self.sheet_pr = Some(sheet_pr);
+    }
+
+    pub(crate) fn ignore_errors(&mut self, error_map: HashMap<&str, String>) {
+        let ignore_errors = IgnoredErrors::from_map(error_map);
+        self.ignored_errors = Some(ignore_errors);
+    }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-struct SheetPr {
-    #[serde(rename = "tabColor")]
-    tab_color: Color
+#[derive(Debug, Deserialize, Serialize, Default)]
+struct IgnoredErrors {
+    #[serde(rename = "ignoredError")]
+    ignored_error: Vec<IgnoredError>,
 }
 
-impl SheetPr {
-    fn new(color: &FormatColor) -> SheetPr {
-        SheetPr {
-            tab_color: Color::from_format(color),
+impl IgnoredErrors {
+    fn from_map(error_map: HashMap<&str, String>) -> IgnoredErrors {
+        let mut ignored_errors = IgnoredErrors::default();
+        error_map.iter().for_each(|(error_type, sqref)|{
+            ignored_errors.ignored_error.push(IgnoredError::from_sqref(error_type, sqref));
+        });
+        ignored_errors
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize, Default)]
+struct IgnoredError {
+    #[serde(rename = "@sqref")]
+    sqref: String,
+    #[serde(rename = "@numberStoredAsText")]
+    number_stored_as_text: Option<u8>,
+    #[serde(rename = "@evalError")]
+    eval_error: Option<u8>,
+    #[serde(rename = "@formulaDiffers")]
+    formula_differs: Option<u8>,
+    #[serde(rename = "@formulaRange")]
+    formula_range: Option<u8>,
+    #[serde(rename = "@formulaUnlocked")]
+    formula_unlocked: Option<u8>,
+    #[serde(rename = "@emptyCellReference")]
+    empty_cell_reference: Option<u8>,
+    #[serde(rename = "@listDataValidation")]
+    list_data_validation: Option<u8>,
+    #[serde(rename = "@calculatedColumn")]
+    calculated_column: Option<u8>,
+    #[serde(rename = "@twoDigitTextYear")]
+    two_digit_text_year: Option<u8>,
+}
+
+impl IgnoredError {
+    fn from_sqref(error_type: &str, sqref: &str) -> IgnoredError {
+        let mut ignored_error = IgnoredError::default();
+        match error_type {
+            "number_stored_as_text" => {
+                ignored_error.number_stored_as_text = Some(1);
+                ignored_error.sqref = String::from(sqref);
+            },
+            "eval_error" => {
+                ignored_error.eval_error = Some(1);
+                ignored_error.sqref = String::from(sqref);
+            },
+            "formula_differs" => {
+                ignored_error.formula_differs = Some(1);
+                ignored_error.sqref = String::from(sqref);
+            },
+            "formula_range" => {
+                ignored_error.formula_range = Some(1);
+                ignored_error.sqref = String::from(sqref);
+            },
+            "formula_unlocked" => {
+                ignored_error.formula_unlocked = Some(1);
+                ignored_error.sqref = String::from(sqref);
+            },
+            "empty_cell_reference" => {
+                ignored_error.empty_cell_reference = Some(1);
+                ignored_error.sqref = String::from(sqref);
+            },
+            "list_data_validation" => {
+                ignored_error.list_data_validation = Some(1);
+                ignored_error.sqref = String::from(sqref);
+            },
+            "calculated_column" => {
+                ignored_error.calculated_column = Some(1);
+                ignored_error.sqref = String::from(sqref);
+            },
+            "two_digit_text_year" => {
+                ignored_error.two_digit_text_year = Some(1);
+                ignored_error.sqref = String::from(sqref);
+            },
+            &_ => {}
         }
+        ignored_error
     }
 }
 
@@ -122,133 +217,22 @@ impl Dimension {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
-pub(crate) struct SheetView {
-    #[serde(rename = "@tabSelected", skip_serializing_if = "Option::is_none")]
-    pub(crate) tab_selected: Option<u8>,
-    #[serde(rename = "@zoomScale", skip_serializing_if = "Option::is_none")]
-    pub(crate) zoom_scale: Option<u16>,
-    #[serde(rename = "@topLeftCell", skip_serializing_if = "Option::is_none")]
-    pub(crate) top_left_cell: Option<String>,
-    #[serde(rename = "@workbookViewId")]
-    workbook_view_id: u32,
-    #[serde(rename = "pane", skip_serializing_if = "Option::is_none")]
-    pane: Option<Vec<Pane>>,
-    #[serde(rename = "selection", skip_serializing_if = "Option::is_none")]
-    selection: Option<Vec<Selection>>,
-}
-
-#[derive(Debug, Deserialize, Serialize, Default)]
-struct Pane {
-    #[serde(rename = "@xSplit", skip_serializing_if = "Option::is_none")]
-    x_split: Option<u32>,
-    #[serde(rename = "@ySplit", skip_serializing_if = "Option::is_none")]
-    y_split: Option<u32>,
-    #[serde(rename = "@topLeftCell", skip_serializing_if = "Option::is_none")]
-    top_left_cell: Option<String>,
-    #[serde(rename = "@activePane", skip_serializing_if = "Option::is_none")]
-    active_pane: Option<String>,
-    #[serde(rename = "@state", skip_serializing_if = "Option::is_none")]
-    state: Option<String>,
-}
-
-impl Pane {
-    fn set_freeze_panes(&mut self, loc_ref: &str) {
-        let mut top_left_cell = self.top_left_cell.take().unwrap_or_default();
-        top_left_cell = loc_ref.to_string();
-        self.x_split = Some(1);
-        self.y_split = Some(1);
-        self.state = Some("frozen".to_string());
-        self.top_left_cell = Some(top_left_cell);
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Selection {
-    #[serde(rename = "@pane", skip_serializing_if = "Option::is_none")]
-    pane: Option<String>,
-    #[serde(rename = "@activeCell", skip_serializing_if = "Option::is_none")]
-    active_cell: Option<String>,
-    #[serde(rename = "@sqref", skip_serializing_if = "Option::is_none")]
-    sqref: Option<String>,
-}
-
-impl Selection {
-    fn add_selection(&mut self, loc_ref: &str) {
-        let mut sqref = self.sqref.take().unwrap_or_default();
-        sqref.push_str(&format!(" {}", loc_ref));
-        self.sqref = Some(sqref);
-    }
-}
-
-impl Default for Selection {
-    fn default() -> Self {
-        Self {
-            active_cell: Some(String::new()),
-            sqref: Some(String::new()),
-            pane: None,
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct SheetViews {
-    #[serde(rename = "sheetView")]
-    pub(crate) sheet_view: Vec<SheetView>
-}
-
-impl SheetViews {
-    pub(crate) fn default() -> SheetViews {
-        SheetViews {
-            sheet_view: vec![SheetView::default()],
-        }
-    }
-}
-
-impl SheetViews {
-    pub(crate) fn set_tab_selected(&mut self, tab_selected: u8) {
-        self.sheet_view[0].tab_selected = Some(tab_selected);
-    }
-
-    pub(crate) fn set_zoom_scale(&mut self, zoom_scale: u16) {
-        self.sheet_view[0].zoom_scale = Some(zoom_scale);
-    }
-
-    pub(crate) fn set_top_left_cell(&mut self, loc_ref: &str) {
-        self.sheet_view[0].top_left_cell = Some(String::from(loc_ref));
-    }
-
-    pub(crate) fn set_selection(&mut self, loc_ref: String) {
-        let selection = self.sheet_view[0].selection.take();
-        let mut selection = selection.unwrap_or_else(|| vec![Selection::default()]);
-        selection.last_mut().unwrap().add_selection(&loc_ref);
-        self.sheet_view[0].selection = Some(selection);
-    }
-
-    pub(crate) fn set_freeze_panes(&mut self, from: &str, loc_ref: &str) {
-        let pane = self.sheet_view[0].pane.take();
-        let mut pane = pane.unwrap_or_else(|| vec![Pane::default()]);
-        pane.last_mut().unwrap().set_freeze_panes(&loc_ref);
-        self.sheet_view[0].top_left_cell = Some(from.to_string());
-        self.sheet_view[0].pane = Some(pane);
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct SheetFormat {
-    default_row_height: u32
-}
-
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct SheetFormatPr {
     #[serde(rename = "@defaultRowHeight")]
-    pub(crate) default_row_height: f64,
+    default_row_height: f64,
+    #[serde(rename = "@customHeight", skip_serializing_if = "Option::is_none")]
+    custom_height: Option<u8>,
+    #[serde(rename = "@zeroHeight", skip_serializing_if = "Option::is_none")]
+    zero_height: Option<u8>,
 }
 
-impl SheetFormatPr {
-    pub(crate) fn default() -> SheetFormatPr {
+impl Default for SheetFormatPr {
+    fn default() -> SheetFormatPr {
         SheetFormatPr {
             default_row_height: 15.0,
+            custom_height: None,
+            zero_height: None,
         }
     }
 }
@@ -384,6 +368,7 @@ impl WorkSheet {
             merge_cells: None,
             phonetic_pr: None,
             page_margins: PageMargins::default(),
+            ignored_errors: None,
             picture: None,
             hyperlinks: None,
         }

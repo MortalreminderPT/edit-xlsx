@@ -10,7 +10,7 @@ use crate::xml::relationship::{RelationShip};
 pub(crate) struct Relationships {
     #[serde(rename = "@xmlns")]
     xmlns: String,
-    #[serde(rename = "Relationship")]
+    #[serde(rename = "Relationship", default)]
     relationship: Vec<RelationShip>,
 }
 
