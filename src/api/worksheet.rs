@@ -15,7 +15,10 @@ use crate::api::worksheet::col::Col;
 use crate::api::worksheet::image::_Image;
 use crate::api::worksheet::row::Row;
 use crate::api::worksheet::write::Write;
-use crate::result::SheetError;
+use crate::file::XlsxFileType;
+use crate::result::{SheetError, SheetResult};
+use crate::xml::drawings::{Drawings};
+use crate::xml::relationships::Relationships;
 use crate::xml::worksheet::WorkSheet;
 use crate::xml::workbook::Workbook;
 use crate::xml::style::StyleSheet;
@@ -26,15 +29,25 @@ pub struct Sheet {
     pub(crate) name: String,
     workbook: Rc<RefCell<Workbook>>,
     worksheets: Rc<RefCell<HashMap<u32, WorkSheet>>>,
-    worksheets_rel: Rc<RefCell<HashMap<u32, xml::worksheet_rel::Relationships>>>,
+    worksheets_rel: Rc<RefCell<HashMap<u32, Relationships>>>,
     style_sheet: Rc<RefCell<StyleSheet>>,
     content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
-    medias: Rc<RefCell<xml::medias::Medias>>
+    medias: Rc<RefCell<xml::medias::Medias>>,
+    drawings: HashMap<u32, Drawings>,
+    drawings_rel: HashMap<u32, Relationships>,
 }
 
 impl Write for Sheet {}
 impl Row for Sheet {}
 impl Col for Sheet {}
+
+impl Sheet {
+    pub(crate) fn save_as<P: AsRef<Path>>(&mut self, file_path: P) -> SheetResult<()> {
+        self.drawings.iter_mut().for_each(|(id, d)| d.save(&file_path, *id));
+        self.drawings_rel.iter_mut().for_each(|(id, d)| d.save(&file_path, XlsxFileType::DrawingRels(*id)));
+        Ok(())
+    }
+}
 
 impl Sheet {
     pub fn max_column(&self) -> u32 {
@@ -167,7 +180,6 @@ impl Sheet {
         sheets[0].change_id(self.id);
         sheets.swap(0, loc);
         // change self id
-
         Ok(())
     }
 
@@ -180,8 +192,22 @@ impl Sheet {
     pub fn set_background<P: AsRef<Path>>(&mut self, filename: &P) {
         let worksheets = &mut self.worksheets.borrow_mut();
         let worksheet = worksheets.get_mut(&self.id).unwrap();
-        let r_id = self.add_image(filename);
+        let r_id = self.add_background(filename);
         worksheet.set_background(r_id);
+    }
+
+    pub fn insert_image<L: Location, P: AsRef<Path>>(&mut self, loc: L, filename: &P) {
+        let mut r_id = 0;
+        {
+            let (from_row, from_col) = loc.to_location();
+            let (to_row, to_col) = (5 + from_row, 5 + from_col);
+            r_id = self.add_drawing_image((from_row, from_col, to_row, to_col), filename);
+        }
+        {
+            let worksheets = &mut self.worksheets.borrow_mut();
+            let worksheet = worksheets.get_mut(&self.id).unwrap();
+            worksheet.insert_image(loc, r_id);
+        }
     }
 
     pub fn id(&self) -> u32 {
@@ -190,12 +216,21 @@ impl Sheet {
 }
 
 impl Sheet {
+    pub(crate) fn add_drawings(&mut self, tmp_path: &str) {
+        let binding = self.worksheets_rel.borrow();
+        let worksheet_rel = binding.get(&self.id).unwrap();
+        let drawings_id = worksheet_rel.list_drawings();
+        drawings_id.iter().for_each(|&id| {
+            self.drawings.insert(id, Drawings::from_path(tmp_path, id).unwrap());
+        });
+    }
+
     pub(crate) fn from_xml(
         sheet_id: u32,
         name: &str,
         workbook: Rc<RefCell<Workbook>>,
         worksheets: Rc<RefCell<HashMap<u32, WorkSheet>>>,
-        worksheets_rel: Rc<RefCell<HashMap<u32, xml::worksheet_rel::Relationships>>>,
+        worksheets_rel: Rc<RefCell<HashMap<u32, Relationships>>>,
         style_sheet: Rc<RefCell<StyleSheet>>,
         content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
         medias: Rc<RefCell<xml::medias::Medias>>,
@@ -209,6 +244,8 @@ impl Sheet {
             style_sheet,
             content_types,
             medias,
+            drawings: HashMap::new(),
+            drawings_rel: HashMap::new(),
         }
     }
 }

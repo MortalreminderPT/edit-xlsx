@@ -1,4 +1,4 @@
-use crate::xml::relationship::RelationShip;
+use crate::xml::relationships::RelationShip;
 
 enum RelsType {
     Sheet,

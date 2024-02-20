@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use crate::xml::worksheet::sheetviews::sheetview::pane::Pane;
-use crate::xml::worksheet::sheetviews::sheetview::selection::Selection;
+use crate::xml::worksheet::sheet_views::sheetview::pane::Pane;
+use crate::xml::worksheet::sheet_views::sheetview::selection::Selection;
 
 pub mod pane;
 pub mod selection;

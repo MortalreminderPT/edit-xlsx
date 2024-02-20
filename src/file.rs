@@ -12,6 +12,8 @@ pub enum XlsxFileType {
     WorksheetRels(u32),
     ContentTypes,
     Medias(String),
+    Drawings(u32),
+    DrawingRels(u32)
 }
 
 pub struct XlsxFileReader {
@@ -105,6 +107,12 @@ fn parse_path<P: AsRef<Path>>(base_path: P, file_type: &XlsxFileType) -> PathBuf
         }
         XlsxFileType::Medias(name) => {
             base_path.as_ref().join(format!("xl/media/{name}"))
+        }
+        XlsxFileType::Drawings(id) => {
+            base_path.as_ref().join(format!("xl/drawings/drawing{id}.xml"))
+        }
+        XlsxFileType::DrawingRels(id) => {
+            base_path.as_ref().join(format!("xl/drawings/_rels/drawing{id}.xml.rels"))
         }
     }
 }

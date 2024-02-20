@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 use crate::api::worksheet::Sheet;
+use crate::file::XlsxFileType;
 use crate::utils::zip_util;
 use crate::result::{SheetError, WorkbookError, WorkbookResult};
 use crate::xml;
@@ -11,7 +12,7 @@ use crate::xml::content_types::ContentTypes;
 use crate::xml::io::Io;
 use crate::xml::medias::Medias;
 use crate::xml::style::StyleSheet;
-use crate::xml::workbook_rel::Relationships;
+use crate::xml::relationships::Relationships;
 use crate::xml::worksheet::WorkSheet;
 
 #[derive(Debug)]
@@ -22,9 +23,9 @@ pub struct Workbook {
     closed: bool,
     workbook: Rc<RefCell<xml::workbook::Workbook>>,
     style_sheet: Rc<RefCell<xml::style::StyleSheet>>,
-    workbook_rel: Rc<RefCell<xml::workbook_rel::Relationships>>,
+    workbook_rel: Rc<RefCell<Relationships>>,
     worksheets: Rc<RefCell<HashMap<u32, WorkSheet>>>,
-    worksheets_rel: Rc<RefCell<HashMap<u32, xml::worksheet_rel::Relationships>>>,
+    worksheets_rel: Rc<RefCell<HashMap<u32, Relationships>>>,
     content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
     medias: Rc<RefCell<xml::medias::Medias>>
 }
@@ -128,16 +129,16 @@ impl Workbook {
 impl Workbook {
     pub fn from_path<P: AsRef<Path>>(file_path: P) -> WorkbookResult<Workbook> {
         let tmp_path = Workbook::extract_tmp_dir(&file_path)?;
-        let workbook = crate::xml::workbook::Workbook::from_path(&tmp_path)?;
-        let workbook_rel = Relationships::from_path(&tmp_path)?;
+        let workbook = xml::workbook::Workbook::from_path(&tmp_path)?;
+        let workbook_rel = Relationships::from_path(&tmp_path, XlsxFileType::WorkbookRels)?;
         let style_sheet = StyleSheet::from_path(&tmp_path)?;
         let content_types = ContentTypes::from_path(&tmp_path)?;
         let medias = Medias::from_path(&tmp_path)?;
         let worksheets: HashMap<u32, WorkSheet> = workbook.sheets.sheets.iter()
             .map(|sheet| (sheet.sheet_id, WorkSheet::from_path(&tmp_path, sheet.sheet_id)))
             .collect();
-        let worksheets_rel: HashMap<u32, xml::worksheet_rel::Relationships> = workbook.sheets.sheets.iter()
-            .map(|sheet| (sheet.sheet_id, xml::worksheet_rel::Relationships::from_path(&tmp_path, sheet.sheet_id).unwrap_or_default()))
+        let worksheets_rel: HashMap<u32, Relationships> = workbook.sheets.sheets.iter()
+            .map(|sheet| (sheet.sheet_id, Relationships::from_path(&tmp_path, XlsxFileType::WorksheetRels(sheet.sheet_id)).unwrap_or_default()))
             .collect();
         let workbook = Rc::new(RefCell::new(workbook));
         let workbook_rel = Rc::new(RefCell::new(workbook_rel));
@@ -147,7 +148,7 @@ impl Workbook {
         let content_types = Rc::new(RefCell::new(content_types));
         let medias = Rc::new(RefCell::new(medias));
 
-        let sheets = workbook.borrow().sheets.sheets.iter().map(
+        let mut sheets = workbook.borrow().sheets.sheets.iter().map(
             |sheet_xml| {
                 // let worksheet = &binding.worksheets.borrow_mut().get(&sheet_xml.sheet_id).unwrap();
                 Sheet::from_xml(
@@ -160,7 +161,12 @@ impl Workbook {
                     Rc::clone(&content_types),
                     Rc::clone(&medias),
                 )
-            }).collect();
+            }).collect::<Vec<Sheet>>();
+        sheets.iter_mut().for_each(
+            |sheet| {
+                sheet.add_drawings(&tmp_path)
+            }
+        );
         Ok(Workbook {
             sheets,
             tmp_path,
@@ -180,14 +186,16 @@ impl Workbook {
         Ok(zip_util::extract_dir(file_path)?)
     }
 
-    pub fn save_as<P: AsRef<Path>>(&self, file_path: P) -> WorkbookResult<()> {
+    pub fn save_as<P: AsRef<Path>>(&mut self, file_path: P) -> WorkbookResult<()> {
+        // save sheets
+        self.sheets.iter_mut().for_each(|s|s.save_as(&self.tmp_path).unwrap());
         // save files
         self.workbook.borrow_mut().save(&self.tmp_path);
         self.worksheets.borrow_mut().iter_mut().for_each(|(id, worksheet)| worksheet.save(&self.tmp_path, *id));
         self.style_sheet.borrow_mut().save(&self.tmp_path);
         // self.workbook_rel.borrow_mut().update(self.worksheets.borrow_mut().len() as u32, 1, 1);
-        self.workbook_rel.borrow_mut().save(&self.tmp_path);
-        self.worksheets_rel.borrow_mut().iter_mut().for_each(|(id, worksheet_rel)| worksheet_rel.save(&self.tmp_path, *id));
+        self.workbook_rel.borrow_mut().save(&self.tmp_path, XlsxFileType::WorkbookRels);
+        self.worksheets_rel.borrow_mut().iter_mut().for_each(|(id, worksheet_rel)| worksheet_rel.save(&self.tmp_path, XlsxFileType::WorksheetRels(*id)));
         self.content_types.borrow_mut().save(&self.tmp_path);
         self.medias.borrow_mut().save(&self.tmp_path);
         // package files
@@ -195,7 +203,7 @@ impl Workbook {
         Ok(())
     }
 
-    pub fn save(&self) -> WorkbookResult<()> {
+    pub fn save(&mut self) -> WorkbookResult<()> {
         self.save_as(&self.file_path.clone())
     }
 

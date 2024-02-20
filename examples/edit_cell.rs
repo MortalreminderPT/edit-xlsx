@@ -1,14 +1,14 @@
 use edit_xlsx::{Format, Workbook, WorkbookResult, FormatColor, Write};
 fn main() -> WorkbookResult<()> {
-    // let mut workbook = Workbook::from_path("examples/xlsx/edit.xlsx")?;
-    let mut workbook = Workbook::new();
-    let mut worksheet = workbook.get_worksheet(1)?;
+    let mut workbook = Workbook::from_path("pic.xlsx")?;
+    // let mut workbook = Workbook::new();
+    let worksheet = workbook.get_worksheet(1)?;
     // write some text
-    for i in (1..50).rev() {
-        for j in (1..50).rev() {
-            worksheet.write((i, j), format!("{}  {}", worksheet.max_row(), worksheet.max_column()))?;
+    for i in (1..50) {
+        for j in (1..50) {
+            worksheet.write((i, j), format!("{}  {}", i, j))?;
         }
     }
-    workbook.save_as("examples/output/edit_cell.xlsx")?;
+    workbook.save_as("pics.xlsx")?;
     Ok(())
 }

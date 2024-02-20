@@ -5,9 +5,8 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::{Error, Visitor};
 use crate::api::cell::formula::FormulaType;
 use crate::api::cell::location::Location;
-use crate::xml::worksheet::sheetdata::cell::formula::Formula;
+use crate::xml::worksheet::sheet_data::cell::formula::Formula;
 use crate::api::cell::values::{CellDisplay, CellValue, CellType};
-use crate::xml::worksheet::sheetdata::row::Row;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Cell {
@@ -76,7 +75,7 @@ impl Cell {
             text: None,
         }
     }
-    
+
     pub(crate) fn new_display<L: Location, T: CellDisplay + CellValue>(loc: L, text: T, style: Option<u32>) -> Cell {
         Cell {
             loc: Sqref::from_location(loc),

@@ -35,6 +35,7 @@ impl ContentTypes {
     pub(crate) fn add_png(&mut self) {
         self.content_types.insert(ContentType::png_default());
     }
+    pub(crate) fn add_drawing(&mut self, id: u32) { self.content_types.insert(ContentType::drawing_override(id)); }
 }
 
 impl ContentType {
@@ -42,6 +43,13 @@ impl ContentType {
         ContentType::Default {
             extension: "png".to_string(),
             content_type: "image/png".to_string(),
+        }
+    }
+
+    pub(crate) fn drawing_override(id: u32) -> ContentType {
+        ContentType::Override {
+            part_name: format!("/xl/drawings/drawing{id}.xml"),
+            content_type: "application/vnd.openxmlformats-officedocument.drawing+xml".to_string(),
         }
     }
 }
