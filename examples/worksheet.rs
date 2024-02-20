@@ -22,16 +22,15 @@ fn main() -> WorkbookResult<()> {
     let tab_color = FormatColor::RGB("00ff0000");
     worksheet.set_tab_color(&tab_color);
     // worksheet.set_zoom(200);
-    worksheet.set_top_left_cell("A1");
+    // worksheet.set_top_left_cell("A1");
     worksheet.set_selection("A1:B2");
     worksheet.set_selection("C1:D5");
-    worksheet.set_selection("F5");
-    worksheet.freeze_panes("A1");
+    // worksheet.freeze_panes("C3");
     // worksheet.set_top_left_cell("AB128")
     worksheet.activate();
     // worksheet.hide_unused_rows(true);
     // worksheet.set_default_row(100.0);
-    worksheet.write("B2", format!("text in sheet{}, {}", worksheet.id(), worksheet.get_name()))?;
+    worksheet.write("A30", format!("text in sheet{}, {}", worksheet.id(), worksheet.get_name()))?;
     worksheet.write("C10", format!("text in sheet{}, {}", worksheet.id(), worksheet.get_name()))?;
     // worksheet.outline_settings(false, false, false, true);
 
@@ -40,6 +39,12 @@ fn main() -> WorkbookResult<()> {
             worksheet.write((i, j), format!("{i}{j}"))?;
         }
     }
+
+    worksheet.insert_image((10, 10), &"./examples/pics/ferris.png");
+
+
+    worksheet.insert_image((5, 5), &"./examples/pics/rust.png");
+
 
     // worksheet.write_string("A1", "123546".to_string())?;
     // let mut map = HashMap::new();

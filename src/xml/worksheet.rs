@@ -6,7 +6,7 @@ use crate::api::cell::location::Location;
 use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::FormatColor;
-use crate::result::ColResult;
+use crate::result::{ColResult, SheetResult};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
 use crate::xml::worksheet::columns::Cols;
 use crate::xml::worksheet::hyperlinks::Hyperlinks;
@@ -55,10 +55,10 @@ pub(crate) struct WorkSheet {
     page_margins: PageMargins,
     #[serde(rename = "ignoredErrors", skip_serializing_if = "Option::is_none")]
     ignored_errors: Option<IgnoredErrors>,
-    #[serde(rename = "picture", skip_serializing_if = "Option::is_none")]
-    picture: Option<Picture>,
     #[serde(rename = "drawing", skip_serializing_if = "Option::is_none")]
     drawing: Option<Drawing>,
+    #[serde(rename = "picture", skip_serializing_if = "Option::is_none")]
+    picture: Option<Picture>,
 }
 
 impl WorkSheet {
@@ -150,8 +150,8 @@ impl Picture {
     }
 }
 
-impl WorkSheet {
-    pub(crate) fn new() -> WorkSheet {
+impl Default for WorkSheet {
+    fn default() -> WorkSheet {
         WorkSheet {
             xmlns_attrs: XmlnsAttrs::worksheet_default(),
             sheet_pr: None,
@@ -169,13 +169,15 @@ impl WorkSheet {
             drawing: None,
         }
     }
-    
-    pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, sheet_id: u32) -> WorkSheet {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SheetFile(sheet_id)).unwrap();
+}
+
+impl WorkSheet {
+    pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, sheet_id: u32) -> SheetResult<WorkSheet> {
+        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SheetFile(sheet_id))?;
         let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        let work_sheet = de::from_str(&xml).unwrap();
-        work_sheet
+        file.read_to_string(&mut xml)?;
+        let work_sheet = de::from_str(&xml)?;
+        Ok(work_sheet)
     }
 
     pub(crate) fn save<P: AsRef<Path>>(&mut self, file_path: P, sheet_id: u32) {

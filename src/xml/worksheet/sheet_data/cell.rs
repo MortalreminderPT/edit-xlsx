@@ -29,7 +29,7 @@ pub(crate) struct Sqref {
 }
 
 impl Sqref {
-    fn from_location<L: Location>(location: L) -> Sqref {
+    pub(crate) fn from_location<L: Location>(location: &L) -> Sqref {
         let (row, col) = location.to_location();
         Sqref {
             col,
@@ -47,7 +47,7 @@ impl<'de> Visitor<'de> for Sqref {
 
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> where E: Error {
         // let (row, col) = to_loc(&v);
-        let sqref = Sqref::from_location(v);
+        let sqref = Sqref::from_location(&v);
         Ok(sqref)
     }
 }
@@ -68,7 +68,7 @@ impl Serialize for Sqref {
 impl Cell {
     pub(crate) fn new<L: Location>(loc: L) -> Cell {
         Cell {
-            loc: Sqref::from_location(loc),
+            loc: Sqref::from_location(&loc),
             style: None,
             cell_type: CellType::String,
             formula: None,
@@ -78,7 +78,7 @@ impl Cell {
 
     pub(crate) fn new_display<L: Location, T: CellDisplay + CellValue>(loc: L, text: T, style: Option<u32>) -> Cell {
         Cell {
-            loc: Sqref::from_location(loc),
+            loc: Sqref::from_location(&loc),
             style,
             cell_type: text.to_cell_type(),
             formula: None,
@@ -89,7 +89,7 @@ impl Cell {
     pub(crate) fn new_formula<L: Location>(loc: L, formula: &str, formula_type: FormulaType, style: Option<u32>) -> Cell {
         let formula = Formula::from_formula_type(formula, formula_type);
         Cell {
-            loc: Sqref::from_location(loc),
+            loc: Sqref::from_location(&loc),
             style,
             cell_type: CellType::String,
             formula: Some(formula),

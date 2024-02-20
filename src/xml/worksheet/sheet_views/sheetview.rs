@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
+use crate::api::cell::location::Location;
 use crate::xml::worksheet::sheet_views::sheetview::pane::Pane;
-use crate::xml::worksheet::sheet_views::sheetview::selection::Selection;
+use crate::xml::worksheet::sheet_views::sheetview::selection::{Selection, ActivePane};
 
 pub mod pane;
 pub mod selection;
@@ -15,10 +16,10 @@ pub(crate) struct SheetView {
     pub(crate) top_left_cell: Option<String>,
     #[serde(rename = "@workbookViewId")]
     workbook_view_id: u32,
-    #[serde(rename = "pane", skip_serializing_if = "Option::is_none")]
-    pane: Option<Vec<Pane>>,
-    #[serde(rename = "selection", skip_serializing_if = "Option::is_none")]
-    selection: Option<Vec<Selection>>,
+    #[serde(rename = "pane", skip_serializing_if = "Vec::is_empty")]
+    pane: Vec<Pane>,
+    #[serde(rename = "selection", skip_serializing_if = "Vec::is_empty")]
+    selection: Vec<Selection>,
 }
 
 impl SheetView {
@@ -35,17 +36,39 @@ impl SheetView {
     }
 
     pub(crate) fn set_selection(&mut self, loc_ref: String) {
-        let selection = self.selection.take();
-        let mut selection = selection.unwrap_or_else(|| vec![Selection::default()]);
-        selection.last_mut().unwrap().add_selection(&loc_ref);
-        self.selection = Some(selection);
+        if self.selection.len() == 0 {
+            self.selection.push(Selection::default());
+        }
+        self.selection.last_mut().unwrap().set_selection(&loc_ref);
     }
 
-    pub(crate) fn set_freeze_panes(&mut self, from: &str, loc_ref: &str) {
-        let pane = self.pane.take();
-        let mut pane = pane.unwrap_or_else(|| vec![Pane::default()]);
-        pane.last_mut().unwrap().set_freeze_panes(&loc_ref);
-        self.top_left_cell = Some(from.to_string());
-        self.pane = Some(pane);
+    fn update_by_pane<L: Location>(&mut self, active_pane: ActivePane<L>) {
+        if self.selection.len() == 0 {
+            self.selection.push(Selection::default());
+        }
+        self.selection.last_mut().unwrap().update_by_pane(active_pane);
+    }
+
+    pub(crate) fn set_freeze_panes<L: Location>(&mut self, loc: L) {
+        let (row, col) = loc.to_location();
+        match (row, col) {
+            (1, 1) => {},
+            (1, col) => {
+                self.pane = vec![Pane::default_pane(ActivePane::TopRight(Some((1, col))))];
+                self.update_by_pane(ActivePane::<L>::TopRight(None));
+            },
+            (row, 1) => {
+                self.pane = vec![Pane::default_pane(ActivePane::BottomLeft(Some((row, 1))))];
+                self.update_by_pane(ActivePane::<L>::BottomLeft(None));
+            },
+            (row, col) => {
+                self.pane = vec![Pane::default_pane(ActivePane::BottomRight(Some((row, col))))];
+                self.update_by_pane(ActivePane::<L>::BottomRight(None));
+                self.selection.append(&mut vec![
+                    Selection::default_pane(ActivePane::TopRight(Some((1, col)))),
+                    Selection::default_pane(ActivePane::BottomLeft(Some((row, 1)))),
+                ]);
+            }
+        };
     }
 }

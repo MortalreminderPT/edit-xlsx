@@ -29,8 +29,7 @@ impl _Col for Sheet {
         if let Some(format) = format {
             style = Some(self.add_format(format));
         }
-        let worksheets = &mut self.worksheets.borrow_mut();
-        let worksheet = worksheets.get_mut(&self.id).unwrap();
+        let worksheet = &mut self.worksheet;
         worksheet.create_col(first_col, last_col, Some(width), style, None)?;
         Ok(())
     }

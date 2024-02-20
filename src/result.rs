@@ -1,4 +1,5 @@
 use std::io;
+use quick_xml::DeError;
 use zip::result::ZipError;
 
 pub type CellResult<T> = Result<T, CellError>;
@@ -24,6 +25,7 @@ pub type SheetResult<T> = Result<T, SheetError>;
 #[derive(Debug)]
 pub enum SheetError {
     Io(io::Error),
+    DeError(DeError),
     ZipError(ZipError),
     FileNotFound,
     RowError(RowError),
@@ -31,19 +33,12 @@ pub enum SheetError {
     DuplicatedSheets,
 }
 
-impl From<RowError> for SheetError {
-    fn from(err: RowError) -> SheetError {
-        SheetError::RowError(err)
-    }
-}
-
-
-impl From<ColError> for SheetError {
-    fn from(err: ColError) -> SheetError {
-        SheetError::ColError(err)
-    }
-}
-
+impl From<DeError> for SheetError { fn from(err: DeError) -> SheetError { SheetError::DeError(err) } }
+impl From<io::Error> for SheetError { fn from(err: io::Error) -> SheetError {
+        SheetError::Io(err)
+    } }
+impl From<RowError> for SheetError { fn from(err: RowError) -> SheetError { SheetError::RowError(err) } }
+impl From<ColError> for SheetError { fn from(err: ColError) -> SheetError { SheetError::ColError(err) } }
 
 pub type WorkbookResult<T> = Result<T, WorkbookError>;
 #[derive(Debug)]

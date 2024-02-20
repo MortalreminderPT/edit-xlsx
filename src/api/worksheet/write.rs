@@ -107,8 +107,8 @@ impl _Write for Sheet {
         if let Some(format) = format {
             style = Some(self.add_format(format));
         }
-        let worksheets = &mut self.worksheets.borrow_mut();
-        let worksheet = worksheets.get_mut(&self.id).unwrap();
+        // let worksheets = &mut self.worksheets.borrow_mut();
+        let worksheet = &mut self.worksheet;
         let sheet_data = &mut worksheet.sheet_data;
         sheet_data.write_display(loc, data, style)?;
         Ok(())
@@ -119,29 +119,24 @@ impl _Write for Sheet {
         if let Some(format) = format {
             style = Some(self.add_format(format));
         }
-        let worksheets = &mut self.worksheets.borrow_mut();
-        let worksheet = worksheets.get_mut(&self.id).unwrap();
+        let worksheet = &mut self.worksheet;
         let sheet_data = &mut worksheet.sheet_data;
         sheet_data.write_formula(loc, formula, formula_type, style)?;
         Ok(())
     }
 
     fn write_hyperlink<L: Location>(&mut self, loc: &L, url: &str, data: &str, format: Option<&Format>) -> SheetResult<()> {
-        // let (row, col) = loc.to_location();
         self.write_display_all(loc, data, format)?;
-        let r_id = self.worksheets_rel.borrow_mut().get_mut(&self.id).unwrap().next_id();
-        self.worksheets_rel.borrow_mut().get_mut(&self.id).unwrap().add_hyperlink(r_id, url);
-        self.worksheets.borrow_mut().get_mut(&self.id).unwrap().add_hyperlink(loc, r_id);
+        let r_id = self.worksheet_rel.next_id();
+        self.worksheet_rel.add_hyperlink(r_id, url);
+        self.worksheet.add_hyperlink(loc, r_id);
         Ok(())
     }
 
     fn merge_range_all<L: LocationRange, T: CellDisplay + CellValue>(&mut self, loc: L, data: T, format: Option<&Format>) -> SheetResult<()> {
         let (first_row, first_col, last_row, last_col) = loc.to_locations();
-        {
-            let worksheets = &mut self.worksheets.borrow_mut();
-            let worksheet = worksheets.get_mut(&self.id).unwrap();
-            worksheet.add_merge_cell(first_row, first_col, last_row, last_col);
-        }
+        let worksheet = &mut self.worksheet;
+        worksheet.add_merge_cell(first_row, first_col, last_row, last_col);
         self.write_display_all(&(first_row, first_col), data, format)?;
         Ok(())
     }

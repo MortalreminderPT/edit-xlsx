@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use crate::api::cell::location::Location;
+use crate::xml::worksheet::sheet_views::sheetview::selection::ActivePane;
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub(crate) struct Pane {
@@ -15,12 +17,25 @@ pub(crate) struct Pane {
 }
 
 impl Pane {
-    pub(crate) fn set_freeze_panes(&mut self, loc_ref: &str) {
-        let mut top_left_cell = self.top_left_cell.take().unwrap_or_default();
-        top_left_cell = loc_ref.to_string();
-        self.x_split = Some(1);
-        self.y_split = Some(1);
-        self.state = Some("frozen".to_string());
-        self.top_left_cell = Some(top_left_cell);
+    pub(crate) fn from_location<L: Location>(loc: L) -> Pane {
+        let (row, col) = loc.to_location();
+        Pane {
+            x_split: Some(row - 1),
+            y_split: Some(col - 1),
+            top_left_cell: Some(loc.to_ref()),
+            active_pane: Some(String::from("bottomRight")),
+            state: Some(String::from("frozen")),
+        }
+    }
+
+    pub(crate) fn default_pane<L: Location>(active_pane: ActivePane<L>) -> Self {
+        let (y_split, x_split) = active_pane.get_split();
+        Self {
+            x_split,
+            y_split,
+            top_left_cell: active_pane.get_sqref(),
+            active_pane: Some(String::from(active_pane.get_pane())),
+            state: Some(String::from("frozen")),
+        }
     }
 }

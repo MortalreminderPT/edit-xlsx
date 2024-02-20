@@ -1,6 +1,7 @@
 mod sheetview;
 
 use serde::{Deserialize, Serialize};
+use crate::api::cell::location::Location;
 use self::sheetview::SheetView;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -34,7 +35,7 @@ impl SheetViews {
         self.sheet_view[0].set_selection(loc_ref);
     }
 
-    pub(crate) fn set_freeze_panes(&mut self, from: &str, loc_ref: &str) {
-        self.sheet_view[0].set_freeze_panes(from, loc_ref);
+    pub(crate) fn set_freeze_panes<L: Location>(&mut self, loc: L) {
+        self.sheet_view[0].set_freeze_panes(loc);
     }
 }

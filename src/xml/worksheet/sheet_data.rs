@@ -31,7 +31,7 @@ impl SheetData {
         Ok(())
     }
 
-    pub(crate) fn max_col(&mut self) -> u32 {
+    pub(crate) fn max_col(&self) -> u32 {
         match self.rows.iter().max_by_key(|row| { row.max_col() }) {
             Some(row) => row.max_col(),
             None => 0

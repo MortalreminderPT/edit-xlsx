@@ -22,12 +22,10 @@ pub struct Workbook {
     pub(crate) file_path: String,
     closed: bool,
     workbook: Rc<RefCell<xml::workbook::Workbook>>,
-    style_sheet: Rc<RefCell<xml::style::StyleSheet>>,
+    style_sheet: Rc<RefCell<StyleSheet>>,
     workbook_rel: Rc<RefCell<Relationships>>,
-    worksheets: Rc<RefCell<HashMap<u32, WorkSheet>>>,
-    worksheets_rel: Rc<RefCell<HashMap<u32, Relationships>>>,
-    content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
-    medias: Rc<RefCell<xml::medias::Medias>>
+    content_types: Rc<RefCell<ContentTypes>>,
+    medias: Rc<RefCell<Medias>>
 }
 
 impl Workbook {
@@ -48,13 +46,13 @@ impl Workbook {
         let r_id = self.workbook_rel.borrow().next_id();
         let (id, name) = self.workbook.borrow_mut().add_worksheet(r_id)?;
         self.workbook_rel.borrow_mut().add_worksheet(r_id, id);
-        self.worksheets.borrow_mut().insert(id, WorkSheet::new());
+        // self.worksheets.borrow_mut().insert(id, WorkSheet::new());
         let sheet = Sheet::from_xml(
             id,
             &name,
+            &self.tmp_path,
             Rc::clone(&self.workbook),
-            Rc::clone(&self.worksheets),
-            Rc::clone(&self.worksheets_rel),
+            // Rc::clone(&self.worksheets_rel),
             Rc::clone(&self.style_sheet),
             Rc::clone(&self.content_types),
             Rc::clone(&self.medias),
@@ -67,13 +65,13 @@ impl Workbook {
         let r_id = self.workbook_rel.borrow().next_id();
         let id = self.workbook.borrow_mut().add_worksheet_by_name(r_id, name)?;
         self.workbook_rel.borrow_mut().add_worksheet(r_id, id);
-        self.worksheets.borrow_mut().insert(id, WorkSheet::new());
+        // self.worksheets.borrow_mut().insert(id, WorkSheet::new());
         let sheet = Sheet::from_xml(
             id,
             name,
+            &self.tmp_path,
             Rc::clone(&self.workbook),
-            Rc::clone(&self.worksheets),
-            Rc::clone(&self.worksheets_rel),
+            // Rc::clone(&self.worksheets_rel),
             Rc::clone(&self.style_sheet),
             Rc::clone(&self.content_types),
             Rc::clone(&self.medias),
@@ -134,39 +132,24 @@ impl Workbook {
         let style_sheet = StyleSheet::from_path(&tmp_path)?;
         let content_types = ContentTypes::from_path(&tmp_path)?;
         let medias = Medias::from_path(&tmp_path)?;
-        let worksheets: HashMap<u32, WorkSheet> = workbook.sheets.sheets.iter()
-            .map(|sheet| (sheet.sheet_id, WorkSheet::from_path(&tmp_path, sheet.sheet_id)))
-            .collect();
-        let worksheets_rel: HashMap<u32, Relationships> = workbook.sheets.sheets.iter()
-            .map(|sheet| (sheet.sheet_id, Relationships::from_path(&tmp_path, XlsxFileType::WorksheetRels(sheet.sheet_id)).unwrap_or_default()))
-            .collect();
         let workbook = Rc::new(RefCell::new(workbook));
         let workbook_rel = Rc::new(RefCell::new(workbook_rel));
         let style_sheet = Rc::new(RefCell::new(style_sheet));
-        let worksheets = Rc::new(RefCell::new(worksheets));
-        let worksheets_rel = Rc::new(RefCell::new(worksheets_rel));
         let content_types = Rc::new(RefCell::new(content_types));
         let medias = Rc::new(RefCell::new(medias));
 
-        let mut sheets = workbook.borrow().sheets.sheets.iter().map(
+        let sheets = workbook.borrow().sheets.sheets.iter().map(
             |sheet_xml| {
-                // let worksheet = &binding.worksheets.borrow_mut().get(&sheet_xml.sheet_id).unwrap();
                 Sheet::from_xml(
                     sheet_xml.sheet_id,
                     &sheet_xml.name,
+                    &tmp_path,
                     Rc::clone(&workbook),
-                    Rc::clone(&worksheets),
-                    Rc::clone(&worksheets_rel),
                     Rc::clone(&style_sheet),
                     Rc::clone(&content_types),
                     Rc::clone(&medias),
                 )
             }).collect::<Vec<Sheet>>();
-        sheets.iter_mut().for_each(
-            |sheet| {
-                sheet.add_drawings(&tmp_path)
-            }
-        );
         Ok(Workbook {
             sheets,
             tmp_path,
@@ -174,8 +157,6 @@ impl Workbook {
             closed: false,
             workbook: Rc::clone(&workbook),
             workbook_rel: Rc::clone(&workbook_rel),
-            worksheets: Rc::clone(&worksheets),
-            worksheets_rel: Rc::clone(&worksheets_rel),
             style_sheet: Rc::clone(&style_sheet),
             content_types: Rc::clone(&content_types),
             medias: Rc::clone(&medias),
@@ -191,11 +172,8 @@ impl Workbook {
         self.sheets.iter_mut().for_each(|s|s.save_as(&self.tmp_path).unwrap());
         // save files
         self.workbook.borrow_mut().save(&self.tmp_path);
-        self.worksheets.borrow_mut().iter_mut().for_each(|(id, worksheet)| worksheet.save(&self.tmp_path, *id));
         self.style_sheet.borrow_mut().save(&self.tmp_path);
-        // self.workbook_rel.borrow_mut().update(self.worksheets.borrow_mut().len() as u32, 1, 1);
         self.workbook_rel.borrow_mut().save(&self.tmp_path, XlsxFileType::WorkbookRels);
-        self.worksheets_rel.borrow_mut().iter_mut().for_each(|(id, worksheet_rel)| worksheet_rel.save(&self.tmp_path, XlsxFileType::WorksheetRels(*id)));
         self.content_types.borrow_mut().save(&self.tmp_path);
         self.medias.borrow_mut().save(&self.tmp_path);
         // package files
