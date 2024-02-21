@@ -14,8 +14,10 @@ pub(crate) struct Cell {
     pub(crate) loc: Sqref,
     #[serde(rename = "@s", skip_serializing_if = "Option::is_none")]
     pub(crate) style: Option<u32>,
-    #[serde(rename = "@t", default = "CellType::default", serialize_with = "CellType::se", deserialize_with = "CellType::de")]
-    pub(crate) cell_type: CellType,
+    #[serde(rename = "@t", skip_serializing_if = "Option::is_none")]
+    pub(crate) cell_type: Option<CellType>,
+    #[serde(rename = "@cm", skip_serializing_if = "Option::is_none")]
+    pub(crate) cm: Option<u8>,
     #[serde(rename = "f", skip_serializing_if = "Option::is_none")]
     pub(crate) formula: Option<Formula>,
     #[serde(rename = "v", skip_serializing_if = "Option::is_none")]
@@ -70,7 +72,8 @@ impl Cell {
         Cell {
             loc: Sqref::from_location(&loc),
             style: None,
-            cell_type: CellType::String,
+            cell_type: Some(CellType::String),
+            cm: None,
             formula: None,
             text: None,
         }
@@ -80,7 +83,8 @@ impl Cell {
         Cell {
             loc: Sqref::from_location(&loc),
             style,
-            cell_type: text.to_cell_type(),
+            cell_type: Some(text.to_cell_type()),
+            cm: None,
             formula: None,
             text: Some(text.to_display()),
         }
@@ -91,7 +95,8 @@ impl Cell {
         Cell {
             loc: Sqref::from_location(&loc),
             style,
-            cell_type: CellType::String,
+            cell_type: Some(CellType::String),
+            cm: Some(1),
             formula: Some(formula),
             text: None,
         }
@@ -99,12 +104,12 @@ impl Cell {
 }
 
 impl Cell {
-    pub(crate) fn update_by_display<T: CellDisplay + CellValue>(&mut self, text: T, style: Option<u32>) {
+    pub(crate) fn update_by_display<T: CellDisplay + CellValue>(&mut self, text: &T, style: Option<u32>) {
         self.text = Some(text.to_display());
         if let Some(style) = style {
             self.style = Some(style);
         }
-        self.cell_type = text.to_cell_type();
+        self.cell_type = Some(text.to_cell_type());
         self.formula = None;
     }
 
@@ -112,7 +117,8 @@ impl Cell {
         let formula = Formula::from_formula_type(formula, formula_type);
         self.formula = Some(formula);
         self.style = style;
-        self.cell_type = CellType::String;
-        self.text = None;
+        self.cell_type = None;
+        self.cm = Some(1);
+        self.text = Some(String::from("0"));
     }
 }

@@ -7,8 +7,8 @@ use crate::api::format::FormatFont;
 pub(crate) struct Fonts {
     #[serde(rename = "@count", default)]
     count: u32,
-    #[serde(rename(serialize = "@x14ac:knownFonts", deserialize = "@knownFonts"), default)]
-    x14ac_known_fonts: u32,
+    #[serde(rename(serialize = "@x14ac:knownFonts", deserialize = "@knownFonts"), skip_serializing_if = "Option::is_none")]
+    x14ac_known_fonts: Option<u32>,
     #[serde(rename = "font", default)]
     fonts: Vec<Font>,
 }
@@ -17,7 +17,7 @@ impl Default for Fonts {
     fn default() -> Self {
         Fonts {
             count: 1,
-            x14ac_known_fonts: 1,
+            x14ac_known_fonts: Some(1),
             fonts: vec![Default::default()],
         }
     }

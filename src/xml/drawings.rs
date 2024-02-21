@@ -28,6 +28,11 @@ impl Default for Drawings {
 }
 
 impl Drawings {
+    pub(crate) fn next_id(&self) -> u32 {
+        let id = 1 + self.drawing.len() as u32;
+        id
+    }
+
     pub(crate) fn add_drawing<L: LocationRange>(&mut self, from_to: L, r_id: u32) {
         self.drawing.push(Drawing::new(from_to, r_id));
     }
@@ -49,7 +54,7 @@ struct Drawing {
 
 impl Drawing {
     fn new<L: LocationRange>(from_to: L, r_id: u32) -> Drawing {
-        let (from_row, from_col, to_row, to_col) = from_to.to_locations();
+        let (from_row, from_col, to_row, to_col) = from_to.to_range();
         Drawing {
             edit_as: String::from("oneCell"),
             from: DrawingLocation::from_location((from_row, from_col)),

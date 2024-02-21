@@ -13,7 +13,8 @@ use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::api::format::Format;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::xml::common::{ExtLst, FromFormat, XmlnsAttrs};
+use crate::xml::common::{FromFormat, XmlnsAttrs};
+use crate::xml::extension::ExtensionList;
 use crate::xml::io::Io;
 use crate::xml::style::alignment::Alignment;
 use crate::xml::style::border::{Border, Borders};
@@ -42,7 +43,7 @@ pub(crate) struct StyleSheet {
     #[serde(rename = "tableStyles")]
     table_styles: TableStyles,
     #[serde(rename = "extLst", skip_serializing_if = "Option::is_none")]
-    ext_lst: Option<ExtLst>,
+    ext_lst: Option<ExtensionList>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -207,7 +208,6 @@ trait Rearrange<E: Clone + Eq + Hash> {
             let (_, ids) = distinct_elements[i];
             ids.iter().for_each(|&id| { index_map.insert(id, i); });
         }
-        // let distinct_elements: Vec<E> = distinct_elements.iter().map(|&e| e.0.clone()).collect();
         let elements = distinct_elements.iter().map(|&e| e.0.clone()).collect::<Vec<E>>();
         (elements, index_map)
     }

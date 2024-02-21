@@ -10,48 +10,53 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 use crate::{FormatColor, WorkbookResult, xml};
-use crate::api::cell::location::{Location, LocationRange};
+use crate::api::cell::location::Location;
 use crate::api::worksheet::col::Col;
 use crate::api::worksheet::image::_Image;
 use crate::api::worksheet::row::Row;
 use crate::api::worksheet::write::Write;
 use crate::file::XlsxFileType;
-use crate::result::{SheetError, SheetResult};
-use crate::xml::drawings::{Drawings};
+use crate::result::WorkSheetResult;
+use crate::xml::drawings::Drawings;
+use crate::xml::metadata::Metadata;
 use crate::xml::relationships::Relationships;
-use crate::xml::worksheet::WorkSheet;
+use crate::xml::worksheet::{WorkSheet as XmlWorkSheet};
 use crate::xml::workbook::Workbook;
 use crate::xml::style::StyleSheet;
 
 #[derive(Debug)]
-pub struct Sheet {
+pub struct WorkSheet {
     pub(crate) id: u32,
     pub(crate) name: String,
     workbook: Rc<RefCell<Workbook>>,
-    worksheet: WorkSheet,
+    workbook_rel: Rc<RefCell<Relationships>>,
+    worksheet: XmlWorkSheet,
     worksheet_rel: Relationships,
     style_sheet: Rc<RefCell<StyleSheet>>,
     content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
     medias: Rc<RefCell<xml::medias::Medias>>,
-    drawings: HashMap<u32, Drawings>,
-    drawings_rel: HashMap<u32, Relationships>,
+    drawings: Option<Drawings>,
+    drawings_rel: Option<Relationships>,
+    metadata: Rc<RefCell<Metadata>>,
 }
 
-impl Write for Sheet {}
-impl Row for Sheet {}
-impl Col for Sheet {}
+impl Write for WorkSheet {}
+impl Row for WorkSheet {}
+impl Col for WorkSheet {}
 
-impl Sheet {
-    pub(crate) fn save_as<P: AsRef<Path>>(&mut self, file_path: P) -> SheetResult<()> {
+impl WorkSheet {
+    pub(crate) fn save_as<P: AsRef<Path>>(&mut self, file_path: P) -> WorkSheetResult<()> {
         self.worksheet.save(&file_path, self.id);
         self.worksheet_rel.save(&file_path, XlsxFileType::WorksheetRels(self.id));
-        self.drawings.iter_mut().for_each(|(id, d)| d.save(&file_path, *id));
-        self.drawings_rel.iter_mut().for_each(|(id, d)| d.save(&file_path, XlsxFileType::DrawingRels(*id)));
+        if let Some(_) = self.worksheet_rel.get_drawings_rid() {
+            self.drawings.take().unwrap_or_default().save(&file_path, self.id);
+            self.drawings_rel.take().unwrap_or_default().save(&file_path, XlsxFileType::DrawingRels(self.id));
+        }
         Ok(())
     }
 }
 
-impl Sheet {
+impl WorkSheet {
     pub fn max_column(&self) -> u32 {
         let worksheet = &self.worksheet;
         let sheet_data = & worksheet.sheet_data;
@@ -173,22 +178,20 @@ impl Sheet {
     }
 
     pub fn set_tab_color(&mut self, tab_color: &FormatColor) {
-        let worksheet = &mut self.worksheet;
-        worksheet.set_tab_color(tab_color);
+        self.worksheet.set_tab_color(tab_color);
     }
 
-    pub fn set_background<P: AsRef<Path>>(&mut self, filename: &P) {
-        let r_id = self.add_background(filename);
-        let worksheet = &mut self.worksheet;
-        worksheet.set_background(r_id);
+    pub fn set_background<P: AsRef<Path>>(&mut self, filename: P) -> WorkSheetResult<()> {
+        let r_id = self.add_background(&filename);
+        self.worksheet.set_background(r_id);
+        Ok(())
     }
 
     pub fn insert_image<L: Location, P: AsRef<Path>>(&mut self, loc: L, filename: &P) {
         let (from_row, from_col) = loc.to_location();
         let (to_row, to_col) = (5 + from_row, 5 + from_col);
-        let r_id = self.add_drawing_image((from_row, from_col, to_row, to_col), filename);
-        let worksheet = &mut self.worksheet;
-        worksheet.insert_image(loc, r_id);
+        let r_id = self.add_drawing((from_row, from_col, to_row, to_col), filename);
+        self.worksheet.insert_image(loc, r_id);
     }
 
     pub fn id(&self) -> u32 {
@@ -196,37 +199,39 @@ impl Sheet {
     }
 }
 
-impl Sheet {
-    pub(crate) fn add_drawings(&mut self, tmp_path: &str) {
-        let worksheet_rel = &mut self.worksheet_rel;
-        let drawings_id = worksheet_rel.list_drawings();
-        drawings_id.iter().for_each(|&id| {
-            self.drawings.insert(id, Drawings::from_path(tmp_path, id).unwrap());
-        });
-    }
+impl WorkSheet {
+    // pub(crate) fn add_drawings(&mut self, tmp_path: &str) {
+        // let worksheet_rel = &mut self.worksheet_rel;
+        // let drawings_id = worksheet_rel.list_drawings();
+        // drawings_id.iter().for_each(|&id| {
+        //     self.drawings.insert(id, Drawings::from_path(tmp_path, id).unwrap());
+        // });
+    // }
 
     pub(crate) fn from_xml<P: AsRef<Path>>(
         sheet_id: u32,
         name: &str,
         tmp_path: P,
         workbook: Rc<RefCell<Workbook>>,
+        workbook_rel: Rc<RefCell<Relationships>>,
         // worksheets_rel: Rc<RefCell<HashMap<u32, Relationships>>>,
         style_sheet: Rc<RefCell<StyleSheet>>,
         content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
         medias: Rc<RefCell<xml::medias::Medias>>,
-    ) -> Sheet {
-        let worksheet = WorkSheet::from_path(&tmp_path, sheet_id).unwrap_or_default();
+        metadata: Rc<RefCell<Metadata>>,
+    ) -> WorkSheet {
+        let worksheet = XmlWorkSheet::from_path(&tmp_path, sheet_id).unwrap_or_default();
         let worksheet_rel = Relationships::from_path(&tmp_path, XlsxFileType::WorksheetRels(sheet_id)).unwrap_or_default();
-        let mut drawings = HashMap::new();
-        let mut drawings_rel = HashMap::new();
-        worksheet_rel.list_drawings().iter().for_each(|&id| {
-            drawings.insert(id, Drawings::from_path(&tmp_path, id).unwrap());
-            drawings_rel.insert(id, Relationships::from_path(&tmp_path, XlsxFileType::DrawingRels(id)).unwrap());
-        });
-        Sheet {
+        // load drawings
+        let (drawings, drawings_rel) = match worksheet_rel.get_drawings_rid() {
+            Some(drawings_id) => (Drawings::from_path(&tmp_path, drawings_id).ok(), Relationships::from_path(&tmp_path, XlsxFileType::DrawingRels(drawings_id)).ok()),
+            None => (None, None)
+        };
+        WorkSheet {
             id: sheet_id,
             name: String::from(name),
             workbook,
+            workbook_rel,
             worksheet,
             worksheet_rel,
             style_sheet,
@@ -234,6 +239,7 @@ impl Sheet {
             medias,
             drawings,
             drawings_rel,
+            metadata,
         }
     }
 }

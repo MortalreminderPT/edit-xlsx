@@ -38,7 +38,7 @@ impl Row {
         }
     }
 
-    pub(crate) fn add_display_cell<T: CellDisplay + CellValue>(&mut self, col: u32, text: T, style: Option<u32>) {
+    pub(crate) fn add_display_cell<T: CellDisplay + CellValue>(&mut self, col: u32, text: &T, style: Option<u32>) {
         // 判断新增cell位置是否已经存在别的cell
         let cell = self.get_or_new_cell(col);
         cell.update_by_display(text, style);
@@ -63,7 +63,9 @@ impl _OrderCell for Row {
         let mut r = self.cells.len();
         while r - l > 0 {
             let mid = (l + r) / 2;
-            if col < self.cells[mid].loc.col {
+            if col == self.cells[mid].loc.col {
+                return mid;
+            } else if col < self.cells[mid].loc.col {
                 r = mid;
             } else {
                 l = mid + 1;

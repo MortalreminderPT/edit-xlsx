@@ -21,9 +21,9 @@ pub enum ColError {
     ColNotFound,
 }
 
-pub type SheetResult<T> = Result<T, SheetError>;
+pub type WorkSheetResult<T> = Result<T, WorkSheetError>;
 #[derive(Debug)]
-pub enum SheetError {
+pub enum WorkSheetError {
     Io(io::Error),
     DeError(DeError),
     ZipError(ZipError),
@@ -33,20 +33,21 @@ pub enum SheetError {
     DuplicatedSheets,
 }
 
-impl From<DeError> for SheetError { fn from(err: DeError) -> SheetError { SheetError::DeError(err) } }
-impl From<io::Error> for SheetError { fn from(err: io::Error) -> SheetError {
-        SheetError::Io(err)
+impl From<DeError> for WorkSheetError { fn from(err: DeError) -> WorkSheetError { WorkSheetError::DeError(err) } }
+impl From<io::Error> for WorkSheetError { fn from(err: io::Error) -> WorkSheetError {
+        WorkSheetError::Io(err)
     } }
-impl From<RowError> for SheetError { fn from(err: RowError) -> SheetError { SheetError::RowError(err) } }
-impl From<ColError> for SheetError { fn from(err: ColError) -> SheetError { SheetError::ColError(err) } }
+impl From<RowError> for WorkSheetError { fn from(err: RowError) -> WorkSheetError { WorkSheetError::RowError(err) } }
+impl From<ColError> for WorkSheetError { fn from(err: ColError) -> WorkSheetError { WorkSheetError::ColError(err) } }
 
 pub type WorkbookResult<T> = Result<T, WorkbookError>;
 #[derive(Debug)]
 pub enum WorkbookError {
     Io(io::Error),
     ZipError(ZipError),
-    SheetError(SheetError),
+    SheetError(WorkSheetError),
     FileNotFound,
+    RelationshipError(RelationshipError),
 }
 
 impl From<io::Error> for WorkbookError {
@@ -61,8 +62,16 @@ impl From<ZipError> for WorkbookError {
     }
 }
 
-impl From<SheetError> for WorkbookError {
-    fn from(err: SheetError) -> WorkbookError {
+impl From<WorkSheetError> for WorkbookError {
+    fn from(err: WorkSheetError) -> WorkbookError {
         WorkbookError::SheetError(err)
     }
 }
+
+pub type RelationshipResult<T> = Result<T, RelationshipError>;
+
+#[derive(Debug)]
+pub enum RelationshipError {
+    UnsupportedNamespace,
+}
+

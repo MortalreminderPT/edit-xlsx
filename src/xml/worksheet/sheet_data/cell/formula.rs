@@ -13,6 +13,11 @@ pub(crate) struct Formula {
 
 impl Formula {
     pub(crate) fn from_formula_type(formula: &str, formula_type: FormulaType) -> Formula {
+        // let mut formula = formula.trim_matches(|f| f == '{' || f == '}').to_string();
+        // if formula.starts_with("=") {
+        //     formula = formula.split_off(1);
+        //     formula = format!("_xlfn._xlws.{}", formula);
+        // }
         let (formula_type, formula_ref) = formula_type.to_formula_ref();
         Formula {
             formula: formula.to_string(),

@@ -16,9 +16,9 @@ pub(crate) struct SheetView {
     pub(crate) top_left_cell: Option<String>,
     #[serde(rename = "@workbookViewId")]
     workbook_view_id: u32,
-    #[serde(rename = "pane", skip_serializing_if = "Vec::is_empty")]
+    #[serde(rename = "pane", default, skip_serializing_if = "Vec::is_empty")]
     pane: Vec<Pane>,
-    #[serde(rename = "selection", skip_serializing_if = "Vec::is_empty")]
+    #[serde(rename = "selection", default, skip_serializing_if = "Vec::is_empty")]
     selection: Vec<Selection>,
 }
 

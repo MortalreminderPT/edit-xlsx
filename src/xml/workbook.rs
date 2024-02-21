@@ -1,15 +1,18 @@
 mod bookviews;
+mod defined_names;
 
 use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::result::{SheetError, WorkbookError};
+use crate::result::{WorkSheetError, WorkbookError};
 use crate::WorkbookResult;
-use crate::xml::common::{ExtLst, XmlnsAttrs};
+use crate::xml::common::{XmlnsAttrs};
+use crate::xml::extension::ExtensionList;
 use crate::xml::io::Io;
 use crate::xml::workbook::bookviews::BookViews;
+use crate::xml::workbook::defined_names::DefinedNames;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="workbook")]
@@ -28,34 +31,35 @@ pub(crate) struct Workbook {
     pub(crate) book_views: BookViews,
     #[serde(rename = "sheets")]
     pub(crate) sheets: Sheets,
+    #[serde(rename = "definedNames", default, skip_serializing_if = "DefinedNames::is_empty")]
+    pub(crate) defined_names: DefinedNames,
     #[serde(rename = "calcPr")]
     calc_pr: CalcPr,
     #[serde(rename = "extLst", skip_serializing_if = "Option::is_none")]
-    ext_lst: Option<ExtLst>,
+    ext_lst: Option<ExtensionList>,
 }
 
 impl Workbook {
-    fn add_worksheet_r_id(&mut self, r_id: u32, id: u32, name: &str) {
-        self.sheets.sheets.push(Sheet::by_name(r_id, id, &name));
+    pub(crate) fn next_sheet_id(&self) -> u32 {
+        let max_sheet_id = self.sheets.sheets.iter().max_by_key(|s| { s.sheet_id }).unwrap().sheet_id;
+        1 + max_sheet_id
     }
 
-    pub(crate) fn add_worksheet(&mut self, r_id: u32) -> WorkbookResult<(u32, String)> {
-        let id = 1 + self.sheets.sheets.iter().max_by_key(|s| { s.sheet_id }).unwrap().sheet_id;
+    pub(crate) fn add_worksheet(&mut self, id: u32, r_id: u32) -> WorkbookResult<String> {
         let name = format!("Sheet{id}");
         if let Some(_) = self.sheets.sheets.iter().find(|s| { s.name == name }) {
-            return Err(WorkbookError::SheetError(SheetError::DuplicatedSheets));
+            return Err(WorkbookError::SheetError(WorkSheetError::DuplicatedSheets));
         }
         self.sheets.sheets.push(Sheet::by_name(r_id, id, &name));
-        Ok((id, name))
+        Ok(name)
     }
 
-    pub(crate) fn add_worksheet_by_name(&mut self, r_id: u32, name: &str) -> WorkbookResult<u32> {
-        let id = 1 + self.sheets.sheets.iter().max_by_key(|s| { s.sheet_id }).unwrap().sheet_id;
+    pub(crate) fn add_worksheet_by_name(&mut self, id: u32, r_id: u32, name: &str) -> WorkbookResult<()> { 
         if let Some(_) = self.sheets.sheets.iter().find(|s| { s.name == name }) {
-            return Err(WorkbookError::SheetError(SheetError::DuplicatedSheets));
+            return Err(WorkbookError::SheetError(WorkSheetError::DuplicatedSheets));
         }
         self.sheets.sheets.push(Sheet::by_name(r_id, id, &name));
-        Ok(id)
+        Ok(())
     }
 }
 
@@ -204,6 +208,7 @@ impl Default for Workbook {
             xr_revision_ptr: None,
             book_views: Default::default(),
             sheets: Default::default(),
+            defined_names: Default::default(),
             calc_pr: Default::default(),
             ext_lst: Some(Default::default()),
         }

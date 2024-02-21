@@ -8,3 +8,5 @@ pub(crate) mod content_types;
 pub(crate) mod medias;
 pub(crate) mod relationships;
 pub(crate) mod drawings;
+pub(crate) mod metadata;
+pub(crate) mod extension;

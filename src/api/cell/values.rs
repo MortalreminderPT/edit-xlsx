@@ -1,8 +1,9 @@
-use std::fmt::Display;
+use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{Error, Visitor};
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(untagged)]
+#[derive(Debug)]
+// #[serde(untagged)]
 pub(crate) enum CellType {
     Boolean,
     Date,
@@ -10,6 +11,13 @@ pub(crate) enum CellType {
     Number,
     SharedString,
     String,
+    Undefined,
+}
+
+impl Default for CellType {
+    fn default() -> Self {
+        CellType::Undefined
+    }
 }
 
 impl CellType {
@@ -20,27 +28,21 @@ impl CellType {
             "e" => CellType::Error,
             "n" => CellType::Number,
             "s" => CellType::SharedString,
-            _ => CellType::String,
+            "str" => CellType::String,
+            _ => CellType::Undefined,
         }
     }
 
-    pub(crate) fn default() -> CellType {
-        CellType::SharedString
-    }
-
-    fn as_str(&self) -> &str {
+    fn to_str(&self) -> &str {
         match self {
             CellType::Boolean => "b",
             CellType::Date => "d",
             CellType::Error => "e",
             CellType::Number => "n",
             CellType::SharedString => "s",
-            CellType::String => "str"
+            CellType::String => "str",
+            CellType::Undefined => "",
         }
-    }
-
-    pub(crate) fn se<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-        serializer.serialize_str(self.as_str())
     }
 
     pub(crate) fn de<'de, D>(deserializer: D) -> Result<CellType, D::Error> where D: Deserializer<'de> {
@@ -48,6 +50,33 @@ impl CellType {
         Ok(CellType::from_str(s))
     }
 }
+
+impl Serialize for CellType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        let str = self.to_str();
+        serializer.serialize_str(str)
+    }
+}
+
+impl<'de> Visitor<'de> for CellType {
+    type Value = CellType;
+
+    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+        todo!()
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> where E: Error {
+        Ok(CellType::from_str(v))
+    }
+}
+
+impl<'de> Deserialize<'de> for CellType {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        let cell_type = CellType::Undefined;
+        deserializer.deserialize_str(cell_type)
+    }
+}
+
 
 /// 可以被展示的Cell文字内容
 pub(crate) trait CellDisplay {

@@ -6,7 +6,7 @@ use crate::api::cell::location::Location;
 use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::FormatColor;
-use crate::result::{ColResult, SheetResult};
+use crate::result::{ColResult, WorkSheetResult};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
 use crate::xml::worksheet::columns::Cols;
 use crate::xml::worksheet::hyperlinks::Hyperlinks;
@@ -91,15 +91,13 @@ impl WorkSheet {
     }
 
     pub(crate) fn insert_image<L: Location>(&mut self, loc: L, r_id: u32) {
-        let mut drawing = self.drawing.take().unwrap_or_default();
+        let drawing = self.drawing.get_or_insert(Default::default());
         drawing.r_id = Rel::from_id(r_id);
-        self.drawing = Some(drawing);
     }
 
     pub(crate) fn add_hyperlink<L: Location>(&mut self, loc: &L, r_id: u32) {
-        let mut hyperlinks = self.hyperlinks.take().unwrap_or_default();
+        let hyperlinks = self.hyperlinks.get_or_insert(Default::default());
         hyperlinks.add_hyperlink(loc, r_id);
-        self.hyperlinks = Some(hyperlinks);
     }
 
     pub(crate) fn set_default_row_height(&mut self, height: f64) {
@@ -111,9 +109,8 @@ impl WorkSheet {
     }
 
     pub(crate) fn outline_settings(&mut self, visible: bool, symbols_below: bool, symbols_right: bool, auto_style: bool) {
-        let mut sheet_pr = self.sheet_pr.take().unwrap_or_default();
+        let sheet_pr = self.sheet_pr.get_or_insert(Default::default());
         sheet_pr.set_outline_pr(visible, symbols_below, symbols_right, auto_style);
-        self.sheet_pr = Some(sheet_pr);
     }
 
     pub(crate) fn ignore_errors(&mut self, error_map: HashMap<&str, String>) {
@@ -172,11 +169,11 @@ impl Default for WorkSheet {
 }
 
 impl WorkSheet {
-    pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, sheet_id: u32) -> SheetResult<WorkSheet> {
+    pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, sheet_id: u32) -> WorkSheetResult<WorkSheet> {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SheetFile(sheet_id))?;
         let mut xml = String::new();
         file.read_to_string(&mut xml)?;
-        let work_sheet = de::from_str(&xml)?;
+        let work_sheet = de::from_str(&xml).unwrap();
         Ok(work_sheet)
     }
 

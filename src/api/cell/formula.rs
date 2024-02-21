@@ -1,5 +1,5 @@
 pub(crate) enum FormulaType {
-    Formula,
+    Formula(String),
     ArrayFormula(String),
     DynamicArrayFormula(String),
 }
@@ -7,7 +7,7 @@ pub(crate) enum FormulaType {
 impl FormulaType {
     pub(crate) fn to_formula_ref(self) -> (Option<String>, Option<String>) {
         match self {
-            FormulaType::Formula => (None, None),
+            FormulaType::Formula(formula_ref) => (Some(String::from("array")), Some(formula_ref)),
             FormulaType::ArrayFormula(formula_ref) => (Some(String::from("array")), Some(formula_ref)),
             FormulaType::DynamicArrayFormula(formula_ref) => (Some(String::from("array")), Some(formula_ref)),
         }

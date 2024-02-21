@@ -1,13 +1,11 @@
-use crate::api::worksheet::Sheet;
+use crate::api::worksheet::WorkSheet;
 
 pub(crate) trait _Hyperlink {
     fn add_hyperlink(&mut self, hyperlink: &str) -> u32;
 }
 
-impl _Hyperlink for Sheet {
+impl _Hyperlink for WorkSheet {
     fn add_hyperlink(&mut self, hyperlink: &str) -> u32 {
-        let r_id = self.worksheet_rel.next_id();
-        self.worksheet_rel.add_hyperlink(r_id, hyperlink);
-        r_id
+        self.worksheet_rel.add_hyperlink(hyperlink)
     }
 }

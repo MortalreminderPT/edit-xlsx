@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use edit_xlsx::{FormatColor, Workbook, WorkbookResult, Write};
 
 fn main() -> WorkbookResult<()> {
@@ -39,10 +38,11 @@ fn main() -> WorkbookResult<()> {
             worksheet.write((i, j), format!("{i}{j}"))?;
         }
     }
-
+    println!("{}", worksheet.max_column());
+    println!("{}", worksheet.max_row());
+    let worksheet = workbook.get_worksheet_by_name("Data")?;
     worksheet.insert_image((10, 10), &"./examples/pics/ferris.png");
-
-
+    let worksheet = workbook.get_worksheet_by_name("Foglio2")?;
     worksheet.insert_image((5, 5), &"./examples/pics/rust.png");
 
 
@@ -52,8 +52,6 @@ fn main() -> WorkbookResult<()> {
     // map.insert("formula_differs", "A1:XFD1048576");
     // map.insert("eval_error", "A1:XFD1048576");
     // worksheet.ignore_errors(map);
-    println!("{}", worksheet.max_column());
-    println!("{}", worksheet.max_row());
     workbook.save_as("new_3.xlsx")?;
     Ok(())
 }

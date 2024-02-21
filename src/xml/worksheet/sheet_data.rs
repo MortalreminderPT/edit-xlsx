@@ -45,7 +45,7 @@ impl SheetData {
         }
     }
 
-    pub(crate) fn write_display<L: Location, T: CellDisplay + CellValue>(&mut self, loc: &L, text: T, style: Option<u32>) -> RowResult<()> {
+    pub(crate) fn write_display<L: Location, T: CellDisplay + CellValue>(&mut self, loc: &L, text: &T, style: Option<u32>) -> RowResult<()> {
         let (row, col) = loc.to_location();
         let row = self.get_or_new_row(row);
         row.add_display_cell(col, text, style);
@@ -74,7 +74,10 @@ impl _OrderRow for SheetData {
         let mut r = self.rows.len();
         while r - l > 0 {
             let mid = (l + r) / 2;
-            if row < self.rows[mid].row {
+            if row == self.rows[mid].row {
+                return mid;
+            }
+            else if row < self.rows[mid].row {
                 r = mid;
             } else {
                 l = mid + 1;

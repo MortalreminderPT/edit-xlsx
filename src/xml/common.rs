@@ -42,86 +42,39 @@ pub(crate) struct XmlnsAttrs {
     xr_uid: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub(crate) struct ExtLst {
-    #[serde(rename = "ext")]
-    ext: Vec<Ext>,
-}
-
-impl Default for ExtLst {
-    fn default() -> Self {
-        ExtLst {
-            ext: vec![Default::default()],
+impl XmlnsAttrs {
+    fn default_none() -> XmlnsAttrs {
+        XmlnsAttrs {
+            xmlns: None,
+            xmlns_r: None,
+            xmlns_mc: None,
+            mc_ignorable: None,
+            xmlns_x14: None,
+            xmlns_x14ac: None,
+            xmlns_x15: None,
+            xmlns_xr: None,
+            xmlns_xr6: None,
+            xmlns_xr10: None,
+            xmlns_xr2: None,
+            xmlns_xr3: None,
+            xmlns_x16r2: None,
+            xr_uid: None,
         }
     }
 }
-
-#[derive(Debug, Deserialize, Serialize)]
-struct Ext {
-    #[serde(rename = "@uri")]
-    uri: String,
-    #[serde(flatten)]
-    xmlns_attrs: XmlnsAttrs,
-    #[serde(rename(serialize = "x15:workbookPr", deserialize = "workbookPr"), skip_serializing_if = "Option::is_none")]
-    x15_workbook_pr: Option<X15WorkbookPr>,
-    #[serde(rename(serialize = "x14:slicerStyles", deserialize = "slicerStyles"), skip_serializing_if = "Option::is_none")]
-    x14_slicer_styles: Option<X14SlicerStyles>,
-    #[serde(rename(serialize = "x15:timelineStyles", deserialize = "timelineStyles"), skip_serializing_if = "Option::is_none")]
-    x15_timeline_styles: Option<X15TimelineStyles>,
-}
-
-impl Default for Ext {
-    fn default() -> Self {
-        Ext {
-            uri: String::from("{140A7094-0E35-4892-8432-C4D2E57EDEB5}"),
-            xmlns_attrs: XmlnsAttrs {
-                xmlns: None,
-                xmlns_r: None,
-                xmlns_mc: None,
-                mc_ignorable: None,
-                xmlns_x14: None,
-                xmlns_x14ac: None,
-                xmlns_x15: Some("http://schemas.microsoft.com/office/spreadsheetml/2010/11/main".to_string()),
-                xmlns_xr: None,
-                xmlns_xr6: None,
-                xmlns_xr10: None,
-                xmlns_xr2: None,
-                xmlns_xr3: None,
-                xmlns_x16r2: None,
-                xr_uid: None,
-            },
-            x15_workbook_pr: Default::default(),
-            x14_slicer_styles: None,
-            x15_timeline_styles: None,
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct X15WorkbookPr {
-    #[serde(rename = "@chartTrackingRefBase", skip_serializing_if = "Option::is_none")]
-    chart_tracking_ref_base: Option<u32>
-}
-
-impl Default for X15WorkbookPr {
-    fn default() -> Self {
-        X15WorkbookPr {
-            chart_tracking_ref_base: Some(1),
-        }
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct X14SlicerStyles {
-    #[serde(rename = "@defaultSlicerStyle", skip_serializing_if = "Option::is_none")]
-    default_slicer_style: Option<String>
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct X15TimelineStyles {
-    #[serde(rename = "@defaultTimelineStyle", skip_serializing_if = "Option::is_none")]
-    default_timeline_style: Option<String>
-}
+// 
+// impl Extension {
+//     fn default_dynamic_array() -> Self {
+//         Self {
+//             uri: "{bdbb8cdc-fa1e-496e-a857-3c3f30c029c3}".to_string(),
+//             xmlns_attrs: XmlnsAttrs::default_none(),
+//             x15_workbook_pr: None,
+//             x14_slicer_styles: None,
+//             x15_timeline_styles: None,
+//             dynamic_array_properties: Some(XdaDynamicArrayProperties::default()),
+//         }
+//     }
+// }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct Element<T: Clone + PartialEq + Eq + Hash> {

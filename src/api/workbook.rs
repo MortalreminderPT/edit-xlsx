@@ -1,23 +1,23 @@
 use std::{fs, slice};
 use std::cell::RefCell;
-use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
-use crate::api::worksheet::Sheet;
+use crate::api::worksheet::WorkSheet;
 use crate::file::XlsxFileType;
 use crate::utils::zip_util;
-use crate::result::{SheetError, WorkbookError, WorkbookResult};
+use crate::result::{WorkSheetError, WorkbookError, WorkbookResult};
+use crate::result::WorkbookError::{FileNotFound, SheetError};
 use crate::xml;
 use crate::xml::content_types::ContentTypes;
 use crate::xml::io::Io;
 use crate::xml::medias::Medias;
+use crate::xml::metadata::Metadata;
 use crate::xml::style::StyleSheet;
 use crate::xml::relationships::Relationships;
-use crate::xml::worksheet::WorkSheet;
 
 #[derive(Debug)]
 pub struct Workbook {
-    pub sheets: Vec<Sheet>,
+    pub sheets: Vec<WorkSheet>,
     pub(crate) tmp_path: String,
     pub(crate) file_path: String,
     closed: bool,
@@ -25,7 +25,8 @@ pub struct Workbook {
     style_sheet: Rc<RefCell<StyleSheet>>,
     workbook_rel: Rc<RefCell<Relationships>>,
     content_types: Rc<RefCell<ContentTypes>>,
-    medias: Rc<RefCell<Medias>>
+    medias: Rc<RefCell<Medias>>,
+    metadata: Rc<RefCell<Metadata>>,
 }
 
 impl Workbook {
@@ -35,46 +36,46 @@ impl Workbook {
         wb
     }
 
-    pub fn get_worksheet(&mut self, id: u32) -> WorkbookResult<&mut Sheet> {
+    pub fn get_worksheet(&mut self, id: u32) -> WorkbookResult<&mut WorkSheet> {
         let sheet = self.sheets
             .iter_mut()
-            .find(|sheet| sheet.id == id).ok_or(SheetError::FileNotFound)?;
+            .find(|sheet| sheet.id == id).ok_or(WorkSheetError::FileNotFound)?;
         Ok(sheet)
     }
 
-    pub fn add_worksheet(&mut self) -> WorkbookResult<&mut Sheet> {
-        let r_id = self.workbook_rel.borrow().next_id();
-        let (id, name) = self.workbook.borrow_mut().add_worksheet(r_id)?;
-        self.workbook_rel.borrow_mut().add_worksheet(r_id, id);
-        // self.worksheets.borrow_mut().insert(id, WorkSheet::new());
-        let sheet = Sheet::from_xml(
+    pub fn add_worksheet(&mut self) -> WorkbookResult<&mut WorkSheet> {
+        let id = self.workbook.borrow().next_sheet_id();
+        let r_id = self.workbook_rel.borrow_mut().add_worksheet(id);
+        let name = self.workbook.borrow_mut().add_worksheet(id, r_id)?;
+        let sheet = WorkSheet::from_xml(
             id,
             &name,
             &self.tmp_path,
             Rc::clone(&self.workbook),
-            // Rc::clone(&self.worksheets_rel),
+            Rc::clone(&self.workbook_rel),
             Rc::clone(&self.style_sheet),
             Rc::clone(&self.content_types),
             Rc::clone(&self.medias),
+            Rc::clone(&self.metadata),
         );
         self.sheets.push(sheet);
         self.get_worksheet(id)
     }
 
-    pub fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<&mut Sheet> {
-        let r_id = self.workbook_rel.borrow().next_id();
-        let id = self.workbook.borrow_mut().add_worksheet_by_name(r_id, name)?;
-        self.workbook_rel.borrow_mut().add_worksheet(r_id, id);
-        // self.worksheets.borrow_mut().insert(id, WorkSheet::new());
-        let sheet = Sheet::from_xml(
+    pub fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<&mut WorkSheet> {
+        let id = self.workbook.borrow().next_sheet_id();
+        let r_id = self.workbook_rel.borrow_mut().add_worksheet(id);
+        self.workbook.borrow_mut().add_worksheet_by_name(id, r_id, name)?;
+        let sheet = WorkSheet::from_xml(
             id,
             name,
             &self.tmp_path,
             Rc::clone(&self.workbook),
-            // Rc::clone(&self.worksheets_rel),
+            Rc::clone(&self.workbook_rel),
             Rc::clone(&self.style_sheet),
             Rc::clone(&self.content_types),
             Rc::clone(&self.medias),
+            Rc::clone(&self.metadata),
         );
         self.sheets.push(sheet);
         self.get_worksheet(id)
@@ -96,22 +97,30 @@ impl Workbook {
         Ok(())
     }
 
-    // fn define_name(&mut self, name: &str, formula: &str) -> WorkbookResult<()> {
-    //     let book_view = self.workbook.borrow_mut().book_views.book_views.get_mut(0).unwrap();
-    //     Ok(())
-    // }
+    pub fn define_name(&mut self, name: &str, value: &str) -> WorkbookResult<()> {
+        self.workbook.borrow_mut().defined_names.add_define_name(name, value, None);
+        Ok(())
+    }
 
-    pub fn worksheets(&mut self) -> slice::IterMut<Sheet> {
+    pub fn define_local_name(&mut self, name: &str, value: &str, sheet_id: u32) -> WorkbookResult<()> {
+        if sheet_id > self.sheets.len() as u32 {
+            return Err(SheetError(WorkSheetError::FileNotFound));
+        }
+        self.workbook.borrow_mut().defined_names.add_define_name(name, value, Some(sheet_id - 1));
+        Ok(())
+    }
+
+    pub fn worksheets(&mut self) -> slice::IterMut<WorkSheet> {
         self.sheets.iter_mut()
     }
 
-    pub fn get_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<&mut Sheet> {
+    pub fn get_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<&mut WorkSheet> {
         let sheet = self.sheets
             .iter_mut()
             .find(|sheet| sheet.name == name);
         match sheet {
             Some(sheet) => Ok(sheet),
-            None => Err(WorkbookError::SheetError(SheetError::FileNotFound))
+            None => Err(WorkbookError::SheetError(WorkSheetError::FileNotFound))
         }
     }
 
@@ -132,24 +141,28 @@ impl Workbook {
         let style_sheet = StyleSheet::from_path(&tmp_path)?;
         let content_types = ContentTypes::from_path(&tmp_path)?;
         let medias = Medias::from_path(&tmp_path)?;
+        let metadata = Metadata::from_path(&tmp_path).unwrap_or_default();
         let workbook = Rc::new(RefCell::new(workbook));
         let workbook_rel = Rc::new(RefCell::new(workbook_rel));
         let style_sheet = Rc::new(RefCell::new(style_sheet));
         let content_types = Rc::new(RefCell::new(content_types));
         let medias = Rc::new(RefCell::new(medias));
+        let metadata = Rc::new(RefCell::new(metadata));
 
         let sheets = workbook.borrow().sheets.sheets.iter().map(
             |sheet_xml| {
-                Sheet::from_xml(
+                WorkSheet::from_xml(
                     sheet_xml.sheet_id,
                     &sheet_xml.name,
                     &tmp_path,
                     Rc::clone(&workbook),
+                    Rc::clone(&workbook_rel),
                     Rc::clone(&style_sheet),
                     Rc::clone(&content_types),
                     Rc::clone(&medias),
+                    Rc::clone(&metadata),
                 )
-            }).collect::<Vec<Sheet>>();
+            }).collect::<Vec<WorkSheet>>();
         Ok(Workbook {
             sheets,
             tmp_path,
@@ -160,6 +173,7 @@ impl Workbook {
             style_sheet: Rc::clone(&style_sheet),
             content_types: Rc::clone(&content_types),
             medias: Rc::clone(&medias),
+            metadata,
         })
     }
 
@@ -176,6 +190,7 @@ impl Workbook {
         self.workbook_rel.borrow_mut().save(&self.tmp_path, XlsxFileType::WorkbookRels);
         self.content_types.borrow_mut().save(&self.tmp_path);
         self.medias.borrow_mut().save(&self.tmp_path);
+        self.metadata.borrow_mut().save(&self.tmp_path);
         // package files
         zip_util::zip_dir(&self.tmp_path, file_path)?;
         Ok(())
