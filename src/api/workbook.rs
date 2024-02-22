@@ -6,9 +6,11 @@ use crate::api::worksheet::WorkSheet;
 use crate::file::XlsxFileType;
 use crate::utils::zip_util;
 use crate::result::{WorkSheetError, WorkbookError, WorkbookResult};
-use crate::result::WorkbookError::{FileNotFound, SheetError};
-use crate::xml;
+use crate::result::WorkbookError::SheetError;
+use crate::{Properties, xml};
 use crate::xml::content_types::ContentTypes;
+use crate::xml::core_properties::CoreProperties;
+use crate::xml::app_properties::AppProperties;
 use crate::xml::io::Io;
 use crate::xml::medias::Medias;
 use crate::xml::metadata::Metadata;
@@ -27,6 +29,18 @@ pub struct Workbook {
     content_types: Rc<RefCell<ContentTypes>>,
     medias: Rc<RefCell<Medias>>,
     metadata: Rc<RefCell<Metadata>>,
+    core_properties: Option<CoreProperties>,
+    app_properties: Option<AppProperties>
+}
+
+impl Workbook {
+    fn get_core_properties(&mut self) -> &mut CoreProperties {
+        self.core_properties.get_or_insert(CoreProperties::from_path(&self.tmp_path).unwrap())
+    }
+
+    fn get_app_properties(&mut self) -> &mut AppProperties {
+        self.app_properties.get_or_insert(AppProperties::from_path(&self.tmp_path).unwrap())
+    }
 }
 
 impl Workbook {
@@ -131,6 +145,14 @@ impl Workbook {
         workbook.file_sharing = Some(file_sharing);
         Ok(())
     }
+
+    pub fn set_properties(&mut self, properties: &Properties) -> WorkbookResult<()> {
+        let core_properties = self.get_core_properties();
+        core_properties.update_by_properties(properties);
+        let app_properties = self.get_app_properties();
+        app_properties.update_by_properties(properties);
+        Ok(())
+    }
 }
 
 impl Workbook {
@@ -174,6 +196,8 @@ impl Workbook {
             content_types: Rc::clone(&content_types),
             medias: Rc::clone(&medias),
             metadata,
+            core_properties: None,
+            app_properties: None,
         })
     }
 
@@ -191,6 +215,13 @@ impl Workbook {
         self.content_types.borrow_mut().save(&self.tmp_path);
         self.medias.borrow_mut().save(&self.tmp_path);
         self.metadata.borrow_mut().save(&self.tmp_path);
+        // save if modified
+        if let Some(core_propertises) = &mut self.core_properties {
+            core_propertises.save(&self.tmp_path);
+        }
+        if let Some(app_properties) = &mut self.app_properties {
+            app_properties.save(&self.tmp_path);
+        }
         // package files
         zip_util::zip_dir(&self.tmp_path, file_path)?;
         Ok(())

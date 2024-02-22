@@ -15,6 +15,8 @@ pub enum XlsxFileType {
     Drawings(u32),
     DrawingRels(u32),
     MetaData,
+    CoreProperties,
+    AppProperties,
 }
 
 pub struct XlsxFileReader {
@@ -95,6 +97,7 @@ impl XlsxFileType {
             XlsxFileType::Medias(_) => "./xl/media",
             XlsxFileType::Drawings(_) => "./xl/drawings",
             XlsxFileType::DrawingRels(_) => "./xl/drawings/_rels",
+            XlsxFileType::CoreProperties | XlsxFileType::AppProperties => "./docProps",
         }
     }
     fn get_filename(&self) -> String {
@@ -109,7 +112,9 @@ impl XlsxFileType {
             XlsxFileType::Medias(name) => format!("{name}"),
             XlsxFileType::Drawings(id) => format!("drawing{id}.xml"),
             XlsxFileType::DrawingRels(id) => format!("drawing{id}.xml.rels"),
-            XlsxFileType::MetaData => "metadata.xml".to_string()
+            XlsxFileType::MetaData => "metadata.xml".to_string(),
+            XlsxFileType::CoreProperties => "core.xml".to_string(),
+            XlsxFileType::AppProperties => "app.xml".to_string(),
         }
     }
     pub(crate) fn get_path<P: AsRef<Path>>(&self, base_path: P) -> PathBuf {
