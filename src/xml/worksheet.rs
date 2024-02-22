@@ -73,7 +73,7 @@ impl WorkSheet {
 
     pub(crate) fn filter_column<L: Location>(&mut self, col: L, filters: &Filters) {
         let auto_filter = self.auto_filter.get_or_insert(AutoFilter::default());
-        auto_filter.add_filters(col.to_location().1 - 1, filters);
+        auto_filter.add_filters(col.to_col(), filters);
     }
 }
 

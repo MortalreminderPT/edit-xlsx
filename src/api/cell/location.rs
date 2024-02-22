@@ -9,6 +9,8 @@ pub(crate) trait Location {
     /// Convert the coordinates into a form like (1, 1)
     ///
     fn to_location(&self) -> (u32, u32);
+    fn to_col(&self) -> u32;
+    fn to_row(&self) -> u32;
 }
 
 pub(crate) trait LocationRange {
@@ -54,6 +56,15 @@ impl Location for &str {
     fn to_location(&self) -> (u32, u32) {
         to_loc(self)
     }
+
+    fn to_col(&self) -> u32 {
+        to_col(self)
+    }
+
+    fn to_row(&self) -> u32 {
+        let row = self.chars().filter(|&c| { c >= '0' && c <= '9' }).collect::<String>();
+        row.parse().unwrap()
+    }
 }
 
 impl Location for (u32, u32) {
@@ -63,6 +74,14 @@ impl Location for (u32, u32) {
 
     fn to_location(&self) -> (u32, u32) {
         *self
+    }
+
+    fn to_col(&self) -> u32 {
+        self.1
+    }
+
+    fn to_row(&self) -> u32 {
+        self.0
     }
 }
 
