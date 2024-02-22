@@ -8,6 +8,8 @@ pub(crate) struct Alignment {
     pub(crate) horizontal: Option<String>,
     #[serde(rename = "@vertical", skip_serializing_if = "Option::is_none")]
     pub(crate) vertical: Option<String>,
+    #[serde(rename = "@readingOrder", skip_serializing_if = "Option::is_none")]
+    reading_order: Option<u8>,
 }
 
 impl Default for Alignment {
@@ -15,6 +17,7 @@ impl Default for Alignment {
         Alignment {
             horizontal: None,
             vertical: None,
+            reading_order: None,
         }
     }
 }
@@ -23,14 +26,15 @@ impl FromFormat<FormatAlign> for Alignment {
     fn set_attrs_by_format(&mut self, format: &FormatAlign) {
         self.vertical = Some(String::from(format.vertical.to_str()));
         self.horizontal = Some(String::from(format.horizontal.to_str()));
+        self.reading_order = format.reading_order;
     }
 }
 
-impl Alignment {
-    pub(crate) fn new(horizontal: Option<String>, vertical: Option<String>) -> Alignment {
-        Alignment {
-            horizontal,
-            vertical,
-        }
-    }
-}
+// impl Alignment {
+//     pub(crate) fn new(horizontal: Option<String>, vertical: Option<String>) -> Alignment {
+//         Alignment {
+//             horizontal,
+//             vertical,
+//         }
+//     }
+// }

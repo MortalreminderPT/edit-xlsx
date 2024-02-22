@@ -24,7 +24,7 @@ pub(crate) struct Cell {
     pub(crate) text: Option<String>,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq)]
 pub(crate) struct Sqref {
     pub(crate) col: u32,
     pub(crate) row: u32,

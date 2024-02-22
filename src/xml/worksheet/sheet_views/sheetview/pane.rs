@@ -17,25 +17,25 @@ pub(crate) struct Pane {
 }
 
 impl Pane {
-    pub(crate) fn from_location<L: Location>(loc: L) -> Pane {
+    pub(crate) fn from_location<L: Location>(loc: L, active_pane: &str) -> Pane {
         let (row, col) = loc.to_location();
+        let (y_split, x_split) = (if row == 1 { None } else { Some(row - 1) }, if col == 1 { None } else { Some(col - 1) });
         Pane {
-            x_split: Some(row - 1),
-            y_split: Some(col - 1),
+            x_split,
+            y_split,
             top_left_cell: Some(loc.to_ref()),
-            active_pane: Some(String::from("bottomRight")),
+            active_pane: Some(String::from(active_pane)),
             state: Some(String::from("frozen")),
         }
     }
-
-    pub(crate) fn default_pane<L: Location>(active_pane: ActivePane<L>) -> Self {
-        let (y_split, x_split) = active_pane.get_split();
+    
+    pub(crate) fn from_split(x_split: u32, y_split: u32) -> Self {
         Self {
-            x_split,
-            y_split,
-            top_left_cell: active_pane.get_sqref(),
-            active_pane: Some(String::from(active_pane.get_pane())),
-            state: Some(String::from("frozen")),
+            x_split: Some(x_split),
+            y_split: Some(y_split),
+            top_left_cell: None,
+            active_pane: Some("bottomRight".to_string()),
+            state: None,
         }
     }
 }

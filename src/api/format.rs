@@ -100,4 +100,9 @@ impl<'a> Format<'a> {
         }
         self
     }
+
+    pub fn set_reading_order(mut self, reading_order: u8) -> Self {
+        self.align.reading_order = Some(reading_order);
+        self
+    }
 }

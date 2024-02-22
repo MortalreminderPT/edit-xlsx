@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
-use crate::api::cell::location::Location;
+use crate::api::cell::location::{Location, LocationRange};
 use crate::xml::worksheet::sheet_data::cell::Sqref;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Selection {
     #[serde(rename = "@pane", skip_serializing_if = "Option::is_none")]
-    pane: Option<String>,
+    pub(crate) pane: Option<String>,
     #[serde(rename = "@activeCell", skip_serializing_if = "Option::is_none")]
     active_cell: Option<Sqref>,
     #[serde(rename = "@sqref", skip_serializing_if = "Option::is_none")]
@@ -23,10 +23,23 @@ impl Default for Selection {
 }
 
 impl Selection {
-    pub(crate) fn set_selection(&mut self, loc_ref: &str) {
-        let mut sqref = self.sqref.take().unwrap_or_default();
-        sqref = String::from(loc_ref);
-        self.sqref = Some(sqref);
+    pub(crate) fn set_selection<L: LocationRange>(&mut self, loc_range: &L) {
+        // let mut sqref = self.sqref.take().unwrap_or_default();
+        // sqref = String::from(loc_ref);
+        self.active_cell = Some(Sqref::from_location(&loc_range.end_ref().as_str()));
+        self.sqref = Some(loc_range.to_range_ref());
+    }
+
+    pub(crate) fn from_loc_range<L: LocationRange>(loc_range: &L) -> Selection {
+        let mut selection = Selection::default();
+        selection.set_selection(loc_range);
+        selection
+    }
+
+    pub(crate) fn from_active_pane(pane: &str) -> Selection {
+        let mut selection = Selection::default();
+        selection.pane = Some(pane.to_string());
+        selection
     }
 
     pub(crate) fn default_pane<L: Location>(selection_pane: ActivePane<L>) -> Self {
@@ -37,8 +50,16 @@ impl Selection {
         }
     }
 
-    pub(crate) fn update_by_pane<L: Location>(&mut self, selection_pane: ActivePane<L>) {
-        self.pane = Some(String::from(selection_pane.get_pane()));
+    pub(crate) fn by_pane(pane: &str) -> Self {
+        Self {
+            pane: Some(pane.to_string()),
+            active_cell: None,
+            sqref: None,
+        }
+    }
+
+    pub(crate) fn update_by_pane(&mut self, selection_pane: &str) {
+        self.pane = Some(String::from(selection_pane));
     }
 }
 
@@ -92,7 +113,7 @@ impl<L: Location> ActivePane<L> {
     }
 
     pub(crate) fn get_split(&self) -> (Option<u32>, Option<u32>) {
-        match self {
+        let (x_split, y_split) = match self {
             ActivePane::TopRight(l) => match l {
                 Some(l) => {
                     let (_, col) = l.to_location();
@@ -114,6 +135,7 @@ impl<L: Location> ActivePane<L> {
                 },
                 None => (None, None),
             },
-        }
+        };
+        (x_split, y_split)
     }
 }

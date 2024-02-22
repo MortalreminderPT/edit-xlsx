@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 use crate::{FormatColor, WorkbookResult, xml};
-use crate::api::cell::location::Location;
+use crate::api::cell::location::{Location, LocationRange};
 use crate::api::worksheet::col::Col;
 use crate::api::worksheet::image::_Image;
 use crate::api::worksheet::row::Row;
@@ -75,7 +75,7 @@ impl WorkSheet {
     //     let worksheet = worksheets.get_mut(&self.id).unwrap();
     //     worksheet.autofit_cols();
     // }
-
+    
     pub fn get_name(&self) -> &str {
         &self.name
     }
@@ -92,6 +92,10 @@ impl WorkSheet {
         sheet_views.set_tab_selected(1);
     }
 
+    pub fn right_to_left(&mut self) {
+        self.worksheet.sheet_views.set_right_to_left(1);
+    }
+    
     pub fn set_top_left_cell<L: Location>(&mut self, loc: L) {
         let worksheet = &mut self.worksheet;
         let sheet_views = &mut worksheet.sheet_views;
@@ -104,16 +108,27 @@ impl WorkSheet {
         sheet_views.set_zoom_scale(zoom_scale);
     }
 
-    pub fn set_selection<L: Location>(&mut self, loc: L) {
+    pub fn set_selection<L: LocationRange>(&mut self, loc_range: L) -> WorkSheetResult<()> {
         let worksheet = &mut self.worksheet;
         let sheet_views = &mut worksheet.sheet_views;
-        sheet_views.set_selection(loc.to_ref());
+        sheet_views.set_selection(&loc_range);
+        Ok(())
     }
 
-    pub fn freeze_panes<L: Location>(&mut self, loc: L) {
+    pub fn freeze_panes<L: Location>(&mut self, loc: L) -> WorkSheetResult<()> {
         let worksheet = &mut self.worksheet;
         let sheet_views = &mut worksheet.sheet_views;
         sheet_views.set_freeze_panes(loc);
+        Ok(())
+    }
+
+    pub fn split_panes(&mut self, width: f64, height: f64) -> WorkSheetResult<()> {
+        let width = (420.0 + width * 120.0) as u32;
+        let height = (280.0 + height * 20.0) as u32;
+        let worksheet = &mut self.worksheet;
+        let sheet_views = &mut worksheet.sheet_views;
+        sheet_views.split_panes(width, height);
+        Ok(())
     }
 
     pub fn set_default_row(&mut self, height: f64) {

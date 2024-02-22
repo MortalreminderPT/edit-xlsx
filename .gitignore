@@ -4,5 +4,3 @@
 *.xlsx
 /test
 !/resource/new.xlsx
-!/examples/**/*.zip
-!/examples/**/*.xlsx

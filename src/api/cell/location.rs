@@ -36,6 +36,14 @@ pub(crate) trait LocationRange {
     /// Convert the row coordinates to a form such as (1,2)
     ///
     fn to_col_range(&self) -> (u32, u32);
+    ///
+    /// Get the start point of range
+    ///
+    fn start_ref(&self) -> String;
+    ///
+    /// Get the end point of range
+    ///
+    fn end_ref(&self) -> String;
 }
 
 impl Location for &str {
@@ -97,6 +105,16 @@ impl LocationRange for &str {
         let end_col = locs.1.chars().filter(|&c| c >= 'A' && c <= 'Z').collect::<String>();
         (to_col(&start_col), to_col(&end_col))
     }
+
+    fn start_ref(&self) -> String {
+        let locs = self.split_once(':').unwrap();
+        locs.0.to_string()
+    }
+
+    fn end_ref(&self) -> String {
+        let locs = self.split_once(':').unwrap();
+        locs.1.to_string()
+    }
 }
 
 impl LocationRange for (u32, u32, u32, u32) {
@@ -122,5 +140,13 @@ impl LocationRange for (u32, u32, u32, u32) {
 
     fn to_col_range(&self) -> (u32, u32) {
         (self.1, self.3)
+    }
+
+    fn start_ref(&self) -> String {
+        format!("{}{}", to_col_name(self.1), self.0)
+    }
+
+    fn end_ref(&self) -> String {
+        format!("{}{}", to_col_name(self.3), self.2)
     }
 }

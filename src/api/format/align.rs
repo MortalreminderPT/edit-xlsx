@@ -24,13 +24,15 @@ impl FormatAlignType {
 pub struct FormatAlign {
     pub(crate) horizontal: FormatAlignType,
     pub(crate) vertical: FormatAlignType,
+    pub(crate) reading_order: Option<u8>,
 }
 
 impl Default for FormatAlign {
     fn default() -> Self {
         Self {
-            horizontal: FormatAlignType::Left,
+            horizontal: FormatAlignType::Right,
             vertical: FormatAlignType::Bottom,
+            reading_order: None,
         }
     }
 }
