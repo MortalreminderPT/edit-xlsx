@@ -2,12 +2,13 @@ use std::collections::HashMap;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
-use crate::api::cell::location::Location;
+use crate::api::cell::location::{Location, LocationRange};
 use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::FormatColor;
+use crate::{Filters, FormatColor};
 use crate::result::{ColResult, WorkSheetResult};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
+use crate::xml::worksheet::auto_filter::AutoFilter;
 use crate::xml::worksheet::columns::Cols;
 use crate::xml::worksheet::hyperlinks::Hyperlinks;
 use crate::xml::worksheet::ignore_errors::IgnoredErrors;
@@ -27,6 +28,7 @@ mod columns;
 mod ignore_errors;
 mod hyperlinks;
 mod page_margins;
+mod auto_filter;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="worksheet")]
@@ -51,6 +53,8 @@ pub(crate) struct WorkSheet {
     phonetic_pr: Option<PhoneticPr>,
     #[serde(rename = "hyperlinks", skip_serializing_if = "Option::is_none")]
     hyperlinks: Option<Hyperlinks>,
+    #[serde(rename = "autoFilter", skip_serializing_if = "Option::is_none")]
+    auto_filter: Option<AutoFilter>,
     #[serde(rename = "pageMargins")]
     page_margins: PageMargins,
     #[serde(rename = "ignoredErrors", skip_serializing_if = "Option::is_none")]
@@ -59,6 +63,18 @@ pub(crate) struct WorkSheet {
     drawing: Option<Drawing>,
     #[serde(rename = "picture", skip_serializing_if = "Option::is_none")]
     picture: Option<Picture>,
+}
+
+impl WorkSheet {
+    pub(crate) fn autofilter<L: LocationRange>(&mut self, loc_range: L) {
+        let auto_filter = self.auto_filter.get_or_insert(AutoFilter::default());
+        auto_filter.sqref = loc_range.to_range_ref();
+    }
+
+    pub(crate) fn filter_column<L: Location>(&mut self, col: L, filters: &Filters) {
+        let auto_filter = self.auto_filter.get_or_insert(AutoFilter::default());
+        auto_filter.add_filters(col.to_location().1 - 1, filters);
+    }
 }
 
 impl WorkSheet {
@@ -164,6 +180,7 @@ impl Default for WorkSheet {
             picture: None,
             hyperlinks: None,
             drawing: None,
+            auto_filter: None,
         }
     }
 }

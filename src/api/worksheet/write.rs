@@ -110,7 +110,6 @@ impl _Write for WorkSheet {
         if let Some(format) = format {
             style = Some(self.add_format(format));
         }
-        // let worksheets = &mut self.worksheets.borrow_mut();
         let worksheet = &mut self.worksheet;
         let sheet_data = &mut worksheet.sheet_data;
         sheet_data.write_display(loc, data, style)?;

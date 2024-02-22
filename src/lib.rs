@@ -13,5 +13,7 @@ pub use api::format::FormatColor;
 pub use api::worksheet::write::Write;
 pub use api::worksheet::row::Row;
 pub use api::worksheet::col::Col;
+pub use api::filter::Filter;
+pub use api::filter::Filters;
 pub use result::WorkbookResult;
 pub use result::WorkSheetResult;

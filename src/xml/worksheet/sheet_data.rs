@@ -19,16 +19,23 @@ impl SheetData {
     pub(crate) fn set_row(&mut self, row: u32, height: f64, style: Option<u32>) -> RowResult<()> {
         let row = self.get_or_new_row(row);
         row.height = Some(height);
-        if let None = row.custom_height {
-            row.custom_height = Some(1);
-        }
+        // if let None = row.custom_height {
+        //     row.custom_height = Some(1);
+        // }
+        row.custom_height = Some(1);
         if let Some(style) = style {
             row.style = Some(style);
-            if let None = row.custom_format {
-                row.custom_format = Some(1);
-            }
+            // if let None = row.custom_format {
+            //     row.custom_format = Some(1);
+            // }
+            row.custom_format = Some(1);
         }
         Ok(())
+    }
+
+    pub(crate) fn hide_row(&mut self, row: u32) {
+        let row = self.get_or_new_row(row);
+        row.hidden = Some(1);
     }
 
     pub(crate) fn max_col(&self) -> u32 {
@@ -48,6 +55,7 @@ impl SheetData {
     pub(crate) fn write_display<L: Location, T: CellDisplay + CellValue>(&mut self, loc: &L, text: &T, style: Option<u32>) -> RowResult<()> {
         let (row, col) = loc.to_location();
         let row = self.get_or_new_row(row);
+        let style = if let None = style { row.style } else { style };
         row.add_display_cell(col, text, style);
         Ok(())
     }

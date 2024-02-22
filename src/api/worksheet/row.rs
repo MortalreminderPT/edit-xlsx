@@ -10,13 +10,13 @@ pub trait Row: _Row {
     fn set_row_pixels(&mut self, row: u32, height: f64) -> WorkSheetResult<()> {
         self.set_row_all(row, 0.5 * height, None)
     }
-
     fn set_row_with_format(&mut self, row: u32, height: f64, format: &Format) -> WorkSheetResult<()> {
         self.set_row_all(row, height, Some(format))
     }
     fn set_row_pixels_with_format(&mut self, row: u32, height: f64, format: &Format) -> WorkSheetResult<()> {
         self.set_row_all(row, 0.5 * height, Some(format))
     }
+    fn hide_row(&mut self, row: u32) -> WorkSheetResult<()>;
 }
 
 pub(crate) trait _Row: _Format {

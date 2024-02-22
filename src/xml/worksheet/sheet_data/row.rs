@@ -14,9 +14,11 @@ pub(crate) struct Row {
     #[serde(rename = "@s", skip_serializing_if = "Option::is_none")]
     pub(crate) style: Option<u32>,
     #[serde(rename = "@customFormat", skip_serializing_if = "Option::is_none")]
-    pub(crate) custom_format: Option<u32>,
+    pub(crate) custom_format: Option<u8>,
     #[serde(rename = "@customHeight", skip_serializing_if = "Option::is_none")]
-    pub(crate) custom_height: Option<u32>,
+    pub(crate) custom_height: Option<u8>,
+    #[serde(rename = "@hidden", skip_serializing_if = "Option::is_none")]
+    pub(crate) hidden: Option<u8>
 }
 
 impl Row {
@@ -28,6 +30,7 @@ impl Row {
             style: None,
             custom_format: None,
             custom_height: None,
+            hidden: None,
         }
     }
 

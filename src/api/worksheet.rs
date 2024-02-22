@@ -9,7 +9,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
-use crate::{FormatColor, WorkbookResult, xml};
+use crate::{Filters, FormatColor, WorkbookResult, xml};
 use crate::api::cell::location::{Location, LocationRange};
 use crate::api::worksheet::col::Col;
 use crate::api::worksheet::image::_Image;
@@ -20,7 +20,7 @@ use crate::result::WorkSheetResult;
 use crate::xml::drawings::Drawings;
 use crate::xml::metadata::Metadata;
 use crate::xml::relationships::Relationships;
-use crate::xml::worksheet::{WorkSheet as XmlWorkSheet};
+use crate::xml::worksheet::WorkSheet as XmlWorkSheet;
 use crate::xml::workbook::Workbook;
 use crate::xml::style::StyleSheet;
 
@@ -41,7 +41,12 @@ pub struct WorkSheet {
 }
 
 impl Write for WorkSheet {}
-impl Row for WorkSheet {}
+impl Row for WorkSheet {
+    fn hide_row(&mut self, row: u32) -> WorkSheetResult<()> {
+        self.worksheet.sheet_data.hide_row(row);
+        Ok(())
+    }
+}
 impl Col for WorkSheet {}
 
 impl WorkSheet {
@@ -53,6 +58,16 @@ impl WorkSheet {
             self.drawings_rel.take().unwrap_or_default().save(&file_path, XlsxFileType::DrawingRels(self.id));
         }
         Ok(())
+    }
+}
+
+impl WorkSheet {
+    pub fn autofilter<L: LocationRange>(&mut self, loc_range: L) {
+        self.worksheet.autofilter(loc_range);
+    }
+
+    pub fn filter_column<L: Location>(&mut self, col: L, filters: &Filters) {
+        self.worksheet.filter_column(col, filters);
     }
 }
 
