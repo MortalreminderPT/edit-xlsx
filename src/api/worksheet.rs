@@ -42,10 +42,10 @@ pub struct WorkSheet {
 
 impl Write for WorkSheet {}
 impl Row for WorkSheet {
-    fn hide_row(&mut self, row: u32) -> WorkSheetResult<()> {
-        self.worksheet.sheet_data.hide_row(row);
-        Ok(())
-    }
+    // fn hide_row(&mut self, row: u32) -> WorkSheetResult<()> {
+    //     self.worksheet.sheet_data.hide_row(row);
+    //     Ok(())
+    // }
 }
 impl Col for WorkSheet {}
 

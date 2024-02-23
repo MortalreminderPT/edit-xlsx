@@ -6,6 +6,7 @@ use crate::api::cell::location::{Location, LocationRange};
 use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::{Filters, FormatColor};
+use crate::api::worksheet::col::ColSet;
 use crate::result::{ColResult, WorkSheetResult};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
 use crate::xml::worksheet::auto_filter::AutoFilter;
@@ -44,7 +45,7 @@ pub(crate) struct WorkSheet {
     #[serde(rename = "sheetFormatPr")]
     sheet_format_pr: SheetFormatPr,
     #[serde(rename = "cols", default, skip_serializing_if = "Cols::is_empty")]
-    cols: Cols,
+    pub(crate) cols: Cols,
     #[serde(rename = "sheetData", default)]
     pub(crate) sheet_data: SheetData,
     #[serde(rename = "mergeCells", skip_serializing_if = "Option::is_none")]
@@ -78,6 +79,34 @@ impl WorkSheet {
 }
 
 impl WorkSheet {
+    pub(crate) fn set_col_by_colset<R: LocationRange>(&mut self, col_range: R, col_set: &ColSet) -> ColResult<()> {
+        let (min, max) = col_range.to_col_range();
+        let col = self.cols.get_or_new_col(min, max);
+        if let Some(width) = col_set.width {
+            col.width = Some(width);
+            col.custom_width = Some(1);
+        }
+        if let Some(style) = col_set.style {
+            col.style = Some(style);
+        }
+        if let Some(hidden) = col_set.hidden {
+            col.hidden = Some(hidden)
+        }
+        if let Some(outline_level) = col_set.outline_level {
+            col.outline_level = Some(outline_level)
+        }
+        Ok(())
+    }
+
+    pub(crate) fn get_default_style<L: Location>(&self, loc: &L) -> Option<u32> {
+        let row_style = self.sheet_data.get_default_style(loc.to_row());
+        if let None = row_style {
+            let col_style = self.cols.get_default_style(loc.to_col());
+            return col_style;
+        }
+        row_style
+    }
+
     pub(crate) fn create_col(&mut self, min: u32, max: u32, width: Option<f64>, style: Option<u32>, best_fit: Option<u8>) -> ColResult<()> {
         self.cols.update_col(min, max, width, style, None, best_fit)
     }

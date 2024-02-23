@@ -185,6 +185,7 @@ impl StyleSheet {
         xf.font_id = font_id;
         xf.border_id = border_id;
         xf.fill_id = fill_id;
+        
         self.cell_xfs.add_xf(&xf)
     }
 }

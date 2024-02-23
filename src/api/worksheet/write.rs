@@ -57,21 +57,19 @@ pub trait Write: _Write {
     fn write_number_with_format<L: Location>(&mut self, loc: L, data: i32, format: &Format) -> WorkSheetResult<()> { self.write_display_all(&loc, &data, Some(format)) }
     fn write_double_with_format<L: Location>(&mut self, loc: L, data: f64, format: &Format) -> WorkSheetResult<()> { self.write_display_all(&loc, &data, Some(format)) }
     fn write_boolean_with_format<L: Location>(&mut self, loc: L, data: bool, format: &Format) -> WorkSheetResult<()> { self.write_display_all(&loc, &data, Some(format)) }
-    fn write_row_with_format<L: Location, T: CellDisplay + CellValue>(&mut self, loc: L, mut data: Vec<T>, format: &Format) -> WorkSheetResult<()> {
-        let (row, col) = loc.to_location();
-        let mut col = col + data.len() as u32 - 1;
-        while !data.is_empty() {
-            self.write_display_all(&(row, col), &data.pop().unwrap(), Some(format))?;
-            col -= 1;
+    fn write_row_with_format<L: Location, T: CellDisplay + CellValue>(&mut self, loc: L, data: Iter<'_, T>, format: &Format) -> WorkSheetResult<()> {
+        let (row, mut col) = loc.to_location();
+        for data in data {
+            self.write_display_all(&(row, col), data, Some(format))?;
+            col += 1;
         }
         Ok(())
     }
-    fn write_column_with_format<L: Location, T: CellDisplay + CellValue>(&mut self, loc: L, mut data: Vec<T>, format: &Format) -> WorkSheetResult<()> {
-        let (row, col) = loc.to_location();
-        let mut row = row + data.len() as u32 - 1;
-        while !data.is_empty() {
-            self.write_display_all(&(row, col), &data.pop().unwrap(), Some(format))?;
-            row -= 1;
+    fn write_column_with_format<L: Location, T: CellDisplay + CellValue>(&mut self, loc: L, data: Iter<'_, T>, format: &Format) -> WorkSheetResult<()> {
+        let (mut row, col) = loc.to_location();
+        for data in data {
+            self.write_display_all(&(row, col), data, Some(format))?;
+            row += 1;
         }
         Ok(())
     }
@@ -106,7 +104,7 @@ pub(crate) trait _Write: _Format + _Hyperlink {
 
 impl _Write for WorkSheet {
     fn write_display_all<L: Location, T: CellDisplay + CellValue>(&mut self, loc: &L, data: &T, format: Option<&Format>) -> WorkSheetResult<()> {
-        let mut style = None;
+        let mut style = self.worksheet.get_default_style(loc);
         if let Some(format) = format {
             style = Some(self.add_format(format));
         }

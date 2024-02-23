@@ -10,6 +10,8 @@ pub(crate) struct Alignment {
     pub(crate) vertical: Option<String>,
     #[serde(rename = "@readingOrder", skip_serializing_if = "Option::is_none")]
     reading_order: Option<u8>,
+    #[serde(rename = "@indent", skip_serializing_if = "Option::is_none")]
+    indent: Option<u8>,
 }
 
 impl Default for Alignment {
@@ -18,15 +20,21 @@ impl Default for Alignment {
             horizontal: None,
             vertical: None,
             reading_order: None,
+            indent: None,
         }
     }
 }
 
 impl FromFormat<FormatAlign> for Alignment {
     fn set_attrs_by_format(&mut self, format: &FormatAlign) {
-        self.vertical = Some(String::from(format.vertical.to_str()));
-        self.horizontal = Some(String::from(format.horizontal.to_str()));
+        if let Some(vertical) = format.vertical {
+            self.vertical = Some(String::from(vertical.to_str()));
+        }
+        if let Some(horizontal) = format.horizontal {
+            self.horizontal = Some(String::from(horizontal.to_str()));
+        }
         self.reading_order = format.reading_order;
+        self.indent = format.indent;
     }
 }
 

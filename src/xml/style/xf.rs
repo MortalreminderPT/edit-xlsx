@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use crate::api::format::FormatAlign;
 use crate::xml::style::alignment::Alignment;
 use crate::xml::common;
 
@@ -34,5 +35,9 @@ impl Xf {
             apply_alignment: 0,
             alignment: None,
         }
+    }
+    
+    pub(crate) fn updat_by_format_align(&mut self, format: &FormatAlign) {
+        
     }
 }

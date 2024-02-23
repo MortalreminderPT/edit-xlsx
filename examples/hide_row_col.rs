@@ -21,9 +21,9 @@ fn main() -> WorkbookResult<()> {
 
     // Columns can be hidden explicitly. This doesn't increase the file size..
     worksheet.hide_column("G:XFD")?;
-    
+
     // Note: hide_column will overwrite the column settings and will be overwritten by set_column
-    // worksheet.set_column("G:XFD", 1.0)?;
+    worksheet.set_column("G:XFD", 1.0)?;
 
     workbook.save_as("examples/hide_row_col.xlsx")?;
     Ok(())

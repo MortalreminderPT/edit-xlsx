@@ -11,7 +11,8 @@ fn main() -> WorkbookResult<()> {
     // Hide Sheet2. It won't be visible until it is unhidden in Excel.
     let worksheet2 = workbook.add_worksheet()?;
     worksheet2.set_column("A:A", 30.0)?;
-    worksheet2.activate();
+    // worksheet2.activate();
+    worksheet2.hide();
     worksheet2.write("A1", "Now it's my turn to find you!")?;
     // Note, you can't hide the "active" worksheet, which generally is the
     // first worksheet, since this would cause an Excel error. So, in order to hide

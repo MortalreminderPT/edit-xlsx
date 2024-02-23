@@ -94,15 +94,20 @@ impl<'a> Format<'a> {
     pub fn set_align<'b: 'a>(mut self, format_align_type: FormatAlignType) -> Self {
         match format_align_type {
             FormatAlignType::Left | FormatAlignType::Center | FormatAlignType::Right =>
-                self.align.horizontal = format_align_type,
+                self.align.horizontal = Some(format_align_type),
             FormatAlignType::Top | FormatAlignType::VerticalCenter | FormatAlignType::Bottom =>
-                self.align.vertical = format_align_type,
+                self.align.vertical = Some(format_align_type),
         }
         self
     }
 
     pub fn set_reading_order(mut self, reading_order: u8) -> Self {
         self.align.reading_order = Some(reading_order);
+        self
+    }
+
+    pub fn set_indent(mut self, indent: u8) -> Self {
+        self.align.indent = Some(indent);
         self
     }
 }
