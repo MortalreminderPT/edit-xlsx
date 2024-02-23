@@ -217,11 +217,10 @@ impl WorkSheet {
         Ok(())
     }
 
-    pub fn insert_image<L: Location, P: AsRef<Path>>(&mut self, loc: L, filename: &P) {
-        let (from_row, from_col) = loc.to_location();
-        let (to_row, to_col) = (5 + from_row, 5 + from_col);
+    pub fn insert_image<L: LocationRange, P: AsRef<Path>>(&mut self, loc_range: L,filename: &P) {
+        let (from_row, from_col, to_row, to_col) = loc_range.to_range();
         let r_id = self.add_drawing((from_row, from_col, to_row, to_col), filename);
-        self.worksheet.insert_image(loc, r_id);
+        self.worksheet.insert_image(r_id);
     }
 
     pub fn id(&self) -> u32 {

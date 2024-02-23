@@ -47,6 +47,13 @@ pub trait Col: _Col {
         self.set_col_by_colset(col_range, &col_set)?;
         Ok(())
     }
+
+    fn collapse_col<R: LocationRange>(&mut self, col_range: R) -> WorkSheetResult<()> {
+        let mut col_set = ColSet::default();
+        col_set.collapsed = Some(1);
+        self.set_col_by_colset(col_range, &col_set)?;
+        Ok(())
+    }
 }
 
 pub(crate) trait _Col: _Format {
@@ -55,7 +62,10 @@ pub(crate) trait _Col: _Format {
 
 impl _Col for WorkSheet {
     fn set_col_by_colset<R: LocationRange>(&mut self, col_range: R, col_set: &ColSet) -> WorkSheetResult<()> {
-        self.worksheet.set_col_by_colset(col_range, col_set)?;
+        // let (start, end) = col_range.to_col_range();
+        // for col in start..=end {
+            self.worksheet.set_col_by_colset(col_range, col_set)?;
+        // }
         Ok(())
     }
 }
@@ -66,4 +76,5 @@ pub(crate) struct ColSet {
     pub(crate) style: Option<u32>,
     pub(crate) outline_level: Option<u32>,
     pub(crate) hidden: Option<u8>,
+    pub(crate) collapsed: Option<u8>,
 }

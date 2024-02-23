@@ -128,7 +128,6 @@ fn main() -> WorkbookResult<()> {
     worksheet3.set_column_with_format("A:A", 10.0, &bold)?;
     worksheet3.set_column("B:G", 10.0)?;
     worksheet3.set_column_level("B:G", 1)?;
-    worksheet3.hide_column("B:G")?;
     worksheet3.set_column("H:H", 10.0)?;
     worksheet3.write_column("A2", ["North", "South", "East", "East"].iter())?;
     worksheet3.write_row("B2", [50, 20, 15, 25, 65, 80].iter())?;

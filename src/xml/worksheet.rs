@@ -95,6 +95,10 @@ impl WorkSheet {
         if let Some(outline_level) = col_set.outline_level {
             col.outline_level = Some(outline_level)
         }
+        if let Some(collapsed) = col_set.collapsed {
+            self.sheet_format_pr.set_outline_level_col(col.outline_level.unwrap_or(0) as u8);
+            col.collapsed = Some(collapsed)
+        }
         Ok(())
     }
 
@@ -107,18 +111,9 @@ impl WorkSheet {
         row_style
     }
 
-    pub(crate) fn create_col(&mut self, min: u32, max: u32, width: Option<f64>, style: Option<u32>, best_fit: Option<u8>) -> ColResult<()> {
-        self.cols.update_col(min, max, width, style, None, best_fit)
-    }
-
-    pub(crate) fn hide_col(&mut self, min: u32, max: u32, hidden: Option<u8>) -> ColResult<()> {
-        self.cols.update_col(min, max, None, None, hidden, None)
-    }
-
     pub(crate) fn add_merge_cell(&mut self, first_row: u32, first_col: u32, last_row: u32, last_col: u32) {
-        let mut merge_cells = self.merge_cells.take().unwrap_or_default();
+        let merge_cells = self.merge_cells.get_or_insert(Default::default());
         merge_cells.add_merge_cell(first_row, first_col, last_row, last_col);
-        self.merge_cells = Some(merge_cells);
     }
 
     pub(crate) fn autofit_cols(&mut self) {
@@ -130,16 +125,15 @@ impl WorkSheet {
     }
 
     pub(crate) fn set_tab_color(&mut self, tab_color: &FormatColor) {
-        let mut sheet_pr = self.sheet_pr.take().unwrap_or_default();
+        let sheet_pr = self.sheet_pr.get_or_insert(Default::default());
         sheet_pr.set_tab_color(tab_color);
-        self.sheet_pr = Some(sheet_pr);
     }
 
     pub(crate) fn set_background(&mut self, r_id: u32) {
         self.picture = Some(Picture::from_id(r_id));
     }
 
-    pub(crate) fn insert_image<L: Location>(&mut self, loc: L, r_id: u32) {
+    pub(crate) fn insert_image(&mut self, r_id: u32) {
         let drawing = self.drawing.get_or_insert(Default::default());
         drawing.r_id = Rel::from_id(r_id);
     }
