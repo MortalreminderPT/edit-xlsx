@@ -79,7 +79,11 @@ impl WorkSheet {
 
 impl WorkSheet {
     pub(crate) fn create_col(&mut self, min: u32, max: u32, width: Option<f64>, style: Option<u32>, best_fit: Option<u8>) -> ColResult<()> {
-        self.cols.add_col(min, max, width, style, best_fit)
+        self.cols.update_col(min, max, width, style, None, best_fit)
+    }
+
+    pub(crate) fn hide_col(&mut self, min: u32, max: u32, hidden: Option<u8>) -> ColResult<()> {
+        self.cols.update_col(min, max, None, None, hidden, None)
     }
 
     pub(crate) fn add_merge_cell(&mut self, first_row: u32, first_col: u32, last_row: u32, last_col: u32) {
