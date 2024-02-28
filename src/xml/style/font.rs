@@ -38,7 +38,7 @@ impl Fonts {
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct Font {
-    pub(crate) sz: Element<u8>,
+    pub(crate) sz: Element<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) color: Option<Color>,
     name: Element<String>,
@@ -59,7 +59,7 @@ pub(crate) struct Font {
 impl Default for Font {
     fn default() -> Font {
         Font {
-            sz: Element::from_val(11),
+            sz: Element::from_val(11.0),
             color: None,
             name: Element::from_val("Calibri".to_string()),
             family: None,

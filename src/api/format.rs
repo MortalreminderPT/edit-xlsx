@@ -37,6 +37,11 @@ impl<'a> Format<'a> {
     }
 
     pub fn set_size(mut self, size: u8) -> Self {
+        self.font.size = size as f64;
+        self
+    }
+
+    pub fn set_size_f64(mut self, size: f64) -> Self {
         self.font.size = size;
         self
     }

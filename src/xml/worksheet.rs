@@ -58,6 +58,10 @@ pub(crate) struct WorkSheet {
     auto_filter: Option<AutoFilter>,
     #[serde(rename = "pageMargins")]
     page_margins: PageMargins,
+    #[serde(rename = "pageSetup", skip_serializing_if = "Option::is_none")]
+    page_setup: Option<PageSetup>,
+    #[serde(rename = "autoFilter", skip_serializing_if = "Option::is_none")]
+    header_footer: Option<HeaderFooter>,
     #[serde(rename = "ignoredErrors", skip_serializing_if = "Option::is_none")]
     ignored_errors: Option<IgnoredErrors>,
     #[serde(rename = "drawing", skip_serializing_if = "Option::is_none")]
@@ -203,6 +207,8 @@ impl Default for WorkSheet {
             merge_cells: None,
             phonetic_pr: None,
             page_margins: PageMargins::default(),
+            page_setup: None,
+            header_footer: None,
             ignored_errors: None,
             picture: None,
             hyperlinks: None,
@@ -210,6 +216,19 @@ impl Default for WorkSheet {
             auto_filter: None,
         }
     }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct PageSetup {
+    #[serde(rename = "@paperSize", skip_serializing_if = "Option::is_none")]
+    paper_size: Option<u8>,
+    #[serde(rename = "@orientation", skip_serializing_if = "Option::is_none")]
+    orientation: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct HeaderFooter {
+
 }
 
 impl WorkSheet {

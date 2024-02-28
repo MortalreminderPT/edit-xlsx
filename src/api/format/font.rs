@@ -4,7 +4,7 @@ pub struct FormatFont<'a> {
     pub(crate) bold: bool,
     pub(crate) italic: bool,
     pub(crate) underline: bool,
-    pub(crate) size: u8,
+    pub(crate) size: f64,
     pub(crate) color: FormatColor<'a>,
 }
 
@@ -14,7 +14,7 @@ impl Default for FormatFont<'_> {
             bold: false,
             italic: false,
             underline: false,
-            size: 11,
+            size: 11.0,
             color: Default::default(),
         }
     }

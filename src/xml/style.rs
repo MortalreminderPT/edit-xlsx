@@ -4,8 +4,8 @@ pub(crate) mod fill;
 pub(crate) mod alignment;
 pub(crate) mod xf;
 pub(crate) mod color;
+mod num_fmt;
 
-use std::collections::HashMap;
 use std::hash::Hash;
 use std::io;
 use std::path::Path;
@@ -20,28 +20,31 @@ use crate::xml::style::alignment::Alignment;
 use crate::xml::style::border::{Border, Borders};
 use crate::xml::style::fill::{Fill, Fills};
 use crate::xml::style::font::{Font, Fonts};
+use crate::xml::style::num_fmt::NumFmts;
 use crate::xml::style::xf::Xf;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct StyleSheet {
     #[serde(flatten)]
     xmlns_attrs: XmlnsAttrs,
-    #[serde(rename = "fonts")]
-    fonts: Fonts,
-    #[serde(rename = "fills")]
-    fills: Fills,
-    #[serde(rename = "borders")]
-    borders: Borders,
-    #[serde(rename = "cellStyleXfs")]
-    cell_style_xfs: CellStyleXfs,
-    #[serde(rename = "cellXfs")]
-    cell_xfs: CellXfs,
-    #[serde(rename = "cellStyles")]
-    cell_styles: CellStyles,
-    #[serde(rename = "dxfs")]
-    dxfs: Dxfs,
-    #[serde(rename = "tableStyles")]
-    table_styles: TableStyles,
+    #[serde(rename = "numFmts", skip_serializing_if = "Option::is_none")]
+    num_fmts: Option<NumFmts>,
+    #[serde(rename = "fonts", skip_serializing_if = "Option::is_none")]
+    fonts: Option<Fonts>,
+    #[serde(rename = "fills", skip_serializing_if = "Option::is_none")]
+    fills: Option<Fills>,
+    #[serde(rename = "borders", skip_serializing_if = "Option::is_none")]
+    borders: Option<Borders>,
+    #[serde(rename = "cellStyleXfs", skip_serializing_if = "Option::is_none")]
+    cell_style_xfs: Option<CellStyleXfs>,
+    #[serde(rename = "cellXfs", skip_serializing_if = "Option::is_none")]
+    cell_xfs: Option<CellXfs>,
+    #[serde(rename = "cellStyles", skip_serializing_if = "Option::is_none")]
+    cell_styles: Option<CellStyles>,
+    #[serde(rename = "dxfs", skip_serializing_if = "Option::is_none")]
+    dxfs: Option<Dxfs>,
+    #[serde(rename = "tableStyles", skip_serializing_if = "Option::is_none")]
+    table_styles: Option<TableStyles>,
     #[serde(rename = "extLst", skip_serializing_if = "Option::is_none")]
     ext_lst: Option<ExtensionList>,
 }
@@ -158,13 +161,14 @@ impl Default for StyleSheet {
     fn default() -> Self {
         StyleSheet {
             xmlns_attrs: XmlnsAttrs::stylesheet_default(),
+            num_fmts: None,
             fonts: Default::default(),
             fills: Default::default(),
             borders: Default::default(),
-            cell_style_xfs: CellStyleXfs::default(),
+            cell_style_xfs: None, //CellStyleXfs::default(),
             cell_xfs: Default::default(),
             cell_styles: Default::default(),
-            dxfs: Dxfs::default(),
+            dxfs: None,//Dxfs::default(),
             table_styles: Default::default(),
             ext_lst: None,
         }
@@ -173,46 +177,49 @@ impl Default for StyleSheet {
 
 impl StyleSheet {
     pub(crate) fn add_format(&mut self, format: &Format) -> u32 {
+        let fonts = self.fonts.get_or_insert(Default::default());
         let font = Font::from_format(&format.font);
-        let font_id = self.fonts.add_font(&font);
+        let font_id = fonts.add_font(&font);
+        let borders = self.borders.get_or_insert(Default::default());
         let border = Border::from_format(&format.border);
-        let border_id = self.borders.add_border(&border);
+        let border_id = borders.add_border(&border);
+        let fills = self.fills.get_or_insert(Default::default());
         let fill = Fill::from_format(&format.fill);
-        let fill_id = self.fills.add_fill(&fill);
+        let fill_id = fills.add_fill(&fill);
         let mut xf = Xf::default();
         let align = Alignment::from_format(&format.align);
         xf.alignment = Some(align);
         xf.font_id = font_id;
         xf.border_id = border_id;
         xf.fill_id = fill_id;
-        
-        self.cell_xfs.add_xf(&xf)
+        let cell_xfs = self.cell_xfs.get_or_insert(Default::default());
+        cell_xfs.add_xf(&xf)
     }
 }
 
-trait Rearrange<E: Clone + Eq + Hash> {
-    fn distinct(elements: &Vec<E>) -> (Vec<E>, HashMap<usize, usize>) {
-        let mut distinct_elements = HashMap::new();
-        for i in 0..elements.len() {
-            let e = &elements[i];
-            if !distinct_elements.contains_key(e) {
-                distinct_elements.insert(e, Vec::new());
-            }
-            distinct_elements.get_mut(e).unwrap().push(i);
-        }
-        let mut index_map = HashMap::new();
-        let distinct_elements: Vec<(&E, &Vec<usize>)> = distinct_elements
-            .iter()
-            .map(|(&e, ids)| (e, ids))
-            .collect();
-        for i in 0..distinct_elements.len() {
-            let (_, ids) = distinct_elements[i];
-            ids.iter().for_each(|&id| { index_map.insert(id, i); });
-        }
-        let elements = distinct_elements.iter().map(|&e| e.0.clone()).collect::<Vec<E>>();
-        (elements, index_map)
-    }
-}
+// trait Rearrange<E: Clone + Eq + Hash> {
+//     fn distinct(elements: &Vec<E>) -> (Vec<E>, HashMap<usize, usize>) {
+//         let mut distinct_elements = HashMap::new();
+//         for i in 0..elements.len() {
+//             let e = &elements[i];
+//             if !distinct_elements.contains_key(e) {
+//                 distinct_elements.insert(e, Vec::new());
+//             }
+//             distinct_elements.get_mut(e).unwrap().push(i);
+//         }
+//         let mut index_map = HashMap::new();
+//         let distinct_elements: Vec<(&E, &Vec<usize>)> = distinct_elements
+//             .iter()
+//             .map(|(&e, ids)| (e, ids))
+//             .collect();
+//         for i in 0..distinct_elements.len() {
+//             let (_, ids) = distinct_elements[i];
+//             ids.iter().for_each(|&id| { index_map.insert(id, i); });
+//         }
+//         let elements = distinct_elements.iter().map(|&e| e.0.clone()).collect::<Vec<E>>();
+//         (elements, index_map)
+//     }
+// }
 
 impl Io<StyleSheet> for StyleSheet {
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<StyleSheet> {
