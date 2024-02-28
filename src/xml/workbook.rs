@@ -40,6 +40,10 @@ pub(crate) struct Workbook {
     ext_lst: Option<ExtensionList>,
 }
 
+unsafe impl Sync for Workbook {}
+unsafe impl Send for Workbook {}
+
+
 impl Workbook {
     pub(crate) fn next_sheet_id(&self) -> u32 {
         let max_sheet_id = self.sheets.sheets.iter().max_by_key(|s| { s.sheet_id }).unwrap().sheet_id;
@@ -225,7 +229,7 @@ impl Io<Workbook> for Workbook {
         Ok(work_book)
     }
 
-    fn save<P: AsRef<Path>>(&mut self, file_path: P) {
+    fn save<P: AsRef<Path>>(& self, file_path: P) {
         let xml = se::to_string_with_root("workbook", &self).unwrap();
         let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
         let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::WorkbookFile).unwrap();

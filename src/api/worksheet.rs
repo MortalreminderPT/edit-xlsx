@@ -31,6 +31,7 @@ pub struct WorkSheet {
     pub(crate) target: String,
     workbook: Rc<RefCell<Workbook>>,
     workbook_rel: Rc<RefCell<Relationships>>,
+    // workbook_api: Weak<& mut ApiWorkbook>,
     worksheet: XmlWorkSheet,
     worksheet_rel: Relationships,
     style_sheet: Rc<RefCell<StyleSheet>>,
@@ -51,12 +52,12 @@ impl Row for WorkSheet {
 impl Col for WorkSheet {}
 
 impl WorkSheet {
-    pub(crate) fn save_as<P: AsRef<Path>>(&mut self, file_path: P) -> WorkSheetResult<()> {
+    pub(crate) fn save_as<P: AsRef<Path>>(&self, file_path: P) -> WorkSheetResult<()> {
         self.worksheet.save(&file_path, &self.target);
         self.worksheet_rel.save(&file_path, XlsxFileType::WorksheetRels(self.id));
         if let Some(_) = self.worksheet_rel.get_drawings_rid() {
-            self.drawings.take().unwrap_or_default().save(&file_path, self.id);
-            self.drawings_rel.take().unwrap_or_default().save(&file_path, XlsxFileType::DrawingRels(self.id));
+            self.drawings.as_ref().unwrap().save(&file_path, self.id);
+            self.drawings_rel.as_ref().unwrap().save(&file_path, XlsxFileType::DrawingRels(self.id));
         }
         Ok(())
     }
@@ -245,6 +246,7 @@ impl WorkSheet {
         tmp_path: P,
         workbook: Rc<RefCell<Workbook>>,
         workbook_rel: Rc<RefCell<Relationships>>,
+        // workbook_api: Weak<& mut ApiWorkbook>,
         // worksheets_rel: Rc<RefCell<HashMap<u32, Relationships>>>,
         style_sheet: Rc<RefCell<StyleSheet>>,
         content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
@@ -264,6 +266,7 @@ impl WorkSheet {
             target: format!("{target}"), // "".to_string(),
             workbook,
             workbook_rel,
+            // workbook_api,
             worksheet,
             worksheet_rel,
             style_sheet,
