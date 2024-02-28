@@ -5,7 +5,7 @@ use crate::xml::worksheet::sheet_data::Cell;
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub(crate) struct Row {
-    #[serde(rename = "c")]
+    #[serde(rename = "c", default, skip_serializing_if = "Vec::is_empty")]
     pub(crate) cells: Vec<Cell>,
     #[serde(rename = "@r")]
     pub(crate) row: u32,

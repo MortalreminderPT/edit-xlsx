@@ -5,6 +5,7 @@ use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
+use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::result::{WorkSheetError, WorkbookError};
 use crate::WorkbookResult;
@@ -129,7 +130,7 @@ pub(crate) struct Sheet {
     #[serde(rename = "@sheetId")]
     pub(crate) sheet_id: u32,
     #[serde(rename(serialize = "@r:id", deserialize = "@id"))]
-    pub(crate) r_id: String,
+    pub(crate) r_id: Rel,
     #[serde(rename = "@state", skip_serializing_if = "Option::is_none")]
     pub(crate) state: Option<String>,
 }
@@ -139,7 +140,7 @@ impl Default for Sheet {
         Sheet {
             name: format!("sheet1"),
             sheet_id: 1,
-            r_id: format!("rId1"),
+            r_id: Rel::from_id(1),// format!("rId1"),
             state: None,
         }
     }
@@ -150,7 +151,7 @@ impl Sheet {
         Sheet {
             name: format!("Sheet{id}"),
             sheet_id: id,
-            r_id: format!("rId{r_id}"),
+            r_id: Rel::from_id(r_id), // format!("rId{r_id}"),
             state: None,
         }
     }
@@ -159,14 +160,14 @@ impl Sheet {
         Sheet {
             name: String::from(name),
             sheet_id: id,
-            r_id: format!("rId{r_id}"),
+            r_id: Rel::from_id(r_id), //format!("rId{r_id}"),
             state: None,
         }
     }
 
     pub(crate) fn change_id(&mut self, id: u32) {
         self.sheet_id = id;
-        self.r_id = format!("rId{id}");
+        self.r_id = Rel::from_id(id); //format!("rId{id}");
     }
 }
 

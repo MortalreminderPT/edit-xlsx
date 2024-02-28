@@ -6,8 +6,8 @@ use crate::api::worksheet::WorkSheet;
 use crate::file::XlsxFileType;
 use crate::utils::zip_util;
 use crate::result::{WorkSheetError, WorkbookError, WorkbookResult};
-use crate::result::WorkbookError::SheetError;
 use crate::{Properties, xml};
+use crate::api::relationship::Rel;
 use crate::xml::content_types::ContentTypes;
 use crate::xml::core_properties::CoreProperties;
 use crate::xml::app_properties::AppProperties;
@@ -59,11 +59,12 @@ impl Workbook {
 
     pub fn add_worksheet(&mut self) -> WorkbookResult<&mut WorkSheet> {
         let id = self.workbook.borrow().next_sheet_id();
-        let r_id = self.workbook_rel.borrow_mut().add_worksheet(id);
+        let (r_id, target) = self.workbook_rel.borrow_mut().add_worksheet(id);
         let name = self.workbook.borrow_mut().add_worksheet(id, r_id)?;
         let sheet = WorkSheet::from_xml(
             id,
             &name,
+            &target,
             &self.tmp_path,
             Rc::clone(&self.workbook),
             Rc::clone(&self.workbook_rel),
@@ -78,11 +79,12 @@ impl Workbook {
 
     pub fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<&mut WorkSheet> {
         let id = self.workbook.borrow().next_sheet_id();
-        let r_id = self.workbook_rel.borrow_mut().add_worksheet(id);
+        let (r_id, target) = self.workbook_rel.borrow_mut().add_worksheet(id);
         self.workbook.borrow_mut().add_worksheet_by_name(id, r_id, name)?;
         let sheet = WorkSheet::from_xml(
             id,
             name,
+            &target,
             &self.tmp_path,
             Rc::clone(&self.workbook),
             Rc::clone(&self.workbook_rel),
@@ -118,7 +120,7 @@ impl Workbook {
 
     pub fn define_local_name(&mut self, name: &str, value: &str, sheet_id: u32) -> WorkbookResult<()> {
         if sheet_id > self.sheets.len() as u32 {
-            return Err(SheetError(WorkSheetError::FileNotFound));
+            return Err(WorkbookError::SheetError(WorkSheetError::FileNotFound));
         }
         self.workbook.borrow_mut().defined_names.add_define_name(name, value, Some(sheet_id - 1));
         Ok(())
@@ -170,12 +172,14 @@ impl Workbook {
         let content_types = Rc::new(RefCell::new(content_types));
         let medias = Rc::new(RefCell::new(medias));
         let metadata = Rc::new(RefCell::new(metadata));
-
+        // let sheet_r_ids = workbook.borrow().sheets.sheets.iter().map(|s|s.r_id).collect::<Vec<Rel>>();
+        // let targets = workbook_rel.borrow().list_targets(sheet_r_ids);
         let sheets = workbook.borrow().sheets.sheets.iter().map(
             |sheet_xml| {
                 WorkSheet::from_xml(
                     sheet_xml.sheet_id,
                     &sheet_xml.name,
+                    &workbook_rel.borrow().get_target(&sheet_xml.r_id),
                     &tmp_path,
                     Rc::clone(&workbook),
                     Rc::clone(&workbook_rel),

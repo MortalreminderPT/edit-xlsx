@@ -15,11 +15,11 @@ pub(crate) struct RelationShip {
 }
 
 impl RelationShip {
-    pub(crate) fn new_sheet(r_id: u32, sheet_id: u32) -> RelationShip {
+    pub(crate) fn new_sheet(r_id: u32, target: &str) -> RelationShip {
         RelationShip {
             id: Rel::from_id(r_id),
             rel_type: RelType::Worksheets,
-            target: format!("worksheets/sheet{sheet_id}.xml"),
+            target: target.to_string(),
             target_mode: None,
         }
     }

@@ -5,9 +5,11 @@ use serde::{Deserialize, Serialize};
 use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
+use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::relationships::rel::RelationShip;
 use crate::xml::relationships::rel_type::RelType;
+use crate::xml::workbook;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct Relationships {
@@ -35,6 +37,29 @@ impl Relationships {
         self.get_rid_by_type(RelType::Drawings).first().copied()
     }
 
+    fn next_target(&self, r_type: RelType) {
+        // self.relationship.iter()
+        //     .filter(|r|r.rel_type == r_type)
+        //     .max_by_key(|r|r.id).unwrap();
+        // self.relationship.iter()
+        //     .find(|r| r.rel_type == r_type)
+        //     .map(|r| &r.target)
+        //     .unwrap();
+    }
+
+    pub(crate) fn get_target(&self, r_id: &Rel) -> &String {
+        self.relationship.iter()
+            .find(|r| r.id == *r_id)
+            .map(|r| &r.target)
+            .unwrap()
+    }
+
+    // pub(crate) fn list_targets(&self, r_ids: Vec<Rel>) -> Vec<&String> {
+    //     self.relationship.iter().filter(
+    //         |r| r_ids.contains(&r.id)
+    //     ).map(|r| &r.target).collect()
+    // }
+
     fn get_rid_by_type(&self, rel_type: RelType) -> Vec<u32> {
         self.relationship
             .iter()
@@ -50,10 +75,12 @@ impl Relationships {
             .count() > 0
     }
 
-    pub(crate) fn add_worksheet(&mut self, id: u32) -> u32 {
+    pub(crate) fn add_worksheet(&mut self, id: u32) -> (u32, String) {
         let r_id = self.next_id();
-        self.relationship.push(RelationShip::new_sheet(r_id, id));
-        r_id
+        let target = format!("worksheets/edit_xlsx_sheet{id}.xml");
+        let rel = RelationShip::new_sheet(r_id, &target);
+        self.relationship.push(rel);
+        (r_id, target)
     }
 
     pub(crate) fn add_image(&mut self, id: u32) -> u32 {
