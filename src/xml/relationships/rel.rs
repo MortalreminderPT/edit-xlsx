@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use crate::api::relationship::Rel;
 use crate::xml::relationships::rel_type::RelType;
+use crate::xml::relationships::Targets;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub(crate) struct RelationShip {
@@ -15,6 +16,16 @@ pub(crate) struct RelationShip {
 }
 
 impl RelationShip {
+    pub(crate) fn new(r_id: u32, rel_type: RelType, target: &str, target_mode: Option<String>) -> RelationShip {
+        RelationShip {
+            id: Rel::from_id(r_id),
+            rel_type,
+            target: target.to_string(),
+            target_mode,
+        }
+    }
+
+
     pub(crate) fn new_sheet(r_id: u32, target: &str) -> RelationShip {
         RelationShip {
             id: Rel::from_id(r_id),

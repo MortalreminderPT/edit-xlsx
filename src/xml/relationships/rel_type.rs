@@ -40,7 +40,7 @@ impl<'de> Deserialize<'de> for RelType {
 }
 
 impl RelType {
-    fn get_type(&self) -> &str {
+    pub(crate) fn get_type(&self) -> &str {
         match self {
             RelType::Worksheets => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet",
             RelType::Theme => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme",

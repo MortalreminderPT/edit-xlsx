@@ -61,8 +61,8 @@ impl Workbook {
     pub fn add_worksheet(&mut self) -> WorkbookResult<& mut WorkSheet> {
         let id = self.workbook.borrow().next_sheet_id();
         let (r_id, target) = self.workbook_rel.borrow_mut().add_worksheet(id);
+        // let name = self.names.next_sheet_name();
         let name = self.workbook.borrow_mut().add_worksheet(id, r_id)?;
-
         let sheet = WorkSheet::from_xml(
             id,
             &name,
@@ -295,7 +295,7 @@ impl Workbook {
                     Rc::clone(&metadata),
                 )
             }).collect::<Vec<WorkSheet>>();
-        let workbook = Workbook {
+        let mut workbook = Workbook {
             sheets,
             tmp_path,
             file_path: file_path.as_ref().to_str().unwrap().to_string(),
@@ -313,21 +313,6 @@ impl Workbook {
         // workbook.workbook_api = Rc::downgrade(&Rc::new(workbook));
         // Rc::downgrade(&Rc::new(RefCell::new(workbook)));
         Ok(workbook)
-        // Ok(Workbook {
-        //     sheets,
-        //     tmp_path,
-        //     file_path: file_path.as_ref().to_str().unwrap().to_string(),
-        //     closed: false,
-        //     workbook_api: Weak::new(),
-        //     workbook: Rc::clone(&workbook),
-        //     workbook_rel: Rc::clone(&workbook_rel),
-        //     style_sheet: Rc::clone(&style_sheet),
-        //     content_types: Rc::clone(&content_types),
-        //     medias: Rc::clone(&medias),
-        //     metadata,
-        //     core_properties: None,
-        //     app_properties: None,
-        // })
     }
 
     fn extract_tmp_dir<P: AsRef<Path>>(file_path: P) -> WorkbookResult<String> {
