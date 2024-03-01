@@ -1,9 +1,12 @@
 use std::{fs, slice, thread};
 use std::cell::RefCell;
+// use std::futures::join;
 use std::path::Path;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::thread::JoinHandle;
+use futures::executor::block_on;
+use futures::join;
 use crate::api::worksheet::WorkSheet;
 use crate::file::XlsxFileType;
 use crate::utils::zip_util;
@@ -161,125 +164,26 @@ impl Workbook {
     }
 }
 
-#[derive(Debug)]
-struct XmlHandler {
-    workbook: JoinHandle<xml::workbook::Workbook>,
-    workbook_rel: JoinHandle<Relationships>,
-    style_sheet: JoinHandle<StyleSheet>,
-    content_types: JoinHandle<ContentTypes>,
-    medias: JoinHandle<Medias>,
-    metadata: JoinHandle<Metadata>,
-}
-
-impl XmlHandler {
-    fn from_path<P: AsRef<Path>>(file_path: P) -> WorkbookResult<XmlHandler> {
-        let tmp_path = Workbook::extract_tmp_dir(&file_path)?;
-        let tmp_path = Arc::new(tmp_path);
-        Ok(XmlHandler {
-            workbook: {
-                let tmp_path = Arc::clone(&tmp_path);
-                thread::spawn(move || {
-                    xml::workbook::Workbook::from_path(&tmp_path.as_ref()).unwrap()
-                })
-            },
-            workbook_rel: {
-                let tmp_path = Arc::clone(&tmp_path);
-                thread::spawn(move || {
-                    Relationships::from_path(&tmp_path.as_ref(), XlsxFileType::WorkbookRels).unwrap()
-                })
-            },
-            style_sheet: {
-                let tmp_path = Arc::clone(&tmp_path);
-                thread::spawn(move || {
-                    StyleSheet::from_path(&tmp_path.as_ref()).unwrap()
-                })
-            },
-            content_types: {
-                let tmp_path = Arc::clone(&tmp_path);
-                thread::spawn(move || {
-                    ContentTypes::from_path(&tmp_path.as_ref()).unwrap()
-                })
-            },
-            medias: {
-                let tmp_path = Arc::clone(&tmp_path);
-                thread::spawn(move || {
-                    Medias::from_path(&tmp_path.as_ref()).unwrap()
-                })
-            },
-            metadata: {
-                let tmp_path = Arc::clone(&tmp_path);
-                thread::spawn(move || {
-                    Metadata::from_path(&tmp_path.as_ref()).unwrap_or_default()
-                })
-            },
-        })
-    }
-
-    fn save<P: AsRef<Path>>(
-        tmp_path: P,
-        workbook: &'static xml::workbook::Workbook,
-        workbook_rel: Relationships,
-        style_sheet: StyleSheet,
-        content_types: ContentTypes,
-        medias: Medias,
-        metadata: Metadata,
-    ) -> WorkbookResult<()> {
-        let tmp_path = Arc::new(tmp_path.as_ref().to_str().unwrap().to_string());
-        let mut handle = vec![];
-        {
-            let tmp_path = Arc::clone(&tmp_path);
-            handle.push(thread::spawn(move || {
-                workbook.save(tmp_path.as_ref());
-            }));
-        }
-        {
-            let tmp_path = Arc::clone(&tmp_path);
-            handle.push(thread::spawn(move || {
-                style_sheet.save(&tmp_path.as_ref());
-            }));
-        }
-        {
-            let tmp_path = Arc::clone(&tmp_path);
-            handle.push(thread::spawn(move || {
-                workbook_rel.save(tmp_path.as_ref(), XlsxFileType::WorkbookRels);
-            }));
-        }
-        {
-            let tmp_path = Arc::clone(&tmp_path);
-            handle.push(thread::spawn(move || {
-                content_types.save(tmp_path.as_ref());
-            }));
-        }
-        {
-            let tmp_path = Arc::clone(&tmp_path);
-            handle.push(thread::spawn(move || {
-                medias.save(tmp_path.as_ref());
-            }));
-        }
-        {
-            let tmp_path = Arc::clone(&tmp_path);
-            handle.push(thread::spawn(move || {
-                metadata.save(tmp_path.as_ref());
-            }));
-        }
-        for h in handle {
-            h.join().unwrap();
-        }
-        Ok(())
-    }
-}
-
 impl Workbook {
-    pub fn from_path<P: AsRef<Path>>(file_path: P) -> WorkbookResult<Workbook> {
+    async fn from_path_async<P: AsRef<Path>>(file_path: P) -> WorkbookResult<Workbook> {
         let tmp_path = Workbook::extract_tmp_dir(&file_path)?;
-        // get xmls from path
-        let xml_handler = XmlHandler::from_path(&file_path)?;
-        let workbook = Rc::new(RefCell::new(xml_handler.workbook.join().unwrap()));
-        let workbook_rel = Rc::new(RefCell::new(xml_handler.workbook_rel.join().unwrap()));
-        let style_sheet = Rc::new(RefCell::new(xml_handler.style_sheet.join().unwrap()));
-        let content_types = Rc::new(RefCell::new(xml_handler.content_types.join().unwrap()));
-        let medias = Rc::new(RefCell::new(xml_handler.medias.join().unwrap()));
-        let metadata = Rc::new(RefCell::new(xml_handler.metadata.join().unwrap()));
+        let workbook = xml::workbook::Workbook::from_path_async(&tmp_path);
+        let workbook_rel = Relationships::from_path_async(&tmp_path, XlsxFileType::WorkbookRels);
+        let style_sheet = StyleSheet::from_path_async(&tmp_path);
+        let content_types = ContentTypes::from_path_async(&tmp_path);
+        let medias = Medias::from_path_async(&tmp_path);
+        let metadata = Metadata::from_path_async(&tmp_path);
+        let (workbook, workbook_rel, style_sheet,
+            content_types, medias, metadata
+        ) = join!(workbook, workbook_rel, style_sheet, content_types, medias, metadata);
+
+        let workbook = Rc::new(RefCell::new(workbook.unwrap()));
+        let workbook_rel = Rc::new(RefCell::new(workbook_rel.unwrap()));
+        let style_sheet = Rc::new(RefCell::new(style_sheet.unwrap()));
+        let content_types = Rc::new(RefCell::new(content_types.unwrap()));
+        let medias = Rc::new(RefCell::new(medias.unwrap()));
+        let metadata = Rc::new(RefCell::new(metadata.unwrap_or_default()));
+
         let sheets = workbook.borrow().sheets.sheets.iter().map(
             |sheet_xml| {
                 WorkSheet::from_xml(
@@ -295,12 +199,12 @@ impl Workbook {
                     Rc::clone(&metadata),
                 )
             }).collect::<Vec<WorkSheet>>();
-        let mut workbook = Workbook {
+
+        let workbook = Workbook {
             sheets,
             tmp_path,
             file_path: file_path.as_ref().to_str().unwrap().to_string(),
             closed: false,
-            // workbook_api: Weak::new(),
             workbook: Rc::clone(&workbook),
             workbook_rel: Rc::clone(&workbook_rel),
             style_sheet: Rc::clone(&style_sheet),
@@ -310,34 +214,41 @@ impl Workbook {
             core_properties: None,
             app_properties: None,
         };
-        // workbook.workbook_api = Rc::downgrade(&Rc::new(workbook));
-        // Rc::downgrade(&Rc::new(RefCell::new(workbook)));
+
         Ok(workbook)
+    }
+
+    pub fn from_path<P: AsRef<Path>>(file_path: P) -> WorkbookResult<Workbook> {
+        let workbook = Self::from_path_async(file_path);
+        let workbook = block_on(workbook);
+        workbook
     }
 
     fn extract_tmp_dir<P: AsRef<Path>>(file_path: P) -> WorkbookResult<String> {
         Ok(zip_util::extract_dir(file_path)?)
     }
 
+    async fn save_async(&self) -> WorkbookResult<()> {
+        let workbook = self.workbook.borrow();
+        let workbook = workbook.save_async(&self.tmp_path);
+        let style_sheet = self.style_sheet.borrow();
+        let style_sheet = style_sheet.save_async(&self.tmp_path);
+        let workbook_rel = self.workbook_rel.borrow();
+        let workbook_rel = workbook_rel.save_async(&self.tmp_path, XlsxFileType::WorkbookRels);
+        let content_types = self.content_types.borrow();
+        let content_types = content_types.save_async(&self.tmp_path);
+        let medias = self.medias.borrow();
+        let medias = medias.save_async(&self.tmp_path);
+        let metadata = self.metadata.borrow();
+        let metadata = metadata.save_async(&self.tmp_path);
+        join!(workbook, style_sheet, workbook_rel, content_types, medias, metadata);
+        Ok(())
+    }
+
     pub fn save_as<P: AsRef<Path>>(&self, file_path: P) -> WorkbookResult<()> {
         // save sheets
         self.sheets.iter().for_each(|s| s.save_as(&self.tmp_path).unwrap());
-        // save files
-        // XmlHandler::save(&self.tmp_path,
-        //                  self.workbook.take(), //.borrow().deref(),
-        //                  self.workbook_rel.take(),
-        //                  self.style_sheet.take(),
-        //                  self.content_types.take(),
-        //                  self.medias.take(),
-        //                  self.metadata.take(),
-        // )?;
-
-        self.workbook.borrow().save(&self.tmp_path);
-        self.style_sheet.borrow().save(&self.tmp_path);
-        self.workbook_rel.borrow().save(&self.tmp_path, XlsxFileType::WorkbookRels);
-        self.content_types.borrow().save(&self.tmp_path);
-        self.medias.borrow().save(&self.tmp_path);
-        self.metadata.borrow().save(&self.tmp_path);
+        block_on(self.save_async()).unwrap();
         // save if modified
         if let Some(core_propertises) = &self.core_properties {
             core_propertises.save(&self.tmp_path);

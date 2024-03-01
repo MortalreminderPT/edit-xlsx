@@ -156,18 +156,25 @@ impl Relationships {
 }
 
 impl Relationships {
+    pub(crate) async fn from_path_async<P: AsRef<Path>>(file_path: P, rel_type: XlsxFileType) -> io::Result<Relationships> {
+        Self::from_path(file_path, rel_type)
+    }
+
+    pub(crate) async fn save_async<P: AsRef<Path>>(&self, file_path: P, rel_type: XlsxFileType) {
+        self.save(file_path, rel_type)
+    }
+
     pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, rel_type: XlsxFileType) -> io::Result<Relationships> {
         let mut file = XlsxFileReader::from_path(file_path, rel_type)?;
         let mut xml = String::new();
         file.read_to_string(&mut xml).unwrap();
         let mut rel: Relationships = de::from_str(&xml).unwrap();
         rel.relationship.iter()
-            // .filter(|r|r.rel_type == RelType::Worksheets)
-            .for_each(|r|rel.targets.add_target(&r.rel_type, &r.target));
+            .for_each(|r| rel.targets.add_target(&r.rel_type, &r.target));
         Ok(rel)
     }
 
-    pub(crate) fn save<P: AsRef<Path>>(& self, file_path: P, rel_type: XlsxFileType) {
+    pub(crate) fn save<P: AsRef<Path>>(&self, file_path: P, rel_type: XlsxFileType) {
         let xml = se::to_string_with_root("Relationships", &self).unwrap();
         let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
         let mut file = XlsxFileWriter::from_path(file_path, rel_type).unwrap();

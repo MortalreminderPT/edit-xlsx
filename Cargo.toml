@@ -16,3 +16,4 @@ zip = "0.6.6"
 serde = { version = "1.0.196", features = ["derive"] }
 quick-xml = { version = "0.31.0", features = ["serialize"] }
 walkdir = "2.4.0"
+futures = "0.3.30"
