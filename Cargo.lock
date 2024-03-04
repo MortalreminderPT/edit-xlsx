@@ -148,7 +148,7 @@ dependencies = [
 
 [[package]]
 name = "edit-xlsx"
-version = "0.3.2"
+version = "0.3.3"
 dependencies = [
  "quick-xml",
  "serde",
