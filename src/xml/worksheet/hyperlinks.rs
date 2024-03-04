@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use crate::api::cell::location::Location;
-use crate::utils::col_helper::to_ref;
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub(crate) struct Hyperlinks {
@@ -19,8 +18,14 @@ impl Hyperlinks {
 struct Hyperlink {
     #[serde(rename = "@ref")]
     hyperlink_ref: String,
-    #[serde(rename(serialize = "@r:id", deserialize = "@id"))]
-    r_id: String,
+    #[serde(rename = "@location", skip_serializing_if = "Option::is_none")]
+    location: Option<String>,
+    #[serde(rename(serialize = "@r:id", deserialize = "@id"), skip_serializing_if = "Option::is_none")]
+    r_id: Option<String>,
+    #[serde(rename = "@display", skip_serializing_if = "Option::is_none")]
+    display: Option<String>,
+    #[serde(rename = "@tooltip", skip_serializing_if = "Option::is_none")]
+    tooltip: Option<String>,
     // #[serde(rename(serialize = "@xr:uid", deserialize = "@uid"))]
     // uid: String,
 }
@@ -29,7 +34,10 @@ impl Hyperlink {
     fn new(hyperlink_ref: &str, r_id: u32) -> Self {
         Self {
             hyperlink_ref: String::from(hyperlink_ref),
-            r_id: format!("rId{r_id}"),
+            location: None,
+            display: None,
+            tooltip: None,
+            r_id: Some(format!("rId{r_id}")),
         }
     }
 }

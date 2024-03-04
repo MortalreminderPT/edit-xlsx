@@ -15,6 +15,7 @@ pub(crate) enum RelType {
     Unknown,
     MetaData,
     SharedStrings,
+    PrinterSettings
 }
 
 impl Serialize for RelType {
@@ -41,7 +42,7 @@ impl<'de> Deserialize<'de> for RelType {
 }
 
 impl RelType {
-    fn get_type(&self) -> &str {
+    pub(crate) fn get_type(&self) -> &str {
         match self {
             RelType::Worksheets => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet",
             RelType::Theme => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme",
@@ -53,6 +54,7 @@ impl RelType {
             RelType::MetaData => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sheetMetadata",
             RelType::VmlDrawing => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing",
             RelType::Comments => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments",
+            RelType::PrinterSettings => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/printerSettings",
             RelType::Unknown => "",
         }
     }
@@ -69,6 +71,7 @@ impl RelType {
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" => RelType::SharedStrings,
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing" => RelType::VmlDrawing,
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" => RelType::Comments,
+            "http://schemas.openxmlformats.org/officeDocument/2006/relationships/printerSettings" => RelType::PrinterSettings,
             &_ => RelType::Unknown
         }
     }

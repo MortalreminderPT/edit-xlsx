@@ -29,8 +29,10 @@ use crate::xml::style::StyleSheet;
 pub struct WorkSheet {
     pub(crate) id: u32,
     pub(crate) name: String,
+    pub(crate) target: String,
     workbook: Rc<RefCell<Workbook>>,
     workbook_rel: Rc<RefCell<Relationships>>,
+    // workbook_api: Weak<& mut ApiWorkbook>,
     worksheet: XmlWorkSheet,
     worksheet_rel: Relationships,
     style_sheet: Rc<RefCell<StyleSheet>>,
@@ -52,12 +54,12 @@ impl Row for WorkSheet {
 impl Col for WorkSheet {}
 
 impl WorkSheet {
-    pub(crate) fn save_as<P: AsRef<Path>>(&mut self, file_path: P) -> WorkSheetResult<()> {
-        self.worksheet.save(&file_path, self.id);
+    pub(crate) fn save_as<P: AsRef<Path>>(&self, file_path: P) -> WorkSheetResult<()> {
+        self.worksheet.save(&file_path, &self.target);
         self.worksheet_rel.save(&file_path, XlsxFileType::WorksheetRels(self.id));
         if let Some(_) = self.worksheet_rel.get_drawings_rid() {
-            self.drawings.take().unwrap_or_default().save(&file_path, self.id);
-            self.drawings_rel.take().unwrap_or_default().save(&file_path, XlsxFileType::DrawingRels(self.id));
+            self.drawings.as_ref().unwrap().save(&file_path, self.id);
+            self.drawings_rel.as_ref().unwrap().save(&file_path, XlsxFileType::DrawingRels(self.id));
         }
         if let Some(id) = self.worksheet_rel.get_vml_drawing_rid() {
             self.vml_drawing.take().unwrap().save(&file_path, id);
@@ -245,16 +247,18 @@ impl WorkSheet {
     pub(crate) fn from_xml<P: AsRef<Path>>(
         sheet_id: u32,
         name: &str,
+        target: &str,
         tmp_path: P,
         workbook: Rc<RefCell<Workbook>>,
         workbook_rel: Rc<RefCell<Relationships>>,
+        // workbook_api: Weak<& mut ApiWorkbook>,
         // worksheets_rel: Rc<RefCell<HashMap<u32, Relationships>>>,
         style_sheet: Rc<RefCell<StyleSheet>>,
         content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
         medias: Rc<RefCell<xml::medias::Medias>>,
         metadata: Rc<RefCell<Metadata>>,
     ) -> WorkSheet {
-        let worksheet = XmlWorkSheet::from_path(&tmp_path, sheet_id).unwrap_or_default();
+        let worksheet = XmlWorkSheet::from_path(&tmp_path, target).unwrap_or_default();
         let worksheet_rel = Relationships::from_path(&tmp_path, XlsxFileType::WorksheetRels(sheet_id)).unwrap_or_default();
         // load drawings
         let (drawings, drawings_rel) = match worksheet_rel.get_drawings_rid() {
@@ -268,8 +272,10 @@ impl WorkSheet {
         WorkSheet {
             id: sheet_id,
             name: String::from(name),
+            target: format!("{target}"), // "".to_string(),
             workbook,
             workbook_rel,
+            // workbook_api,
             worksheet,
             worksheet_rel,
             style_sheet,

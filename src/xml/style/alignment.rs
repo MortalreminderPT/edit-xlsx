@@ -10,6 +10,8 @@ pub(crate) struct Alignment {
     pub(crate) vertical: Option<String>,
     #[serde(rename = "@readingOrder", skip_serializing_if = "Option::is_none")]
     reading_order: Option<u8>,
+    #[serde(rename = "@wrapText", skip_serializing_if = "Option::is_none")]
+    wrap_text: Option<u8>,
     #[serde(rename = "@indent", skip_serializing_if = "Option::is_none")]
     indent: Option<u8>,
 }
@@ -20,6 +22,7 @@ impl Default for Alignment {
             horizontal: None,
             vertical: None,
             reading_order: None,
+            wrap_text: None,
             indent: None,
         }
     }

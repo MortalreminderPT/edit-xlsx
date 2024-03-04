@@ -9,8 +9,14 @@ pub mod selection;
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub(crate) struct SheetView {
+    #[serde(rename = "@showGridLines", skip_serializing_if = "Option::is_none")]
+    show_grid_lines: Option<u8>,
     #[serde(rename = "@tabSelected", skip_serializing_if = "Option::is_none")]
     tab_selected: Option<u8>,
+    #[serde(rename = "@view", skip_serializing_if = "Option::is_none")]
+    view: Option<String>,
+    #[serde(rename = "@zoomScaleNormal", skip_serializing_if = "Option::is_none")]
+    zoom_scale_normal: Option<u32>,
     #[serde(rename = "@zoomScale", skip_serializing_if = "Option::is_none")]
     zoom_scale: Option<u16>,
     #[serde(rename = "@topLeftCell", skip_serializing_if = "Option::is_none")]
