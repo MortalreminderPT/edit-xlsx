@@ -230,7 +230,7 @@ impl Io<StyleSheet> for StyleSheet {
         Ok(style_sheet)
     }
 
-    fn save<P: AsRef<Path>>(&mut self, file_path: P) {
+    fn save<P: AsRef<Path>>(&self, file_path: P) {
         let xml = se::to_string_with_root("styleSheet", &self).unwrap();
         let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
         let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::StylesFile).unwrap();
