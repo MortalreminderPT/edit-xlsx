@@ -18,6 +18,7 @@ use crate::api::worksheet::write::Write;
 use crate::file::XlsxFileType;
 use crate::result::WorkSheetResult;
 use crate::xml::drawings::Drawings;
+use crate::xml::drawings::vml_drawing::VmlDrawing;
 use crate::xml::metadata::Metadata;
 use crate::xml::relationships::Relationships;
 use crate::xml::worksheet::WorkSheet as XmlWorkSheet;
@@ -35,6 +36,7 @@ pub struct WorkSheet {
     style_sheet: Rc<RefCell<StyleSheet>>,
     content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
     medias: Rc<RefCell<xml::medias::Medias>>,
+    vml_drawing: Option<VmlDrawing>,
     drawings: Option<Drawings>,
     drawings_rel: Option<Relationships>,
     metadata: Rc<RefCell<Metadata>>,
@@ -56,6 +58,9 @@ impl WorkSheet {
         if let Some(_) = self.worksheet_rel.get_drawings_rid() {
             self.drawings.take().unwrap_or_default().save(&file_path, self.id);
             self.drawings_rel.take().unwrap_or_default().save(&file_path, XlsxFileType::DrawingRels(self.id));
+        }
+        if let Some(id) = self.worksheet_rel.get_vml_drawing_rid() {
+            self.vml_drawing.take().unwrap().save(&file_path, id);
         }
         Ok(())
     }
@@ -256,6 +261,10 @@ impl WorkSheet {
             Some(drawings_id) => (Drawings::from_path(&tmp_path, drawings_id).ok(), Relationships::from_path(&tmp_path, XlsxFileType::DrawingRels(drawings_id)).ok()),
             None => (None, None)
         };
+        let vml_drawing = match worksheet_rel.get_vml_drawing_rid() {
+            Some(vml_drawing_id) => VmlDrawing::from_path(&tmp_path, vml_drawing_id).ok(),
+            None => None
+        };
         WorkSheet {
             id: sheet_id,
             name: String::from(name),
@@ -266,6 +275,7 @@ impl WorkSheet {
             style_sheet,
             content_types,
             medias,
+            vml_drawing,
             drawings,
             drawings_rel,
             metadata,

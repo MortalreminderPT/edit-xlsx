@@ -60,6 +60,8 @@ pub(crate) struct WorkSheet {
     page_margins: PageMargins,
     #[serde(rename = "ignoredErrors", skip_serializing_if = "Option::is_none")]
     ignored_errors: Option<IgnoredErrors>,
+    #[serde(rename = "legacyDrawing", skip_serializing_if = "Option::is_none")]
+    legacy_drawing: Option<Drawing>,
     #[serde(rename = "drawing", skip_serializing_if = "Option::is_none")]
     drawing: Option<Drawing>,
     #[serde(rename = "picture", skip_serializing_if = "Option::is_none")]
@@ -208,6 +210,7 @@ impl Default for WorkSheet {
             hyperlinks: None,
             drawing: None,
             auto_filter: None,
+            legacy_drawing: None,
         }
     }
 }
