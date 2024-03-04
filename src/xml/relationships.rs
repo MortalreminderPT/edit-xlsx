@@ -1,10 +1,12 @@
 mod rel_type;
 mod rel;
 
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
+use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::relationships::rel::RelationShip;
 use crate::xml::relationships::rel_type::RelType;
@@ -15,13 +17,66 @@ pub(crate) struct Relationships {
     xmlns: String,
     #[serde(rename = "Relationship", default)]
     relationship: Vec<RelationShip>,
+    #[serde(skip)]
+    pub(crate) targets: Targets,
 }
+
+#[derive(Debug, Default)]
+struct Targets {
+    target: HashMap<String, Vec<u32>>,
+}
+
+impl Targets {
+    fn add_target(&mut self, rel_type: &RelType, name: &str) {
+        let name = Path::new(name).file_stem().unwrap().to_str().unwrap();
+        let id = name.chars().filter(|&c| c >= '0' && c <= '9').collect::<String>().parse().unwrap_or(1);
+        let mut target = self.target.get_mut(rel_type.get_type());
+        let mut vec = Vec::new();
+        let ids = target.get_or_insert(&mut vec);
+        ids.push(id);
+    }
+
+    fn next_target(&mut self, rel_type: RelType) -> String {
+        let key = rel_type.get_type();
+        let value = self.target.get_mut(key);
+        let max_id: u32 = match value {
+            None => {
+                let vec = vec![1];
+                self.target.insert(key.to_string(), vec);
+                1
+            }
+            Some(ids) => {
+                let &max_id = ids.iter().max().unwrap_or(&1);
+                ids.push(max_id + 1);
+                max_id
+            }
+        };
+        let id = max_id + 1;
+        match rel_type {
+            RelType::Worksheets => format!("worksheets/sheet{id}.xml"),
+            RelType::Theme => format!("theme/theme{id}.xml"),
+            RelType::Styles => String::from("styles.xml"),
+            RelType::Images => format!("../media/image{id}.png"),
+            RelType::Hyperlinks => { "".to_string() }
+            RelType::Drawings => format!("../drawings/drawing{id}.xml"),
+            RelType::MetaData => "metadata.xml".to_string(),
+            RelType::SharedStrings => { "".to_string() }
+            RelType::PrinterSettings => { "".to_string() }
+            RelType::Unknown => { "".to_string() }
+        }
+    }
+}
+
+unsafe impl Sync for Relationships {}
+
+unsafe impl Send for Relationships {}
 
 impl Default for Relationships {
     fn default() -> Self {
         Relationships {
             xmlns: "http://schemas.openxmlformats.org/package/2006/relationships".to_string(),
             relationship: vec![],
+            targets: Default::default(),
         }
     }
 }
@@ -34,6 +89,19 @@ impl Relationships {
     pub(crate) fn get_drawings_rid(&self) -> Option<u32> {
         self.get_rid_by_type(RelType::Drawings).first().copied()
     }
+
+    pub(crate) fn get_target(&self, r_id: &Rel) -> &String {
+        self.relationship.iter()
+            .find(|r| r.id == *r_id)
+            .map(|r| &r.target)
+            .unwrap()
+    }
+
+    // pub(crate) fn list_targets(&self, r_ids: Vec<Rel>) -> Vec<&String> {
+    //     self.relationship.iter().filter(
+    //         |r| r_ids.contains(&r.id)
+    //     ).map(|r| &r.target).collect()
+    // }
 
     fn get_rid_by_type(&self, rel_type: RelType) -> Vec<u32> {
         self.relationship
@@ -50,10 +118,12 @@ impl Relationships {
             .count() > 0
     }
 
-    pub(crate) fn add_worksheet(&mut self, id: u32) -> u32 {
+    pub(crate) fn add_worksheet(&mut self, id: u32) -> (u32, String) {
         let r_id = self.next_id();
-        self.relationship.push(RelationShip::new_sheet(r_id, id));
-        r_id
+        let target = self.targets.next_target(RelType::Worksheets);
+        let rel = RelationShip::new(r_id, RelType::Worksheets, &target, None);
+        self.relationship.push(rel);
+        (r_id, target)
     }
 
     pub(crate) fn add_image(&mut self, id: u32) -> u32 {
@@ -86,15 +156,25 @@ impl Relationships {
 }
 
 impl Relationships {
+    pub(crate) async fn from_path_async<P: AsRef<Path>>(file_path: P, rel_type: XlsxFileType) -> io::Result<Relationships> {
+        Self::from_path(file_path, rel_type)
+    }
+
+    pub(crate) async fn save_async<P: AsRef<Path>>(&self, file_path: P, rel_type: XlsxFileType) {
+        self.save(file_path, rel_type)
+    }
+
     pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, rel_type: XlsxFileType) -> io::Result<Relationships> {
         let mut file = XlsxFileReader::from_path(file_path, rel_type)?;
         let mut xml = String::new();
         file.read_to_string(&mut xml).unwrap();
-        let rel: Relationships = de::from_str(&xml).unwrap();
+        let mut rel: Relationships = de::from_str(&xml).unwrap();
+        rel.relationship.iter()
+            .for_each(|r| rel.targets.add_target(&r.rel_type, &r.target));
         Ok(rel)
     }
 
-    pub(crate) fn save<P: AsRef<Path>>(&mut self, file_path: P, rel_type: XlsxFileType) {
+    pub(crate) fn save<P: AsRef<Path>>(&self, file_path: P, rel_type: XlsxFileType) {
         let xml = se::to_string_with_root("Relationships", &self).unwrap();
         let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
         let mut file = XlsxFileWriter::from_path(file_path, rel_type).unwrap();

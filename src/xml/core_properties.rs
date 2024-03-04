@@ -83,7 +83,7 @@ impl CoreProperties {
         Ok(properties)
     }
 
-    pub(crate) fn save<P: AsRef<Path>>(&mut self, file_path: P) {
+    pub(crate) fn save<P: AsRef<Path>>(&self, file_path: P) {
         let xml = se::to_string_with_root("cp:coreProperties", &self).unwrap();
         let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
         let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::CoreProperties).unwrap();

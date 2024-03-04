@@ -2,10 +2,12 @@ use std::path::{Path, PathBuf};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::io::Io;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct Medias {
     medias: Vec<Media>
 }
+
+unsafe impl Send for Medias {}
 
 impl Medias {
     pub(crate) fn add_media<P: AsRef<Path>>(&mut self, file_path: P) -> u32 {
@@ -35,8 +37,8 @@ impl Io<Medias> for Medias {
         })
     }
 
-    fn save<P: AsRef<Path>>(&mut self, file_path: P) {
-        self.medias.iter_mut().for_each(|m| { m.save(&file_path) });
+    fn save<P: AsRef<Path>>(& self, file_path: P) {
+        self.medias.iter().for_each(|m| { m.save(&file_path) });
     }
 }
 
@@ -60,7 +62,7 @@ impl Io<Media> for Media {
         todo!()
     }
 
-    fn save<P: AsRef<Path>>(&mut self, file_path: P) {
+    fn save<P: AsRef<Path>>(& self, file_path: P) {
         XlsxFileWriter::copy_from(&file_path, XlsxFileType::Medias(format!("image{}.png", self.id)), &self.file_path).unwrap();
     }
 }
