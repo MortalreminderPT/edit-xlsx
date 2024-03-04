@@ -119,6 +119,6 @@ impl Cell {
         self.style = style;
         self.cell_type = None;
         self.cm = Some(1);
-        self.text = Some(String::from("0"));
+        self.text = None;// Some(String::from("0"));
     }
 }
