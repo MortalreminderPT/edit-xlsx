@@ -31,7 +31,7 @@ impl VmlDrawing {
         Ok(drawing)
     }
 
-    pub(crate) fn save<P: AsRef<Path>>(&mut self, file_path: P, drawing_id: u32) {
+    pub(crate) fn save<P: AsRef<Path>>(&self, file_path: P, drawing_id: u32) {
         let xml = se::to_string_with_root("xml", &self).unwrap();
         // let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
         let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::VmlDrawings(drawing_id)).unwrap();

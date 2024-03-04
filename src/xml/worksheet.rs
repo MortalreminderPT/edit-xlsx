@@ -15,6 +15,7 @@ use crate::xml::worksheet::hyperlinks::Hyperlinks;
 use crate::xml::worksheet::ignore_errors::IgnoredErrors;
 use crate::xml::worksheet::merge_cells::MergeCells;
 use crate::xml::worksheet::page_margins::PageMargins;
+use crate::xml::worksheet::row_breaks::RowBreaks;
 use crate::xml::worksheet::sheet_format::SheetFormatPr;
 use self::sheet_views::SheetViews;
 use self::sheet_data::SheetData;
@@ -30,6 +31,7 @@ mod ignore_errors;
 mod hyperlinks;
 mod page_margins;
 mod auto_filter;
+mod row_breaks;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="worksheet")]
@@ -56,8 +58,16 @@ pub(crate) struct WorkSheet {
     hyperlinks: Option<Hyperlinks>,
     #[serde(rename = "autoFilter", skip_serializing_if = "Option::is_none")]
     auto_filter: Option<AutoFilter>,
+    #[serde(rename = "printOptions", skip_serializing_if = "Option::is_none")]
+    print_options: Option<PrintOptions>,
     #[serde(rename = "pageMargins")]
     page_margins: PageMargins,
+    #[serde(rename = "pageSetup", skip_serializing_if = "Option::is_none")]
+    page_setup: Option<PageSetup>,
+    #[serde(rename = "autoFilter", skip_serializing_if = "Option::is_none")]
+    header_footer: Option<HeaderFooter>,
+    #[serde(rename = "rowBreaks", skip_serializing_if = "Option::is_none")]
+    row_breakers: Option<RowBreaks>,
     #[serde(rename = "ignoredErrors", skip_serializing_if = "Option::is_none")]
     ignored_errors: Option<IgnoredErrors>,
     #[serde(rename = "legacyDrawing", skip_serializing_if = "Option::is_none")]
@@ -205,6 +215,10 @@ impl Default for WorkSheet {
             merge_cells: None,
             phonetic_pr: None,
             page_margins: PageMargins::default(),
+            page_setup: None,
+            header_footer: None,
+            print_options: None,
+            row_breakers: None,
             ignored_errors: None,
             picture: None,
             hyperlinks: None,
@@ -215,19 +229,41 @@ impl Default for WorkSheet {
     }
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+struct PageSetup {
+    #[serde(rename = "@paperSize", skip_serializing_if = "Option::is_none")]
+    paper_size: Option<u8>,
+    #[serde(rename = "@scale", skip_serializing_if = "Option::is_none")]
+    scale: Option<u32>,
+    #[serde(rename = "@orientation", skip_serializing_if = "Option::is_none")]
+    orientation: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct HeaderFooter {
+    #[serde(rename = "@alignWithMargins", skip_serializing_if = "Option::is_none")]
+    align_with_margins: Option<u8>,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct PrintOptions {
+    #[serde(rename = "@horizontalCentered", skip_serializing_if = "Option::is_none")]
+    horizontal_centered: Option<u8>,
+}
+
 impl WorkSheet {
-    pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, sheet_id: u32) -> WorkSheetResult<WorkSheet> {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SheetFile(sheet_id))?;
+    pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, target: &str) -> WorkSheetResult<WorkSheet> {
+        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SheetFile(target.to_string()))?;
         let mut xml = String::new();
         file.read_to_string(&mut xml)?;
         let work_sheet = de::from_str(&xml).unwrap();
         Ok(work_sheet)
     }
 
-    pub(crate) fn save<P: AsRef<Path>>(&mut self, file_path: P, sheet_id: u32) {
+    pub(crate) fn save<P: AsRef<Path>>(& self, file_path: P, target: &str) {
         let xml = se::to_string_with_root("worksheet", &self).unwrap();
         let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
-        let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::SheetFile(sheet_id)).unwrap();
+        let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::SheetFile(target.to_string())).unwrap();
         file.write_all(xml.as_ref()).unwrap();
     }
 }

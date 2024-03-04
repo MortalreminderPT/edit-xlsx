@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 pub enum XlsxFileType {
     WorkbookFile,
-    SheetFile(u32),
+    SheetFile(String),
     SharedStringFile,
     StylesFile,
     WorkbookRels,
@@ -95,7 +95,7 @@ impl XlsxFileType {
             | XlsxFileType::StylesFile | XlsxFileType::MetaData
             | XlsxFileType::Comments(_) => "./xl",
 
-            XlsxFileType::SheetFile(_) => "./xl/worksheets",
+            XlsxFileType::SheetFile(_) => "./xl",
             XlsxFileType::WorkbookRels => "./xl/_rels",
             XlsxFileType::WorksheetRels(_) => "./xl/worksheets/_rels",
             XlsxFileType::ContentTypes => ".",
@@ -108,7 +108,8 @@ impl XlsxFileType {
     fn get_filename(&self) -> String {
         match self {
             XlsxFileType::WorkbookFile => "workbook.xml".to_string(),
-            XlsxFileType::SheetFile(id) => format!("sheet{id}.xml"),
+            // XlsxFileType::SheetFile(id) => format!("sheet{id}.xml"),
+            XlsxFileType::SheetFile(target) => format!("{target}"), //format!("sheet{id}.xml"),
             XlsxFileType::SharedStringFile => "sharedStrings.xml".to_string(),
             XlsxFileType::StylesFile => "styles.xml".to_string(),
             XlsxFileType::WorkbookRels => "workbook.xml.rels".to_string(),

@@ -8,13 +8,13 @@ pub(crate) struct BookViews {
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub(crate) struct WorkbookView {
-    #[serde(rename = "@xWindow")]
+    #[serde(rename = "@xWindow", default)]
     x_window: i32,
-    #[serde(rename = "@yWindow")]
+    #[serde(rename = "@yWindow", default)]
     y_window: i32,
-    #[serde(rename = "@windowWidth")]
+    #[serde(rename = "@windowWidth", default)]
     pub(crate) window_width: u32,
-    #[serde(rename = "@windowHeight")]
+    #[serde(rename = "@windowHeight", default)]
     pub(crate) window_height: u32,
     #[serde(rename = "@tabRatio", skip_serializing_if = "Option::is_none")]
     pub(crate) tab_ratio: Option<u32>,

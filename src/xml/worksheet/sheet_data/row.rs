@@ -5,7 +5,7 @@ use crate::xml::worksheet::sheet_data::Cell;
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub(crate) struct Row {
-    #[serde(rename = "c")]
+    #[serde(rename = "c", default, skip_serializing_if = "Vec::is_empty")]
     pub(crate) cells: Vec<Cell>,
     #[serde(rename = "@r")]
     pub(crate) row: u32,
@@ -22,7 +22,9 @@ pub(crate) struct Row {
     #[serde(rename = "@collapsed", skip_serializing_if = "Option::is_none")]
     pub(crate) collapsed: Option<u8>,
     #[serde(rename = "@hidden", skip_serializing_if = "Option::is_none")]
-    pub(crate) hidden: Option<u8>
+    pub(crate) hidden: Option<u8>,
+    #[serde(rename = "@spans", skip_serializing_if = "Option::is_none")]
+    pub(crate) spans: Option<String>,
 }
 
 impl Row {
@@ -31,6 +33,7 @@ impl Row {
             cells: vec![],
             row,
             height: None,
+            spans: None,
             style: None,
             custom_format: None,
             custom_height: None,

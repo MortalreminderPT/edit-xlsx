@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct SheetFormatPr {
+    #[serde(rename = "@defaultColWidth", skip_serializing_if = "Option::is_none")]
+    default_col_width: Option<f64>,
     #[serde(rename = "@defaultRowHeight")]
     default_row_height: f64,
     #[serde(rename = "@customHeight", skip_serializing_if = "Option::is_none")]
@@ -15,6 +17,7 @@ pub(crate) struct SheetFormatPr {
 impl Default for SheetFormatPr {
     fn default() -> SheetFormatPr {
         SheetFormatPr {
+            default_col_width: None,
             default_row_height: 15.0,
             custom_height: None,
             zero_height: None,

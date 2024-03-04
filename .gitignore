@@ -4,3 +4,5 @@
 *.xlsx
 /test
 !/resource/new.xlsx
+#*.bat
+/examples/demo.rs
