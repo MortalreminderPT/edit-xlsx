@@ -49,8 +49,9 @@ impl Workbook {
 
 impl Workbook {
     pub fn new() -> Workbook {
-        let mut wb = Self::from_path("resource/new.xlsx").unwrap();
-        wb.file_path = String::from("./new.xlsx");
+        let file_path = concat!(env!("CARGO_MANIFEST_DIR"), "/resources/new.xlsx");
+        let mut wb = Self::from_path(file_path).unwrap();
+        wb.file_path = String::from(file_path);
         wb
     }
 

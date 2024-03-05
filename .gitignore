@@ -3,6 +3,6 @@
 *.zip
 *.xlsx
 /test
-!/resource/new.xlsx
+!/resources/new.xlsx
 #*.bat
 /examples/demo.rs
