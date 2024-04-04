@@ -17,6 +17,9 @@ fn main() -> WorkbookResult<()> {
     // Change the font style
     let bold = red.set_bold();
     worksheet.write_with_format("D1", "red bold text", &bold)?;
+    // Change font
+    let font = Format::default().set_font("华文行楷");
+    worksheet.write_with_format("E1", "你好", &font)?;
     // adjust the text align
     let left_top = Format::default().set_align(FormatAlignType::Left).set_align(FormatAlignType::Top);
     worksheet.write_with_format("A2", "left top", &left_top)?;

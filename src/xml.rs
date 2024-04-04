@@ -12,3 +12,4 @@ pub(crate) mod metadata;
 pub(crate) mod extension;
 pub(crate) mod core_properties;
 pub(crate) mod app_properties;
+mod namespaces;
