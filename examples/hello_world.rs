@@ -21,8 +21,8 @@ fn main() -> WorkbookResult<()> {
     let left_top = Format::default().set_align(FormatAlignType::Left).set_align(FormatAlignType::Top);
     worksheet.write_with_format("A2", "left top", &left_top)?;
     // Change font
-    let algerian = Format::default().set_font("Brush Script MT");
-    worksheet.write_with_format("F1", "big text", &algerian)?;
+    let font = Format::default().set_font("华文行楷");
+    worksheet.write_with_format("F1", "你好", &font)?;
     // add borders
     let thin_border = Format::default().set_border(FormatBorderType::Thin);
     worksheet.write_with_format("B2", "bordered text", &thin_border)?;

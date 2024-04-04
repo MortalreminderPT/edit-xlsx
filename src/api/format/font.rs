@@ -17,7 +17,7 @@ impl Default for FormatFont<'_> {
             underline: false,
             size: 11.0,
             color: Default::default(),
-            name: "等线",
+            name: "Calibri",
         }
     }
 }
