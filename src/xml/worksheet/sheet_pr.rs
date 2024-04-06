@@ -3,7 +3,7 @@ use crate::FormatColor;
 use crate::xml::common::FromFormat;
 use crate::xml::style::color::Color;
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub(crate) struct SheetPr {
     #[serde(rename = "tabColor", skip_serializing_if = "Option::is_none")]
     tab_color: Option<Color>,
@@ -11,7 +11,7 @@ pub(crate) struct SheetPr {
     outline_pr: Option<OutlinePr>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct OutlinePr {
     #[serde(rename = "@applyStyles")]
     apply_styles: u8,

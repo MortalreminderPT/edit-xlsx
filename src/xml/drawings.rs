@@ -11,9 +11,9 @@ use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename(serialize = "xdr:wsDr", deserialize = "wsDr"))]
 pub(crate) struct Drawings {
-    #[serde(rename(serialize = "@xmlns:xdr", deserialize = "@xdr"))]
+    #[serde(rename(serialize = "@xmlns:xdr", deserialize = "@xdr"), default, skip_serializing_if = "String::is_empty")]
     xmlns_xdr: String,
-    #[serde(rename(serialize = "@xmlns:a", deserialize = "@a"))]
+    #[serde(rename(serialize = "@xmlns:a", deserialize = "@a"), default, skip_serializing_if = "String::is_empty")]
     xmlns_a: String,
     #[serde(rename(serialize = "xdr:twoCellAnchor", deserialize = "twoCellAnchor"), default)]
     drawing: Vec<Drawing>
@@ -184,7 +184,7 @@ impl BlipFill {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Blip {
-    #[serde(rename(serialize = "@xmlns:r", deserialize = "@r"))]
+    #[serde(rename(serialize = "@xmlns:r", deserialize = "@r"), default, skip_serializing_if = "String::is_empty")]
     xmlns_r: String,
     #[serde(rename(serialize = "@r:embed", deserialize = "@embed"))]
     r_embed: Rel,

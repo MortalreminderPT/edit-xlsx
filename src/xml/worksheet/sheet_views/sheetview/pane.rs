@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use crate::api::cell::location::Location;
 use crate::xml::worksheet::sheet_views::sheetview::selection::ActivePane;
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub(crate) struct Pane {
     #[serde(rename = "@xSplit", skip_serializing_if = "Option::is_none")]
     x_split: Option<u32>,

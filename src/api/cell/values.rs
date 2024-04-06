@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::{Error, Visitor};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 // #[serde(untagged)]
 pub(crate) enum CellType {
     Boolean,

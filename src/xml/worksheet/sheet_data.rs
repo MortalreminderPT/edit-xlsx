@@ -10,7 +10,7 @@ use crate::result::RowResult;
 use crate::xml::worksheet::sheet_data::cell::Cell;
 use crate::xml::worksheet::sheet_data::row::Row;
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub(crate) struct SheetData {
     #[serde(rename = "row", default)]
     rows: Vec<Row>,

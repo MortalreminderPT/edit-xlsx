@@ -2,7 +2,7 @@ use std::cmp;
 use serde::{Deserialize, Serialize};
 use crate::result::ColResult;
 
-#[derive(Debug, Deserialize, Serialize, PartialEq, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Default)]
 pub(crate) struct Cols {
     col: Vec<Col>
 }

@@ -33,7 +33,7 @@ mod page_margins;
 mod auto_filter;
 mod row_breaks;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename="worksheet")]
 pub(crate) struct WorkSheet {
     #[serde(flatten)]
@@ -174,7 +174,7 @@ impl WorkSheet {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct Dimension {
     #[serde(rename="@ref")]
     refer: String,
@@ -188,7 +188,7 @@ impl Dimension {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct Picture {
     #[serde(rename(serialize = "@r:id", deserialize = "@id"))]
     r_id: String,
@@ -229,7 +229,7 @@ impl Default for WorkSheet {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct PageSetup {
     #[serde(rename = "@paperSize", skip_serializing_if = "Option::is_none")]
     paper_size: Option<u8>,
@@ -239,13 +239,13 @@ struct PageSetup {
     orientation: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct HeaderFooter {
     #[serde(rename = "@alignWithMargins", skip_serializing_if = "Option::is_none")]
     align_with_margins: Option<u8>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct PrintOptions {
     #[serde(rename = "@horizontalCentered", skip_serializing_if = "Option::is_none")]
     horizontal_centered: Option<u8>,
@@ -268,7 +268,7 @@ impl WorkSheet {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct Drawing {
     #[serde(rename(serialize = "@r:id", deserialize = "@id"))]
     r_id: Rel,

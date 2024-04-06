@@ -2,7 +2,7 @@ extern crate proc_macro;
 use std::hash::Hash;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct PhoneticPr {
     #[serde(rename = "@fontId")]
     font_id: u32,
@@ -10,7 +10,7 @@ pub(crate) struct PhoneticPr {
     phonetic_pr_type: String
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct XmlnsAttrs {
     #[serde(rename = "@xmlns", skip_serializing_if = "Option::is_none")]
     xmlns: Option<String>,

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use crate::api::cell::location::Location;
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub(crate) struct Hyperlinks {
     #[serde(rename = "hyperlink")]
     hyperlink: Vec<Hyperlink>
@@ -14,7 +14,7 @@ impl Hyperlinks {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct Hyperlink {
     #[serde(rename = "@ref")]
     hyperlink_ref: String,

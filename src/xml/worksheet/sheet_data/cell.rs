@@ -8,7 +8,7 @@ use crate::api::cell::location::Location;
 use crate::xml::worksheet::sheet_data::cell::formula::Formula;
 use crate::api::cell::values::{CellDisplay, CellValue, CellType};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Cell {
     #[serde(rename = "@r")]
     pub(crate) loc: Sqref,
@@ -24,7 +24,7 @@ pub(crate) struct Cell {
     pub(crate) text: Option<String>,
 }
 
-#[derive(Debug, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub(crate) struct Sqref {
     pub(crate) col: u32,
     pub(crate) row: u32,

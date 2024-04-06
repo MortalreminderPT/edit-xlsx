@@ -62,12 +62,12 @@ impl Workbook {
     }
 
     pub fn add_worksheet(&mut self) -> WorkbookResult<& mut WorkSheet> {
-        let id = self.workbook.borrow().next_sheet_id();
-        let (r_id, target) = self.workbook_rel.borrow_mut().add_worksheet(id);
+        let sheet_id = self.workbook.borrow().next_sheet_id();
+        let (r_id, target) = self.workbook_rel.borrow_mut().add_worksheet(sheet_id);
         // let name = self.names.next_sheet_name();
-        let name = self.workbook.borrow_mut().add_worksheet(id, r_id)?;
+        let name = self.workbook.borrow_mut().add_worksheet(sheet_id, r_id)?;
         let sheet = WorkSheet::from_xml(
-            id,
+            sheet_id,
             &name,
             &target,
             &self.tmp_path,
@@ -80,7 +80,7 @@ impl Workbook {
             Rc::clone(&self.metadata),
         );
         self.sheets.push(sheet);
-        self.get_worksheet(id)
+        self.get_worksheet(sheet_id)
     }
 
     pub fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<& mut WorkSheet> {
@@ -102,6 +102,54 @@ impl Workbook {
         );
         self.sheets.push(sheet);
         self.get_worksheet(id)
+    }
+
+    pub fn duplicate_worksheet(&mut self, id: u32) -> WorkbookResult<& mut WorkSheet> {
+        let copy_worksheet = self.sheets
+            .iter()
+            .find(|sheet| sheet.id == id).ok_or(WorkSheetError::FileNotFound)?;
+        let sheet_id = self.workbook.borrow().next_sheet_id();
+        let (r_id, target) = self.workbook_rel.borrow_mut().add_worksheet(sheet_id);
+        let name = self.workbook.borrow_mut().add_worksheet(sheet_id, r_id)?;
+        let sheet = WorkSheet::from_worksheet(
+            sheet_id,
+            &name,
+            &target,
+            &self.tmp_path,
+            Rc::clone(&self.workbook),
+            Rc::clone(&self.workbook_rel),
+            Rc::clone(&self.style_sheet),
+            Rc::clone(&self.content_types),
+            Rc::clone(&self.medias),
+            Rc::clone(&self.metadata),
+            copy_worksheet,
+        );
+        self.sheets.push(sheet);
+        self.get_worksheet(sheet_id)
+    }
+
+    pub fn duplicate_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<& mut WorkSheet> {
+        let copy_worksheet = self.sheets
+            .iter()
+            .find(|sheet| sheet.name == name).ok_or(WorkSheetError::FileNotFound)?;
+        let sheet_id = self.workbook.borrow().next_sheet_id();
+        let (r_id, target) = self.workbook_rel.borrow_mut().add_worksheet(sheet_id);
+        self.workbook.borrow_mut().add_worksheet_by_name(sheet_id, r_id, name)?;
+        let sheet = WorkSheet::from_worksheet(
+            sheet_id,
+            &name,
+            &target,
+            &self.tmp_path,
+            Rc::clone(&self.workbook),
+            Rc::clone(&self.workbook_rel),
+            Rc::clone(&self.style_sheet),
+            Rc::clone(&self.content_types),
+            Rc::clone(&self.medias),
+            Rc::clone(&self.metadata),
+            copy_worksheet,
+        );
+        self.sheets.push(sheet);
+        self.get_worksheet(sheet_id)
     }
 
     pub fn set_size(&mut self, width: u32, height: u32) -> WorkbookResult<()> {

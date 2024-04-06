@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::api::cell::location::{Location, LocationRange};
 use self::sheetview::SheetView;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct SheetViews {
     #[serde(rename = "sheetView")]
     pub(crate) sheet_view: Vec<SheetView>

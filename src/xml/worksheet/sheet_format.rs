@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct SheetFormatPr {
     #[serde(rename = "@defaultColWidth", skip_serializing_if = "Option::is_none")]
     default_col_width: Option<f64>,

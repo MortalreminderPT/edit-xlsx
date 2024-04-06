@@ -30,22 +30,22 @@ struct SizeWithCells {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct Anchor {
-    #[serde(rename = "$value")]
+    #[serde(rename = "$value", default, skip_serializing_if = "String::is_empty")]
     value: String,// Vec<u32>,
 }
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename(serialize = "x:AutoFill", deserialize = "AutoFill"))]
 struct AutoFill {
-    #[serde(rename = "$value")]
+    #[serde(rename = "$value", default)]
     value: bool,
 }
 #[derive(Debug, Deserialize, Serialize)]
 struct Row {
-    #[serde(rename = "$value")]
+    #[serde(rename = "$value", default)]
     value: u32,
 }
 #[derive(Debug, Deserialize, Serialize)]
 struct Column {
-    #[serde(rename = "$value")]
+    #[serde(rename = "$value", default)]
     value: u32,
 }

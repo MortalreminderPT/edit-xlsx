@@ -23,7 +23,7 @@ struct DefinedName {
     name: String,
     #[serde(rename = "@localSheetId", skip_serializing_if = "Option::is_none")]
     local_sheet_id: Option<u32>,
-    #[serde(rename = "$value")]
+    #[serde(rename = "$value", default, skip_serializing_if = "String::is_empty")]
     value: String,
 }
 

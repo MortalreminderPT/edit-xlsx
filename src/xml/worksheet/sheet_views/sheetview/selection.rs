@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use crate::api::cell::location::{Location, LocationRange};
 use crate::xml::worksheet::sheet_data::cell::Sqref;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Selection {
     #[serde(rename = "@pane", skip_serializing_if = "Option::is_none")]
     pub(crate) pane: Option<String>,

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct RowBreaks {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -10,7 +10,7 @@ pub(crate) struct RowBreaks {
     brk: Vec<Break>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct Break {
     #[serde(rename = "@id", skip_serializing_if = "Option::is_none")]
     id: Option<u32>,

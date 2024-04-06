@@ -3,7 +3,7 @@ use crate::api::cell::formula::FormulaType;
 use crate::api::cell::values::{CellDisplay, CellValue};
 use crate::xml::worksheet::sheet_data::Cell;
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub(crate) struct Row {
     #[serde(rename = "c", default, skip_serializing_if = "Vec::is_empty")]
     pub(crate) cells: Vec<Cell>,

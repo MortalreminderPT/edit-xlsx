@@ -7,7 +7,7 @@ use crate::xml::worksheet::sheet_views::sheetview::selection::{Selection, Active
 pub mod pane;
 pub mod selection;
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub(crate) struct SheetView {
     #[serde(rename = "@showGridLines", skip_serializing_if = "Option::is_none")]
     show_grid_lines: Option<u8>,

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use crate::utils::col_helper;
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub(crate) struct MergeCells {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -17,7 +17,7 @@ impl MergeCells {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct MergeCell {
     #[serde(rename = "@ref")]
     cell_ref: String

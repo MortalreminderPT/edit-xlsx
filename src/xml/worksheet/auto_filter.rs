@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use crate::Filters as ApiFilters;
 use crate::Filter as ApiFilter;
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub(crate) struct AutoFilter {
     #[serde(rename = "@ref")]
     pub(crate) sqref: String,
@@ -22,7 +22,7 @@ impl AutoFilter {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct FilterColumn {
     #[serde(rename = "@colId")]
     col_id: u32,
@@ -42,7 +42,7 @@ impl FilterColumn {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct Filters {
     #[serde(rename = "@and", skip_serializing_if = "Option::is_none")]
     and: Option<u8>,
@@ -75,7 +75,7 @@ impl Filters {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct Filter {
     #[serde(rename = "@val")]
     val: Option<String>,

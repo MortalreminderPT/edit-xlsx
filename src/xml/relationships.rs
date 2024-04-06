@@ -89,7 +89,22 @@ impl Relationships {
     }
 
     pub(crate) fn get_drawings_rid(&self) -> Option<u32> {
-        self.get_rid_by_type(RelType::Drawings).first().copied()
+        let binding = self.get_target_by_type(RelType::Drawings);
+        let targets = binding.first();
+        match targets {
+            Some(targets) => {
+                let id: u32 = targets.chars().filter(|&c| c >= '0' && c <= '9').collect::<String>().parse().unwrap();
+                Some(id)
+            }
+            None => {
+                None
+            }
+        }
+        // let a = self.relationship
+        //     .iter()
+        //     .filter(|r| r.rel_type == RelType::Drawings);
+        // // rid
+        // let target = self.get_target(rid);
     }
     
     pub(crate) fn get_vml_drawing_rid(&self) -> Option<u32> {
@@ -114,6 +129,14 @@ impl Relationships {
             .iter()
             .filter(|r| r.rel_type == rel_type)
             .map(|r| r.id.get_id())
+            .collect()
+    }
+
+    fn get_target_by_type(&self, rel_type: RelType) -> Vec<String> {
+        self.relationship
+            .iter()
+            .filter(|r| r.rel_type == rel_type)
+            .map(|r| r.target.clone())
             .collect()
     }
 

@@ -81,13 +81,13 @@ struct VtVariant {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct VtLpstr {
-    #[serde(rename = "$value")]
+    #[serde(rename = "$value", default, skip_serializing_if = "String::is_empty")]
     value: String
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct VtI4 {
-    #[serde(rename = "$value")]
+    #[serde(rename = "$value", default, skip_serializing_if = "String::is_empty")]
     value: String
 }
 

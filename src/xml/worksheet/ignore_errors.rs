@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub(crate) struct IgnoredErrors {
     #[serde(rename = "ignoredError")]
     ignored_error: Vec<IgnoredError>,
@@ -17,7 +17,7 @@ impl IgnoredErrors {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct IgnoredError {
     #[serde(rename = "@sqref")]
     sqref: String,

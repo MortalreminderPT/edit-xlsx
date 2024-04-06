@@ -244,6 +244,35 @@ impl WorkSheet {
         // });
     // }
 
+    pub(crate) fn from_worksheet<P: AsRef<Path>>(
+        sheet_id: u32,
+        name: &str,
+        target: &str,
+        tmp_path: P,
+        workbook: Rc<RefCell<Workbook>>,
+        workbook_rel: Rc<RefCell<Relationships>>,
+        style_sheet: Rc<RefCell<StyleSheet>>,
+        content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
+        medias: Rc<RefCell<xml::medias::Medias>>,
+        metadata: Rc<RefCell<Metadata>>,
+        worksheet: &WorkSheet
+    ) -> WorkSheet {
+        let mut new_worksheet = Self::from_xml(
+            sheet_id,
+            name,
+            target,
+            tmp_path,
+            workbook,
+            workbook_rel,
+            style_sheet,
+            content_types,
+            medias,
+            metadata
+        );
+        new_worksheet.worksheet = worksheet.worksheet.clone();
+        new_worksheet
+    }
+
     pub(crate) fn from_xml<P: AsRef<Path>>(
         sheet_id: u32,
         name: &str,
@@ -262,7 +291,9 @@ impl WorkSheet {
         let worksheet_rel = Relationships::from_path(&tmp_path, XlsxFileType::WorksheetRels(sheet_id)).unwrap_or_default();
         // load drawings
         let (drawings, drawings_rel) = match worksheet_rel.get_drawings_rid() {
-            Some(drawings_id) => (Drawings::from_path(&tmp_path, drawings_id).ok(), Relationships::from_path(&tmp_path, XlsxFileType::DrawingRels(drawings_id)).ok()),
+            Some(drawings_id) => {
+                (Drawings::from_path(&tmp_path, drawings_id).ok(), Relationships::from_path(&tmp_path, XlsxFileType::DrawingRels(drawings_id)).ok())
+            },
             None => (None, None)
         };
         let vml_drawing = match worksheet_rel.get_vml_drawing_rid() {

@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 use crate::api::cell::formula::FormulaType;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Formula {
-    #[serde(rename = "$value")]
+    #[serde(rename = "$value", default, skip_serializing_if = "String::is_empty")]
     formula: String,
     #[serde(rename = "@t", skip_serializing_if = "Option::is_none")]
     formula_type: Option<String>,
