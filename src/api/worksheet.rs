@@ -114,6 +114,12 @@ impl WorkSheet {
         sheet_views.set_tab_selected(1);
     }
 
+    pub fn deselect(&mut self) {
+        let worksheet = &mut self.worksheet;
+        let sheet_views = &mut worksheet.sheet_views;
+        sheet_views.set_tab_selected(0);
+    }
+
     pub fn right_to_left(&mut self) {
         self.worksheet.sheet_views.set_right_to_left(1);
     }
