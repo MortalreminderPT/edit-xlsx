@@ -26,8 +26,8 @@ struct Hyperlink {
     display: Option<String>,
     #[serde(rename = "@tooltip", skip_serializing_if = "Option::is_none")]
     tooltip: Option<String>,
-    // #[serde(rename(serialize = "@xr:uid", deserialize = "@uid"))]
-    // uid: String,
+    #[serde(rename(serialize = "@xr:uid", deserialize = "@uid"), skip_serializing_if = "String::is_empty")]
+    uid: String,
 }
 
 impl Hyperlink {
@@ -38,6 +38,7 @@ impl Hyperlink {
             display: None,
             tooltip: None,
             r_id: Some(format!("rId{r_id}")),
+            uid: "".to_string(),
         }
     }
 }

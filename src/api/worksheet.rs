@@ -16,7 +16,7 @@ use crate::api::worksheet::image::_Image;
 use crate::api::worksheet::row::Row;
 use crate::api::worksheet::write::Write;
 use crate::file::XlsxFileType;
-use crate::result::WorkSheetResult;
+use crate::result::{WorkSheetError, WorkSheetResult};
 use crate::xml::drawings::Drawings;
 use crate::xml::drawings::vml_drawing::VmlDrawing;
 use crate::xml::metadata::Metadata;
@@ -97,9 +97,27 @@ impl WorkSheet {
     //     let worksheet = worksheets.get_mut(&self.id).unwrap();
     //     worksheet.autofit_cols();
     // }
-    
+
     pub fn get_name(&self) -> &str {
         &self.name
+    }
+
+    pub fn set_name(&mut self, name: &str) -> WorkSheetResult<()> {
+        let workbook = &mut self.workbook.borrow_mut();
+        let name_existed = workbook.sheets.sheets
+            .iter()
+            .filter(|sheet| sheet.name == name)
+            .count() > 0;
+        if name_existed {
+            Err(WorkSheetError::DuplicatedSheets)
+        } else {
+            workbook.sheets.sheets
+                .iter_mut()
+                .filter(|sheet| sheet.name == self.name)
+                .for_each(|sheet| sheet.name = name.to_string());
+            self.name = name.to_string();
+            Ok(())
+        }
     }
 
     pub fn activate(&mut self) {
@@ -276,6 +294,9 @@ impl WorkSheet {
             metadata
         );
         new_worksheet.worksheet = worksheet.worksheet.clone();
+        new_worksheet.worksheet_rel = worksheet.worksheet_rel.clone();
+        new_worksheet.drawings = worksheet.drawings.clone();
+        new_worksheet.drawings_rel = worksheet.drawings_rel.clone();
         new_worksheet
     }
 

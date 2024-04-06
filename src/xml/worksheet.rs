@@ -237,6 +237,12 @@ struct PageSetup {
     scale: Option<u32>,
     #[serde(rename = "@orientation", skip_serializing_if = "Option::is_none")]
     orientation: Option<String>,
+    #[serde(rename = "@horizontalDpi", skip_serializing_if = "Option::is_none")]
+    horizontal_dpi: Option<i32>,
+    #[serde(rename = "@verticalDpi", skip_serializing_if = "Option::is_none")]
+    vertical_dpi: Option<i32>,
+    #[serde(rename(serialize = "@r:id", deserialize = "@id"), skip_serializing_if = "Option::is_none")]
+    pub(crate) r_id: Option<Rel>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

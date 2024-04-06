@@ -8,7 +8,7 @@ use crate::api::cell::location::{Location, LocationRange};
 use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename(serialize = "xdr:wsDr", deserialize = "wsDr"))]
 pub(crate) struct Drawings {
     #[serde(rename(serialize = "@xmlns:xdr", deserialize = "@xdr"), default, skip_serializing_if = "String::is_empty")]
@@ -40,7 +40,7 @@ impl Drawings {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct Drawing {
     #[serde(rename = "@editAs")]
     edit_as: String,
@@ -67,7 +67,7 @@ impl Drawing {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct DrawingLocation {
     #[serde(rename(serialize = "xdr:col", deserialize = "col"))]
     col: u32,
@@ -83,15 +83,15 @@ impl DrawingLocation {
     fn from_location<L: Location>(loc: L) -> DrawingLocation {
         let (row, col) = loc.to_location();
         DrawingLocation {
-            col,
-            row,
+            col: col - 1,
+            row: row - 1,
             col_off: 0,
             row_off: 0,
         }
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct Picture {
     #[serde(rename(serialize = "xdr:nvPicPr", deserialize = "nvPicPr"))]
     pic_pr: PicPr,
@@ -111,7 +111,7 @@ impl Picture {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct PicPr {
     #[serde(rename(serialize = "xdr:cNvPr", deserialize = "cNvPr"))]
     c_nv_pr: CNvPr,
@@ -128,7 +128,7 @@ impl PicPr {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct CNvPr {
     #[serde(rename = "@id")]
     id: String,
@@ -145,13 +145,13 @@ impl CNvPr {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct CNvPicPr {
     #[serde(rename(serialize = "a:picLocks", deserialize = "picLocks"))]
     pic_locks: PicLocks,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct PicLocks {
     #[serde(rename = "@noChangeAspect")]
     no_change_aspect: u8,
@@ -165,7 +165,7 @@ impl Default for PicLocks {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct BlipFill {
     #[serde(rename(serialize = "a:blip", deserialize = "blip"))]
     blip: Blip,
@@ -182,7 +182,7 @@ impl BlipFill {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct Blip {
     #[serde(rename(serialize = "@xmlns:r", deserialize = "@r"), default, skip_serializing_if = "String::is_empty")]
     xmlns_r: String,
@@ -208,22 +208,22 @@ impl Blip {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct Stretch {
     #[serde(rename(serialize = "a:fillRect", deserialize = "fillRect"))]
     fill_rect: FillRect,
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct FillRect {}
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct SpPr {
     #[serde(rename(serialize = "a:prstGeom", deserialize = "prstGeom"))]
     prst_geom: PrstGeom,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone ,Deserialize, Serialize)]
 struct PrstGeom {
     #[serde(rename(serialize = "a:avLst", deserialize = "avLst"))]
     av_lst: AvLst,
@@ -240,10 +240,10 @@ impl Default for PrstGeom {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct AvLst {}
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct ClientData {}
 
 impl Drawings {

@@ -11,7 +11,7 @@ use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::relationships::rel::RelationShip;
 use crate::xml::relationships::rel_type::RelType;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Relationships {
     #[serde(rename = "@xmlns")]
     xmlns: String,
@@ -21,7 +21,7 @@ pub(crate) struct Relationships {
     pub(crate) targets: Targets,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default)]
 struct Targets {
     target: HashMap<String, Vec<u32>>,
 }
@@ -48,10 +48,10 @@ impl Targets {
             Some(ids) => {
                 let &max_id = ids.iter().max().unwrap_or(&1);
                 ids.push(max_id + 1);
-                max_id
+                max_id + 1
             }
         };
-        let id = max_id + 1;
+        let id = max_id + 1;// max_id + 1;
         match rel_type {
             RelType::Worksheets => format!("worksheets/sheet{id}.xml"),
             RelType::Theme => format!("theme/theme{id}.xml"),
@@ -60,6 +60,7 @@ impl Targets {
             RelType::Hyperlinks => { "".to_string() }
             RelType::Drawings => format!("../drawings/drawing{id}.xml"),
             RelType::MetaData => "metadata.xml".to_string(),
+            RelType::CalcChain => "calcChain.xml".to_string(),
             RelType::SharedStrings => { "".to_string() }
             RelType::PrinterSettings => { "".to_string() }
             RelType::VmlDrawing => { "".to_string() }

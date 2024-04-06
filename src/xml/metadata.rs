@@ -9,14 +9,14 @@ use crate::xml::io::Io;
 pub(crate) struct Metadata {
     #[serde(rename = "@xmlns")]
     xmlns: String,
-    #[serde(rename(serialize = "@xmlns:xda", deserialize = "@xmlns:xda"))]
+    #[serde(rename(serialize = "@xmlns:xda", deserialize = "@xmlns:xda"), default, skip_serializing_if = "String::is_empty")]
     xmlns_xda: String,
-    #[serde(rename = "metadataTypes")]
-    metadata_types: MetadataTypes,
-    #[serde(rename = "futureMetadata")]
-    future_metadata: FutureMetadata,
-    #[serde(rename = "cellMetadata")]
-    cell_metadata: CellMetadata,
+    #[serde(rename = "metadataTypes", skip_serializing_if = "Option::is_none")]
+    metadata_types: Option<MetadataTypes>,
+    #[serde(rename = "futureMetadata", skip_serializing_if = "Option::is_none")]
+    future_metadata: Option<FutureMetadata>,
+    #[serde(rename = "cellMetadata", skip_serializing_if = "Option::is_none")]
+    cell_metadata: Option<CellMetadata>,
 }
 
 impl Default for Metadata {
@@ -33,11 +33,17 @@ impl Default for Metadata {
 
 impl AddExtension for Metadata {
     fn add_extension(&mut self, e: ExtensionType) {
-        if self.future_metadata.bk.is_empty() {
-            self.future_metadata.bk.push(Bk::default());
+        let mut future_metadata = self.future_metadata.take();
+        if let None = future_metadata {
+            future_metadata = Some(FutureMetadata::default());
         }
-        let extension_list = &mut self.future_metadata.bk[0].ext_lst;
+        let mut future_metadata = future_metadata.unwrap();
+        if future_metadata.bk.is_empty() {
+            future_metadata.bk.push(Bk::default());
+        }
+        let extension_list = &mut future_metadata.bk[0].ext_lst;
         extension_list.add_extension(e);
+        self.future_metadata = Some(future_metadata)
     }
 }
 
@@ -82,8 +88,8 @@ struct MetadataType {
     assign: u8,
     #[serde(rename = "@coerce")]
     coerce: u8,
-    #[serde(rename = "@cellMeta")]
-    cell_meta: u8,
+    #[serde(rename = "@cellMeta", skip_serializing_if = "Option::is_none")]
+    cell_meta: Option<u8>,
 }
 impl Default for MetadataType {
     fn default() -> Self {
@@ -100,7 +106,7 @@ impl Default for MetadataType {
             clear_comments: 1,
             assign: 1,
             coerce: 1,
-            cell_meta: 1,
+            cell_meta: Some(1),
         }
     }
 }

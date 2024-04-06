@@ -15,6 +15,8 @@ pub(crate) struct Row {
     pub(crate) style: Option<u32>,
     #[serde(rename = "@customFormat", skip_serializing_if = "Option::is_none")]
     pub(crate) custom_format: Option<u8>,
+    #[serde(rename(serialize = "@x14ac:dyDescent", deserialize = "@dyDescent"), skip_serializing_if = "Option::is_none")]
+    pub(crate) x14ac_dy_descent: Option<f64>,
     #[serde(rename = "@customHeight", skip_serializing_if = "Option::is_none")]
     pub(crate) custom_height: Option<u8>,
     #[serde(rename = "@outlineLevel", skip_serializing_if = "Option::is_none")]
@@ -36,6 +38,7 @@ impl Row {
             spans: None,
             style: None,
             custom_format: None,
+            x14ac_dy_descent: None,
             custom_height: None,
             outline_level: None,
             collapsed: None,

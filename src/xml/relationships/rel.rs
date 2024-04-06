@@ -3,7 +3,7 @@ use crate::api::relationship::Rel;
 use crate::xml::relationships::rel_type::RelType;
 use crate::xml::relationships::Targets;
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub(crate) struct RelationShip {
     #[serde(rename = "@Id")]
     pub(crate) id: Rel,
