@@ -7,6 +7,8 @@ pub(crate) struct Formula {
     formula: String,
     #[serde(rename = "@t", skip_serializing_if = "Option::is_none")]
     formula_type: Option<String>,
+    #[serde(rename = "@si", skip_serializing_if = "Option::is_none")]
+    si: Option<i32>,
     #[serde(rename = "@ref", skip_serializing_if = "Option::is_none")]
     formula_ref: Option<String>,
 }
@@ -22,6 +24,7 @@ impl Formula {
         Formula {
             formula: formula.to_string(),
             formula_type,
+            si: None,
             formula_ref,
         }
     }

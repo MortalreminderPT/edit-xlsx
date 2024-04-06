@@ -67,6 +67,25 @@ impl Location for &str {
     }
 }
 
+impl Location for &String {
+    fn to_ref(&self) -> String {
+        self.to_string()
+    }
+
+    fn to_location(&self) -> (u32, u32) {
+        to_loc(self)
+    }
+
+    fn to_col(&self) -> u32 {
+        to_col(self)
+    }
+
+    fn to_row(&self) -> u32 {
+        let row = self.chars().filter(|&c| { c >= '0' && c <= '9' }).collect::<String>();
+        row.parse().unwrap()
+    }
+}
+
 impl Location for (u32, u32) {
     fn to_ref(&self) -> String {
         to_ref(self.0, self.1)
