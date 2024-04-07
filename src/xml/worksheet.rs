@@ -115,12 +115,12 @@ impl WorkSheet {
     }
 
     pub(crate) fn get_default_style<L: Location>(&self, loc: &L) -> Option<u32> {
-        let row_style = self.sheet_data.get_default_style(loc.to_row());
-        if let None = row_style {
+        let cell_style = self.sheet_data.get_default_style(loc);
+        if let None = cell_style {
             let col_style = self.cols.get_default_style(loc.to_col());
             return col_style;
         }
-        row_style
+        cell_style
     }
 
     pub(crate) fn add_merge_cell(&mut self, first_row: u32, first_col: u32, last_row: u32, last_col: u32) {

@@ -52,12 +52,19 @@ impl SheetData {
         }
     }
 
-    pub(crate) fn get_default_style(&self, row: u32) -> Option<u32> {
-        let row = self.get_row(row);
-        if let Some(row) = row {
-            return row.style;
+    pub(crate) fn get_default_style<L: Location>(&self, loc: &L) -> Option<u32> {
+        let row = self.get_row(loc.to_row());
+        match row {
+            Some(row) => {
+                let col = loc.to_col();
+                let cell = row.cells.iter().find(|cell| cell.loc.col == col);
+                match cell {
+                    Some(cell) => cell.style,
+                    None => row.style,
+                }
+            },
+            None => None,
         }
-        None
     }
 
     pub(crate) fn write_display<L: Location, T: CellDisplay + CellValue>(&mut self, loc: &L, text: &T, style: Option<u32>) -> RowResult<()> {
