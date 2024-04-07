@@ -114,11 +114,19 @@ impl Cell {
     }
 
     pub(crate) fn update_by_formula(&mut self, formula: &str, formula_type: FormulaType, style: Option<u32>) {
-        let formula = Formula::from_formula_type(formula, formula_type);
-        self.formula = Some(formula);
         self.style = style;
         self.cell_type = None;
-        self.cm = None;
-        self.text = None; // Some(String::from("0"));
+        match formula_type {
+            FormulaType::OldFormula(_) => {
+                self.text = None;
+                self.cm = None;
+            },
+            _ => {
+                self.text = Some(String::from("0"));
+                self.cm = Some(1);
+            },
+        };
+        let formula = Formula::from_formula_type(formula, formula_type);
+        self.formula = Some(formula);
     }
 }

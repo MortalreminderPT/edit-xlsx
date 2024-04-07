@@ -24,9 +24,9 @@ impl Default for Metadata {
         Self {
             xmlns: "http://schemas.openxmlformats.org/spreadsheetml/2006/main".to_string(),
             xmlns_xda: "http://schemas.microsoft.com/office/spreadsheetml/2017/dynamicarray".to_string(),
-            metadata_types: Default::default(),
+            metadata_types: Some(Default::default()),
             future_metadata: Default::default(),
-            cell_metadata: Default::default(),
+            cell_metadata: Some(Default::default()),
         }
     }
 }
