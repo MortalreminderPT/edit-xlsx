@@ -3,11 +3,7 @@
 *.zip
 *.xlsx
 /test
-<<<<<<< HEAD
-!/resource/new.xlsx
 !/examples/xlsx/*.xlsx
-=======
 !/resources/new.xlsx
->>>>>>> main
 #*.bat
 /examples/demo.rs
