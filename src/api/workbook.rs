@@ -37,6 +37,9 @@ pub struct Workbook {
     app_properties: Option<AppProperties>,
 }
 
+///
+/// Private methods
+///
 impl Workbook {
     fn get_core_properties(&mut self) -> &mut CoreProperties {
         self.core_properties.get_or_insert(CoreProperties::from_path(&self.tmp_path).unwrap())
@@ -55,9 +58,16 @@ impl Workbook {
         wb
     }
 
-    pub fn get_worksheet(&mut self, id: u32) -> WorkbookResult<& mut WorkSheet> {
+    pub fn get_worksheet(&mut self, id: u32) -> WorkbookResult<&mut WorkSheet> {
         let sheet = self.sheets
             .iter_mut()
+            .find(|sheet| sheet.id == id).ok_or(WorkSheetError::FileNotFound)?;
+        Ok(sheet)
+    }
+
+    pub fn read_worksheet(&self, id: u32) -> WorkbookResult<&WorkSheet> {
+        let sheet = self.sheets
+            .iter()
             .find(|sheet| sheet.id == id).ok_or(WorkSheetError::FileNotFound)?;
         Ok(sheet)
     }
@@ -296,6 +306,9 @@ impl Workbook {
     }
 
     pub fn save_as<P: AsRef<Path>>(&self, file_path: P) -> WorkbookResult<()> {
+        if self.closed {
+            return Err(WorkbookError::FileNotFound);
+        }
         // save sheets
         self.sheets.iter().for_each(|s| s.save_as(&self.tmp_path).unwrap());
         block_on(self.save_async()).unwrap();

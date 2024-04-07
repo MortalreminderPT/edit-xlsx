@@ -51,7 +51,6 @@ pub trait Write: _Write {
     fn write_dynamic_array_formula<L: Location>(&mut self, loc: L, data: &str) -> WorkSheetResult<()> {
         self.write_formula_all(&loc, data, FormulaType::DynamicArrayFormula(loc.to_ref()), None)
     }
-
     fn write_with_format<L: Location, T: CellDisplay + CellValue>(&mut self, loc: L, data: T, format: &Format) -> WorkSheetResult<()> { self.write_display_all(&loc, &data, Some(format)) }
     fn write_string_with_format<L: Location>(&mut self, loc: L, data: String, format: &Format) -> WorkSheetResult<()> { self.write_display_all(&loc, &data, Some(format)) }
     fn write_number_with_format<L: Location>(&mut self, loc: L, data: i32, format: &Format) -> WorkSheetResult<()> { self.write_display_all(&loc, &data, Some(format)) }

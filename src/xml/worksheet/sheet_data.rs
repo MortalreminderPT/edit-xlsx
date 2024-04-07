@@ -4,7 +4,7 @@ mod row;
 use serde::{Deserialize, Serialize};
 use crate::api::cell::formula::FormulaType;
 use crate::api::cell::location::Location;
-use crate::api::cell::values::{CellDisplay, CellValue};
+use crate::api::cell::values::{CellDisplay, CellType, CellValue};
 use crate::api::worksheet::row::RowSet;
 use crate::result::RowResult;
 use crate::xml::worksheet::sheet_data::cell::Cell;
@@ -49,6 +49,36 @@ impl SheetData {
         }
         if let Some(collapsed) = row_set.collapsed {
             row.collapsed = Some(collapsed)
+        }
+    }
+
+    pub(crate) fn get_cell_type<L: Location>(&self, loc: &L) -> Option<&CellType> {
+        let row = self.get_row(loc.to_row());
+        match row {
+            Some(row) => {
+                let col = loc.to_col();
+                let cell = row.cells.iter().find(|cell| cell.loc.col == col);
+                match cell {
+                    Some(cell) => cell.cell_type.as_ref(),
+                    None => None,
+                }
+            },
+            None => None,
+        }
+    }
+
+    pub(crate) fn get_value<L: Location>(&self, loc: &L) -> Option<&String> {
+        let row = self.get_row(loc.to_row());
+        match row {
+            Some(row) => {
+                let col = loc.to_col();
+                let cell = row.cells.iter().find(|cell| cell.loc.col == col);
+                match cell {
+                    Some(cell) => cell.text.as_ref(),
+                    None => None,
+                }
+            },
+            None => None,
         }
     }
 

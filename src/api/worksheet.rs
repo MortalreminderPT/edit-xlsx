@@ -1,6 +1,7 @@
 pub(crate) mod write;
 pub(crate) mod row;
 pub(crate) mod col;
+pub(crate) mod read;
 mod format;
 mod hyperlink;
 mod image;
@@ -13,6 +14,7 @@ use crate::{Filters, FormatColor, WorkbookResult, xml};
 use crate::api::cell::location::{Location, LocationRange};
 use crate::api::worksheet::col::Col;
 use crate::api::worksheet::image::_Image;
+use crate::api::worksheet::read::Read;
 use crate::api::worksheet::row::Row;
 use crate::api::worksheet::write::Write;
 use crate::file::XlsxFileType;
@@ -52,6 +54,7 @@ impl Row for WorkSheet {
     // }
 }
 impl Col for WorkSheet {}
+impl Read for WorkSheet {}
 
 impl WorkSheet {
     pub(crate) fn save_as<P: AsRef<Path>>(&self, file_path: P) -> WorkSheetResult<()> {
