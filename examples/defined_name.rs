@@ -20,9 +20,13 @@ fn main() -> WorkbookResult<()> {
         worksheet.write("A1", "This worksheet contains some defined names.")?;
         worksheet.write("B1", "Show defined name Sales on the right->")?;
         worksheet.write_formula("C1", "=Sales")?;
+        // In older versions of Excel, you could use the write_old_formula method:
+        // worksheet.write_old_formula("C1", "=Sales")?;
         worksheet.write("A2", "See Formulas -> Name Manager above.")?;
         worksheet.write("A3", "Example formula in cell B3 ->")?;
         worksheet.write_formula("B3", "=Exchange_rate")?;
+        // In older versions of Excel, you could use the write_old_formula method:
+        // worksheet.write_old_formula("B3", "=Exchange_rate")?;
         worksheet.write("F1", "Fill in some arrays on the right->")?;
         worksheet.write_column("G1", sales.iter())?;
         worksheet.write_column("H1", units.iter())?;

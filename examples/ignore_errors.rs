@@ -12,6 +12,9 @@ fn main() -> WorkbookResult<()> {
     // Write a divide by zero formula. This will also cause an Excel warning.
     worksheet.write_formula("C5", "=1/0")?;
     worksheet.write_formula("C6", "=1/0")?;
+    // In older versions of Excel, you could use the write_old_formula method:
+    // worksheet.write_old_formula("C5", "=1/0")?;
+    // worksheet.write_old_formula("C6", "=1/0")?;
 
     // Turn off some of the warnings:
     let mut error_map = HashMap::new();
