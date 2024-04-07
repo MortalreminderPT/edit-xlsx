@@ -135,7 +135,8 @@ impl Workbook {
             .find(|sheet| sheet.name == name).ok_or(WorkSheetError::FileNotFound)?;
         let sheet_id = self.workbook.borrow().next_sheet_id();
         let (r_id, target) = self.workbook_rel.borrow_mut().add_worksheet(sheet_id);
-        self.workbook.borrow_mut().add_worksheet_by_name(sheet_id, r_id, &format!("{name} Duplicated"))?;
+        let name = format!("{name} Duplicated");
+        self.workbook.borrow_mut().add_worksheet_by_name(sheet_id, r_id, &name)?;
         let sheet = WorkSheet::from_worksheet(
             sheet_id,
             &name,
