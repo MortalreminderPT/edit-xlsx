@@ -12,6 +12,7 @@ fn main() -> WorkbookResult<()> {
     template.hide();
     //
     // Example of using the duplicate_worksheet() function.
+    // TODO: if formula's `value` exists, some version of excel can't calculate the right result immediately.
     //
     let jan = workbook.duplicate_worksheet(1)?;
     jan.write("A1", "Accounting Journal in Jan.")?;
@@ -27,7 +28,8 @@ fn main() -> WorkbookResult<()> {
     }
     // activate the Feb. sheet.
     feb.activate();
-    let mar = workbook.duplicate_worksheet(1)?;
+    // duplicate worksheet by sheet name
+    let mar = workbook.duplicate_worksheet_by_name("template")?;
     mar.write("A1", "Accounting Journal in Mar.")?;
     mar.set_name("Mar.")?;
     for col in 'C'..='L' {
