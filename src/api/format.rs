@@ -51,6 +51,11 @@ impl<'a> Format<'a> {
         self
     }
 
+    pub fn set_font(mut self, font_name: &'a str) -> Self {
+        self.font.name = font_name;
+        self
+    }
+
     pub fn set_border<'b: 'a>(mut self, format_border_type: FormatBorderType) -> Self {
         let mut format_border = FormatBorderElement::default();
         format_border.border_type = format_border_type;

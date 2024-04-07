@@ -14,6 +14,8 @@ pub enum XlsxFileType {
     Medias(String),
     Drawings(u32),
     DrawingRels(u32),
+    VmlDrawings(u32),
+    Comments(u32),
     MetaData,
     CoreProperties,
     AppProperties,
@@ -89,14 +91,16 @@ impl XlsxFileWriter {
 impl XlsxFileType {
     fn get_dir(&self) -> &str {
         match self {
-            XlsxFileType::WorkbookFile | XlsxFileType::SharedStringFile | XlsxFileType::StylesFile | XlsxFileType::MetaData => "./xl",
-            // XlsxFileType::SheetFile(_) => "./xl/worksheets",
+            XlsxFileType::WorkbookFile | XlsxFileType::SharedStringFile
+            | XlsxFileType::StylesFile | XlsxFileType::MetaData
+            | XlsxFileType::Comments(_) => "./xl",
+
             XlsxFileType::SheetFile(_) => "./xl",
             XlsxFileType::WorkbookRels => "./xl/_rels",
             XlsxFileType::WorksheetRels(_) => "./xl/worksheets/_rels",
             XlsxFileType::ContentTypes => ".",
             XlsxFileType::Medias(_) => "./xl/media",
-            XlsxFileType::Drawings(_) => "./xl/drawings",
+            XlsxFileType::Drawings(_) | XlsxFileType::VmlDrawings(_) => "./xl/drawings",
             XlsxFileType::DrawingRels(_) => "./xl/drawings/_rels",
             XlsxFileType::CoreProperties | XlsxFileType::AppProperties => "./docProps",
         }
@@ -113,10 +117,12 @@ impl XlsxFileType {
             XlsxFileType::ContentTypes => "[Content_Types].xml".to_string(),
             XlsxFileType::Medias(name) => format!("{name}"),
             XlsxFileType::Drawings(id) => format!("drawing{id}.xml"),
+            XlsxFileType::VmlDrawings(id) => format!("vmlDrawing{id}.vml"),
             XlsxFileType::DrawingRels(id) => format!("drawing{id}.xml.rels"),
             XlsxFileType::MetaData => "metadata.xml".to_string(),
             XlsxFileType::CoreProperties => "core.xml".to_string(),
             XlsxFileType::AppProperties => "app.xml".to_string(),
+            XlsxFileType::Comments(id) => format!("comments{id}.xml"),
         }
     }
     pub(crate) fn get_path<P: AsRef<Path>>(&self, base_path: P) -> PathBuf {

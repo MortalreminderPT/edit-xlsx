@@ -34,8 +34,8 @@ pub(crate) struct Workbook {
     pub(crate) sheets: Sheets,
     #[serde(rename = "definedNames", default, skip_serializing_if = "DefinedNames::is_empty")]
     pub(crate) defined_names: DefinedNames,
-    #[serde(rename = "calcPr")]
-    calc_pr: CalcPr,
+    #[serde(rename = "calcPr", skip_serializing_if = "Option::is_none")]
+    calc_pr: Option<CalcPr>,
     #[serde(rename = "extLst", skip_serializing_if = "Option::is_none")]
     ext_lst: Option<ExtensionList>,
 }
@@ -177,7 +177,7 @@ impl Sheet {
 
 #[derive(Debug, Deserialize, Serialize)]
 struct CalcPr {
-    #[serde(rename = "@calcId")]
+    #[serde(rename = "@calcId", default, skip_serializing_if = "String::is_empty")]
     calc_id: String,
 }
 

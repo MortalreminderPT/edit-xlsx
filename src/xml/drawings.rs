@@ -1,3 +1,5 @@
+pub(crate) mod vml_drawing;
+
 use std::io;
 use std::path::Path;
 use quick_xml::{de, se};

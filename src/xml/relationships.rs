@@ -62,6 +62,8 @@ impl Targets {
             RelType::MetaData => "metadata.xml".to_string(),
             RelType::SharedStrings => { "".to_string() }
             RelType::PrinterSettings => { "".to_string() }
+            RelType::VmlDrawing => { "".to_string() }
+            RelType::Comments => { "".to_string() }
             RelType::Unknown => { "".to_string() }
         }
     }
@@ -88,6 +90,10 @@ impl Relationships {
 
     pub(crate) fn get_drawings_rid(&self) -> Option<u32> {
         self.get_rid_by_type(RelType::Drawings).first().copied()
+    }
+    
+    pub(crate) fn get_vml_drawing_rid(&self) -> Option<u32> {
+        self.get_rid_by_type(RelType::VmlDrawing).first().copied()
     }
 
     pub(crate) fn get_target(&self, r_id: &Rel) -> &String {

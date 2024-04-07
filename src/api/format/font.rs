@@ -6,6 +6,7 @@ pub struct FormatFont<'a> {
     pub(crate) underline: bool,
     pub(crate) size: f64,
     pub(crate) color: FormatColor<'a>,
+    pub(crate) name: &'a str,
 }
 
 impl Default for FormatFont<'_> {
@@ -16,6 +17,7 @@ impl Default for FormatFont<'_> {
             underline: false,
             size: 11.0,
             color: Default::default(),
+            name: "Calibri",
         }
     }
 }

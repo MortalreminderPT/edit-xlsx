@@ -10,6 +10,8 @@ pub(crate) enum RelType {
     Images,
     Hyperlinks,
     Drawings,
+    VmlDrawing,
+    Comments,
     Unknown,
     MetaData,
     SharedStrings,
@@ -50,6 +52,8 @@ impl RelType {
             RelType::Drawings => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing",
             RelType::SharedStrings => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings",
             RelType::MetaData => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sheetMetadata",
+            RelType::VmlDrawing => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing",
+            RelType::Comments => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments",
             RelType::PrinterSettings => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/printerSettings",
             RelType::Unknown => "",
         }
@@ -65,6 +69,8 @@ impl RelType {
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" => RelType::Drawings,
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sheetMetadata" => RelType::MetaData,
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" => RelType::SharedStrings,
+            "http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing" => RelType::VmlDrawing,
+            "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" => RelType::Comments,
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/printerSettings" => RelType::PrinterSettings,
             &_ => RelType::Unknown
         }
