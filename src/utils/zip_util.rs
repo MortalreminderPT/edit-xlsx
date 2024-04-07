@@ -2,6 +2,7 @@ use std::{fs, io};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
+use std::time::{SystemTime, UNIX_EPOCH};
 use walkdir::WalkDir;
 use zip::CompressionMethod;
 use zip::result::ZipError;
@@ -14,7 +15,9 @@ pub(crate) fn extract_dir<P: AsRef<Path>>(file_path: P) -> zip::result::ZipResul
     let file = File::open(&file_path)?;
     let mut archive = zip::ZipArchive::new(file)?;
     // construct a base path for extracted files
-    let binding = "./~$".to_owned() + file_name.to_str().ok_or(ZipError::FileNotFound)?;
+    let time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros();
+    let binding = format!("./~${}_{}", file_name.to_str().ok_or(ZipError::FileNotFound)?, time);
+    // let binding = "./~$".to_owned() + file_name.to_str().ok_or(ZipError::FileNotFound)?;
     let base_path = Path::new(&binding);
     match fs::create_dir(&base_path) {
         Err(why) => println!("! {:?}", why.kind()),
