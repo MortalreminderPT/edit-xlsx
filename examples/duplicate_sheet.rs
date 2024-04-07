@@ -12,7 +12,6 @@ fn main() -> WorkbookResult<()> {
     template.hide();
     //
     // Example of using the duplicate_worksheet() function.
-    // TODO: if formula's `value` exists, some version of excel can't calculate the right result immediately.
     //
     let jan = workbook.duplicate_worksheet(1)?;
     jan.write("A1", "Accounting Journal in Jan.")?;

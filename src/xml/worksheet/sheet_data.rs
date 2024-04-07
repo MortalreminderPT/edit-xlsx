@@ -80,6 +80,16 @@ impl SheetData {
         row.add_formula_cell(col, formula, formula_type, style);
         Ok(())
     }
+
+    pub(crate) fn clean_formula_value(&mut self) {
+        self.rows.iter_mut().for_each(
+            |row| row.cells.iter_mut().for_each(|cell|
+                if let Some(_) = cell.formula {
+                    cell.text = None;
+                }
+            )
+        )
+    }
 }
 
 trait _OrderRow {

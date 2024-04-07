@@ -314,7 +314,8 @@ impl WorkSheet {
         medias: Rc<RefCell<xml::medias::Medias>>,
         metadata: Rc<RefCell<Metadata>>,
     ) -> WorkSheet {
-        let worksheet = XmlWorkSheet::from_path(&tmp_path, target).unwrap_or_default();
+        let mut worksheet = XmlWorkSheet::from_path(&tmp_path, target).unwrap_or_default();
+        worksheet.sheet_data.clean_formula_value();
         let worksheet_rel = Relationships::from_path(&tmp_path, XlsxFileType::WorksheetRels(sheet_id)).unwrap_or_default();
         // load drawings
         let (drawings, drawings_rel) = match worksheet_rel.get_drawings_rid() {
