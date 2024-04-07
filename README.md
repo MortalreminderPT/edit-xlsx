@@ -1,5 +1,9 @@
 # edit-xlsx
 
+[<img alt="github" src="https://img.shields.io/badge/github-MortalreminderPT/edit--xlsx-8da0cb?style=for-the-badge&labelColor=555555&logo=github" height="20">](https://github.com/MortalreminderPT/edit-xlsx)
+[<img alt="crates.io" src="https://img.shields.io/crates/v/edit-xlsx.svg?style=for-the-badge&color=fc8d62&logo=rust" height="20">](https://crates.io/crates/edit-xlsx)
+[<img alt="docs.rs" src="https://img.shields.io/badge/docs.rs-edit--xlsx-66c2a5?style=for-the-badge&labelColor=555555&logo=docs.rs" height="20">](https://docs.rs/edit-xlsx)
+
 Welcome to Edit-xlsx, your quick and easy-to-use Rust library for Excel file editing. Whether you're a developer working on a project that involves manipulating Excel files or a business user streamlining data workflows, Edit-xlsx is designed to make Excel editing a breeze.
 
 ## Features
@@ -22,7 +26,7 @@ To use Edit-xlsx in your Rust project, add the following to your Cargo.toml file
 
 ```toml
 [dependencies]
-edit-xlsx = "0.3.7"
+edit-xlsx = "0.3.8"
 ```
 
 ## Notice
