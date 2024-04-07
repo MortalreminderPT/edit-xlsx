@@ -118,7 +118,7 @@ impl Cell {
         self.formula = Some(formula);
         self.style = style;
         self.cell_type = None;
-        self.cm = Some(1);
-        self.text = None;// Some(String::from("0"));
+        self.cm = None;
+        self.text = None; // Some(String::from("0"));
     }
 }

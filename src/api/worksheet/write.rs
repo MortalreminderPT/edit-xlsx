@@ -1,4 +1,3 @@
-use std::ops::DerefMut;
 use std::slice::Iter;
 use crate::api::cell::formula::FormulaType;
 use crate::api::cell::values::{CellDisplay, CellValue};
@@ -44,6 +43,7 @@ pub trait Write: _Write {
         self.merge_range_all(loc, data, None)
     }
     fn write_formula<L: Location>(&mut self, loc: L, data: &str) -> WorkSheetResult<()> { self.write_formula_all(&loc, data, FormulaType::Formula(loc.to_ref()), None) }
+    fn write_old_formula<L: Location>(&mut self, loc: L, data: &str) -> WorkSheetResult<()> { self.write_formula_all(&loc, data, FormulaType::OldFormula(loc.to_ref()), None) }
     fn write_array_formula<L: Location>(&mut self, loc: L, data: &str) -> WorkSheetResult<()> {
         // let loc = &loc_range.to_locations();
         self.write_formula_all(&loc, data, FormulaType::ArrayFormula(loc.to_ref()), None)
@@ -124,7 +124,9 @@ impl _Write for WorkSheet {
         // self.workbook_rel.borrow_mut().get_or_add_metadata();
         self.workbook_rel.borrow_mut().get_or_add_metadata();
         self.content_types.borrow_mut().add_metadata();
-        self.metadata.borrow_mut().add_extension(ExtensionType::XdaDynamicArrayProperties);
+        if FormulaType::OldFormula(loc.to_ref()) != formula_type {
+            self.metadata.borrow_mut().add_extension(ExtensionType::XdaDynamicArrayProperties);
+        }
         sheet_data.write_formula(loc, formula, formula_type, style)?;
         Ok(())
     }

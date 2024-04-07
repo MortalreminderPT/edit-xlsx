@@ -315,6 +315,7 @@ impl WorkSheet {
         metadata: Rc<RefCell<Metadata>>,
     ) -> WorkSheet {
         let mut worksheet = XmlWorkSheet::from_path(&tmp_path, target).unwrap_or_default();
+        // Prevent incorrect results from being filled into cells
         worksheet.sheet_data.clean_formula_value();
         let worksheet_rel = Relationships::from_path(&tmp_path, XlsxFileType::WorksheetRels(sheet_id)).unwrap_or_default();
         // load drawings

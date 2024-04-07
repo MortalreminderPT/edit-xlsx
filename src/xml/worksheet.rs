@@ -242,7 +242,7 @@ struct PageSetup {
     #[serde(rename = "@verticalDpi", skip_serializing_if = "Option::is_none")]
     vertical_dpi: Option<i32>,
     #[serde(rename(serialize = "@r:id", deserialize = "@id"), skip_serializing_if = "Option::is_none")]
-    pub(crate) r_id: Option<Rel>,
+    r_id: Option<Rel>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
