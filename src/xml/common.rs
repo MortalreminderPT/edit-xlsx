@@ -75,7 +75,7 @@ impl XmlnsAttrs {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct Element<T: Clone + PartialEq> {
     #[serde(rename = "@val")]
-    val: T
+    pub(crate) val: T
 }
 
 impl<T: Clone + PartialEq> Element<T> {

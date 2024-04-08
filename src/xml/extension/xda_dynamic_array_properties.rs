@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct XdaDynamicArrayProperties {
     #[serde(rename = "@fDynamic")]
     f_dynamic: u8,

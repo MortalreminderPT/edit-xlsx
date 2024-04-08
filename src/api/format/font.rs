@@ -1,5 +1,7 @@
 use crate::FormatColor;
+use crate::xml::style::font::Font;
 
+#[derive(Clone)]
 pub struct FormatFont<'a> {
     pub(crate) bold: bool,
     pub(crate) italic: bool,
@@ -19,5 +21,16 @@ impl Default for FormatFont<'_> {
             color: Default::default(),
             name: "Calibri",
         }
+    }
+}
+
+impl FormatFont<'_> {
+    pub(crate) fn from_font(font: &Font) -> Self {
+        let mut format_font = FormatFont::default();
+        format_font.bold = font.bold.is_some();
+        format_font.italic = font.italic.is_some();
+        format_font.underline = font.underline.is_some();
+        format_font.size = font.sz.val;
+        format_font
     }
 }

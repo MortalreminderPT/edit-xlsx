@@ -20,7 +20,7 @@ impl FormatAlignType {
         }
     }
 }
-
+#[derive(Clone)]
 pub struct FormatAlign {
     pub(crate) horizontal: Option<FormatAlignType>,
     pub(crate) vertical: Option<FormatAlignType>,

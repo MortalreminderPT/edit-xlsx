@@ -1,6 +1,7 @@
 use crate::api::cell::location::Location;
-use crate::{WorkSheet, WorkSheetResult};
+use crate::{Format, WorkSheet, WorkSheetResult};
 use crate::api::cell::values::CellType;
+use crate::api::worksheet::format::_Format;
 use crate::result::{CellError, RowError, WorkSheetError};
 
 pub trait Read: _Read {
@@ -12,12 +13,14 @@ pub trait Read: _Read {
     fn read_double<L: Location>(&self, loc: L) -> WorkSheetResult<f64> { Ok(0.0) }
     fn read_boolean<L: Location>(&self, loc: L) -> WorkSheetResult<bool> { Ok(false) }
     fn read_url<L: Location>(&self, loc: L) -> WorkSheetResult<&str> { Ok("") }
+    fn read_format<L: Location>(&self, loc: L) -> WorkSheetResult<Format> {self.read_format_all(loc)}
 }
 
 trait _Read {
     fn get_cell_type<L: Location>(&self, loc: L) -> WorkSheetResult<&CellType>;
     fn read_value<L: Location>(&self, loc: L) -> WorkSheetResult<&str>;
     fn read_text<L: Location>(&self, loc: L) -> WorkSheetResult<&str>;
+    fn read_format_all<L: Location>(&self, loc: L) -> WorkSheetResult<Format>;
 }
 
 impl _Read for WorkSheet {
@@ -54,6 +57,15 @@ impl _Read for WorkSheet {
             _ => {
                 value.ok_or(WorkSheetError::RowError(RowError::CellError(CellError::CellNotFound)))
             }
+        }
+    }
+
+    fn read_format_all<L: Location>(&self, loc: L) -> WorkSheetResult<Format> {
+        let worksheet = &self.worksheet;
+        let sheet_data = &worksheet.sheet_data;
+        match sheet_data.get_default_style(&loc) {
+            Some(style) => Ok(self.get_format(style)), // Ok(Format::from_style(&self.style_sheet.borrow(), style)),
+            None => Err(WorkSheetError::FileNotFound)
         }
     }
 }

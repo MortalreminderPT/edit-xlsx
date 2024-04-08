@@ -3,7 +3,7 @@ use crate::api::format::border::{FormatBorder, FormatBorderElement};
 use crate::xml::common::FromFormat;
 use crate::xml::style::color::Color;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Borders {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -20,6 +20,10 @@ impl Borders {
         self.count += 1;
         self.border.push(border.clone());
         self.border.len() as u32 - 1
+    }
+
+    pub(crate) fn get_border(&self, id: u32) -> Option<&Border> {
+        self.border.get(id as usize)
     }
 }
 

@@ -1,5 +1,6 @@
 use crate::FormatColor;
 
+#[derive(Clone)]
 pub struct FormatBorder<'a> {
     pub(crate) left: FormatBorderElement<'a>,
     pub(crate) right: FormatBorderElement<'a>,

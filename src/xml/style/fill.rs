@@ -4,7 +4,7 @@ use crate::xml::common::FromFormat;
 use crate::xml::style::color::Color;
 
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Fills {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -32,6 +32,10 @@ impl Fills {
         self.fills.push(fill.clone());
         self.fills.len() as u32 - 1
     }
+    
+    pub(crate) fn get_fill(&self, id: u32) -> Option<&Fill> {
+        self.fills.get(id as usize)
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
@@ -40,13 +44,13 @@ pub(crate) struct Fill {
     pub(crate) pattern_fill: PatternFill
 }
 
-impl Fill {
-    pub(crate) fn default() -> Fill {
-        Fill {
-            pattern_fill: PatternFill::default(),
-        }
-    }
-}
+// impl Fill {
+//     pub(crate) fn default() -> Fill {
+//         Fill {
+//             pattern_fill: PatternFill::default(),
+//         }
+//     }
+// }
 
 impl Default for Fill {
     fn default() -> Self {

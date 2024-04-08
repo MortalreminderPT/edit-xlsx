@@ -8,7 +8,8 @@ fn main() -> WorkbookResult<()> {
     let sheet = workbook.read_worksheet(1)?;
     for row in 1..=sheet.max_row() {
         for col in 1..=sheet.max_column() {
-            print!("{}\t", sheet.read((row, col)).unwrap_or_default());
+            // print!("{}\t", sheet.read((row, col)).unwrap_or_default());
+            print!("{}\t", sheet.read_format((row, col)).unwrap_or_default().get_size());
         }
         println!()
     }

@@ -11,7 +11,7 @@ use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
-use crate::api::format::Format;
+use crate::api::format::{Format, FormatFont};
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::common::{FromFormat, XmlnsAttrs};
 use crate::xml::extension::ExtensionList;
@@ -23,22 +23,22 @@ use crate::xml::style::font::{Font, Fonts};
 use crate::xml::style::num_fmt::NumFmts;
 use crate::xml::style::xf::Xf;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct StyleSheet {
     #[serde(flatten)]
     xmlns_attrs: XmlnsAttrs,
     #[serde(rename = "numFmts", skip_serializing_if = "Option::is_none")]
     num_fmts: Option<NumFmts>,
     #[serde(rename = "fonts", skip_serializing_if = "Option::is_none")]
-    fonts: Option<Fonts>,
+    pub(crate) fonts: Option<Fonts>,
     #[serde(rename = "fills", skip_serializing_if = "Option::is_none")]
-    fills: Option<Fills>,
+    pub(crate) fills: Option<Fills>,
     #[serde(rename = "borders", skip_serializing_if = "Option::is_none")]
-    borders: Option<Borders>,
+    pub(crate) borders: Option<Borders>,
     #[serde(rename = "cellStyleXfs", skip_serializing_if = "Option::is_none")]
     cell_style_xfs: Option<CellStyleXfs>,
     #[serde(rename = "cellXfs", skip_serializing_if = "Option::is_none")]
-    cell_xfs: Option<CellXfs>,
+    pub(crate) cell_xfs: Option<CellXfs>,
     #[serde(rename = "cellStyles", skip_serializing_if = "Option::is_none")]
     cell_styles: Option<CellStyles>,
     #[serde(rename = "dxfs", skip_serializing_if = "Option::is_none")]
@@ -49,7 +49,7 @@ pub(crate) struct StyleSheet {
     ext_lst: Option<ExtensionList>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct CellStyleXfs {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -65,7 +65,7 @@ impl Default for CellStyleXfs {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct CellXfs {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -92,9 +92,13 @@ impl CellXfs {
         self.xf.push(xf.clone());
         self.xf.len() as u32 - 1
     }
+
+    pub(crate) fn get_xf(&self, id: u32) -> Option<&Xf> {
+        self.xf.get(id as usize)
+    }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct CellStyles {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -111,7 +115,7 @@ impl Default for CellStyles {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct CellStyle {
     #[serde(rename = "@name")]
     name: String,
@@ -131,13 +135,13 @@ impl Default for CellStyle {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct Dxfs {
     #[serde(rename = "@count", default)]
     count: u32,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct TableStyles {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -194,6 +198,18 @@ impl StyleSheet {
         xf.fill_id = fill_id;
         let cell_xfs = self.cell_xfs.get_or_insert(Default::default());
         cell_xfs.add_xf(&xf)
+    }
+
+    pub(crate) fn update_format(&self, format: &mut Format, style_id: u32) {
+        if let Some(cell_xfs) = &self.cell_xfs {
+            if let Some(xf) = cell_xfs.get_xf(style_id) {
+                let font = &self.fonts.as_ref().unwrap().get_font(xf.font_id);
+                format.font = FormatFont::from_font(font.unwrap());
+                let borders = &self.borders.as_ref().unwrap().get_border(xf.fill_id);
+                let fill = &self.fills.as_ref().unwrap().get_fill(xf.fill_id);
+                // let fill = &self.fills.as_ref().unwrap().get_fill(xf.fill_id);
+            }
+        }
     }
 }
 

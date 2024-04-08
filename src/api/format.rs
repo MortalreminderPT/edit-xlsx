@@ -12,12 +12,30 @@ mod fill;
 mod font;
 pub mod border;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Format<'a> {
     pub(crate) font: FormatFont<'a>,
     pub(crate) border: FormatBorder<'a>,
     pub(crate) fill: FormatFill<'a>,
     pub(crate) align: FormatAlign,
+}
+
+impl<'a> Format<'a> {
+    pub fn is_bold(&self) -> bool {
+        self.font.bold
+    }
+
+    pub fn is_italic(&self) -> bool {
+        self.font.italic
+    }
+
+    pub fn is_underline(&self) -> bool {
+        self.font.underline
+    }
+
+    pub fn get_size(&self) -> f64 {
+        self.font.size
+    }
 }
 
 impl<'a> Format<'a> {

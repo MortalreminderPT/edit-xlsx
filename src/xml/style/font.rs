@@ -3,7 +3,7 @@ use crate::xml::common::{Element, FromFormat};
 use crate::xml::style::color::Color;
 use crate::api::format::FormatFont;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Fonts {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -33,6 +33,10 @@ impl Fonts {
         self.count += 1;
         self.fonts.push(font.clone());
         self.fonts.len() as u32 - 1
+    }
+    
+    pub(crate) fn get_font(&self, id: u32) -> Option<&Font> {
+        self.fonts.get(id as usize)
     }
 }
 
