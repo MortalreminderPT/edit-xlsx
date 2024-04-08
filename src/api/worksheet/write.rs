@@ -88,7 +88,6 @@ pub trait Write: _Write {
         let loc = loc_range.to_range();
         self.write_formula_all(&(loc.0, loc.1), data, FormulaType::DynamicArrayFormula(loc_range.to_range_ref()), Some(format))
     }
-    
     fn merge_range_with_format<L: LocationRange, T: CellDisplay + CellValue>(&mut self, loc: L, data: T, format:&Format) -> WorkSheetResult<()> {
         self.merge_range_all(loc, data, Some(format))
     }

@@ -6,6 +6,6 @@ fn main() -> WorkbookResult<()> {
     workbook.finish();
     // Use the first worksheet as a template
     let sheet1 = workbook.read_worksheet(1)?;
-    println!("{}", sheet1.read("B10")?);
+    println!("{}", sheet1.read("C15")?);
     Ok(())
 }

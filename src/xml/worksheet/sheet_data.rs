@@ -8,10 +8,11 @@ use crate::api::cell::values::{CellDisplay, CellType, CellValue};
 use crate::api::worksheet::row::RowSet;
 use crate::result::RowResult;
 use crate::xml::worksheet::sheet_data::cell::Cell;
-use crate::xml::worksheet::sheet_data::row::Row;
+use crate::xml::worksheet::sheet_data::row::{_OrderCell, Row};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub(crate) struct SheetData {
+    // Rows are ordered
     #[serde(rename = "row", default)]
     rows: Vec<Row>,
 }
@@ -57,7 +58,8 @@ impl SheetData {
         match row {
             Some(row) => {
                 let col = loc.to_col();
-                let cell = row.cells.iter().find(|cell| cell.loc.col == col);
+                // let cell = row.cells.iter().find(|cell| cell.loc.col == col);
+                let cell = row.get_cell(col);
                 match cell {
                     Some(cell) => cell.cell_type.as_ref(),
                     None => None,
@@ -67,18 +69,23 @@ impl SheetData {
         }
     }
 
-    pub(crate) fn get_value<L: Location>(&self, loc: &L) -> Option<&String> {
+    pub(crate) fn get_value<L: Location>(&self, loc: &L) -> Option<&str> {
         let row = self.get_row(loc.to_row());
-        match row {
-            Some(row) => {
-                let col = loc.to_col();
-                let cell = row.cells.iter().find(|cell| cell.loc.col == col);
-                match cell {
-                    Some(cell) => cell.text.as_ref(),
-                    None => None,
+        if let Some(row) = row {
+            let col = loc.to_col();
+            // let cell = row.cells.iter().find(|cell| cell.loc.col == col);
+            let cell = row.get_cell(col);
+            if let Some(cell) = cell {
+                if let Some(text) = &cell.text {
+                    Some(text.as_str())
+                } else {
+                    None
                 }
-            },
-            None => None,
+            } else {
+                None
+            }
+        } else {
+            None
         }
     }
 
@@ -87,7 +94,8 @@ impl SheetData {
         match row {
             Some(row) => {
                 let col = loc.to_col();
-                let cell = row.cells.iter().find(|cell| cell.loc.col == col);
+                // let cell = row.cells.iter().find(|cell| cell.loc.col == col);
+                let cell = row.get_cell(col);
                 match cell {
                     Some(cell) => cell.style,
                     None => row.style,
@@ -158,13 +166,11 @@ impl _OrderRow for SheetData {
         if r >= self.rows.len() {return None}
         return if row == self.rows[r].row { Some(&mut self.rows[r]) } else { None }
     }
-
     fn get_row(&self, row: u32) -> Option<&Row> {
         let r = self.get_position_by_row(row);
         if r >= self.rows.len() {return None}
         return if row == self.rows[r].row { Some(&self.rows[r]) } else { None }
     }
-
     fn get_or_new_row(&mut self, row: u32) -> &mut Row {
         let r = self.get_position_by_row(row);
         return if r < self.rows.len() && self.rows[r].row == row {
