@@ -61,7 +61,6 @@ impl SheetData {
         match row {
             Some(row) => {
                 let col = loc.to_col();
-                // let cell = row.cells.iter().find(|cell| cell.loc.col == col);
                 let cell = row.get_cell(col);
                 match cell {
                     Some(cell) => cell.cell_type.as_ref(),

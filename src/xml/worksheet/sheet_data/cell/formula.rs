@@ -28,4 +28,8 @@ impl Formula {
             formula_ref,
         }
     }
+
+    pub(crate) fn get_formula(&self) -> &String {
+        &self.formula
+    }
 }

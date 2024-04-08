@@ -7,6 +7,7 @@ pub trait Read: _Read {
     fn read<L: Location>(&self, loc: L) -> WorkSheetResult<&str> { self.read_value(loc) }
     fn read_text<L: Location>(&self, loc: L) -> WorkSheetResult<&str> { self.read_value(loc) }
     fn read_string<L: Location>(&self, loc: L) -> WorkSheetResult<&str> { self.read_value(loc) }
+    fn read_shared_string<L: Location>(&self, loc: L) -> WorkSheetResult<&str> { self.read_value(loc) }
     fn read_number<L: Location>(&self, loc: L) -> WorkSheetResult<i32> { Ok(0) }
     fn read_double<L: Location>(&self, loc: L) -> WorkSheetResult<f64> { Ok(0.0) }
     fn read_boolean<L: Location>(&self, loc: L) -> WorkSheetResult<bool> { Ok(false) }
@@ -14,11 +15,19 @@ pub trait Read: _Read {
 }
 
 trait _Read {
+    fn get_cell_type<L: Location>(&self, loc: L) -> WorkSheetResult<&CellType>;
     fn read_value<L: Location>(&self, loc: L) -> WorkSheetResult<&str>;
     fn read_text<L: Location>(&self, loc: L) -> WorkSheetResult<&str>;
 }
 
 impl _Read for WorkSheet {
+    fn get_cell_type<L: Location>(&self, loc: L) -> WorkSheetResult<&CellType> {
+        let worksheet = &self.worksheet;
+        let sheet_data = &worksheet.sheet_data;
+        let cell_type = sheet_data.get_cell_type(&loc);
+        cell_type.ok_or(WorkSheetError::RowError(RowError::CellError(CellError::CellNotFound)))
+    }
+
     fn read_value<L: Location>(&self, loc: L) -> WorkSheetResult<&str> {
         let worksheet = &self.worksheet;
         let sheet_data = &worksheet.sheet_data;
@@ -33,7 +42,6 @@ impl _Read for WorkSheet {
         };
         text.ok_or(WorkSheetError::RowError(RowError::CellError(CellError::CellNotFound)))
     }
-
     fn read_text<L: Location>(&self, loc: L) -> WorkSheetResult<&str> {
         let worksheet = &self.worksheet;
         let sheet_data = &worksheet.sheet_data;

@@ -65,7 +65,11 @@ impl Row {
     pub(crate) fn get_display_cell(&self, col: u32) -> Option<&String> {
         let cell = self.get_cell(col);
         if let Some(cell) = cell {
-            return cell.text.as_ref()
+            // return if let Some(formula) = &cell.formula {
+            //     Some(formula.get_formula())
+            // } else {
+            cell.text.as_ref()
+            // }
         } else {
             None
         }
