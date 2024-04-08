@@ -31,6 +31,7 @@ pub enum WorkSheetError {
     RowError(RowError),
     ColError(ColError),
     DuplicatedSheets,
+    FormatError,
 }
 
 impl From<DeError> for WorkSheetError { fn from(err: DeError) -> WorkSheetError { WorkSheetError::DeError(err) } }

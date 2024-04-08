@@ -23,7 +23,9 @@ impl Io<Medias> for Medias {
         let mut medias = Medias { medias: vec![] };
         let mut id = 1;
         Ok(loop {
-            let file = XlsxFileReader::from_path(&file_path, XlsxFileType::Medias(format!("image{id}.png")));
+            let extension = &file_path.as_ref().extension().unwrap_or("png".as_ref()).to_string_lossy();
+            let file_name = format!("image{}.{}", id, extension);
+            let file = XlsxFileReader::from_path(&file_path, XlsxFileType::Medias(file_name));
             match file {
                 Ok(file) => {
                     let media = Media::new(id, file.file_path);
@@ -62,7 +64,9 @@ impl Io<Media> for Media {
         todo!()
     }
 
-    fn save<P: AsRef<Path>>(& self, file_path: P) {
-        XlsxFileWriter::copy_from(&file_path, XlsxFileType::Medias(format!("image{}.png", self.id)), &self.file_path).unwrap();
+    fn save<P: AsRef<Path>>(&self, file_path: P) {
+        let extension = &self.file_path.extension().unwrap_or("png".as_ref()).to_string_lossy();
+        let file_name = format!("image{}.{}", self.id, extension);
+        XlsxFileWriter::copy_from(&file_path, XlsxFileType::Medias(file_name), &self.file_path).unwrap();
     }
 }

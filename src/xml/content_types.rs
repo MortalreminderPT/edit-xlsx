@@ -35,6 +35,9 @@ impl ContentTypes {
     pub(crate) fn add_png(&mut self) {
         self.content_types.insert(ContentType::png_default());
     }
+    pub(crate) fn add_bin(&mut self, extension: &str) {
+        self.content_types.insert(ContentType::octet_stream_default(extension));
+    }
     pub(crate) fn add_drawing(&mut self, id: u32) { self.content_types.insert(ContentType::drawing_override(id)); }
     pub(crate) fn add_metadata(&mut self) { self.content_types.insert(ContentType::metadata_override()); }
 }
@@ -44,6 +47,13 @@ impl ContentType {
         ContentType::Default {
             extension: "png".to_string(),
             content_type: "image/png".to_string(),
+        }
+    }
+
+    fn octet_stream_default(extension: &str) -> ContentType {
+        ContentType::Default {
+            extension: extension.to_string(),
+            content_type: "application/octet-stream".to_string(),
         }
     }
 

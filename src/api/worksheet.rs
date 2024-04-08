@@ -86,7 +86,7 @@ impl WorkSheet {
 impl WorkSheet {
     pub fn max_column(&self) -> u32 {
         let worksheet = &self.worksheet;
-        let sheet_data = & worksheet.sheet_data;
+        let sheet_data = &worksheet.sheet_data;
         sheet_data.max_col()
     }
 
@@ -146,7 +146,7 @@ impl WorkSheet {
     pub fn right_to_left(&mut self) {
         self.worksheet.sheet_views.set_right_to_left(1);
     }
-    
+
     pub fn set_top_left_cell<L: Location>(&mut self, loc: L) {
         let worksheet = &mut self.worksheet;
         let sheet_views = &mut worksheet.sheet_views;
@@ -192,7 +192,7 @@ impl WorkSheet {
         worksheet.hide_unused_rows(hide);
     }
 
-    pub fn outline_settings(& mut self, visible: bool, symbols_below: bool, symbols_right: bool, auto_style: bool) {
+    pub fn outline_settings(&mut self, visible: bool, symbols_below: bool, symbols_right: bool, auto_style: bool) {
         let worksheet = &mut self.worksheet;
         worksheet.outline_settings(visible, symbols_below, symbols_right, auto_style)
     }
@@ -248,15 +248,16 @@ impl WorkSheet {
     }
 
     pub fn set_background<P: AsRef<Path>>(&mut self, filename: P) -> WorkSheetResult<()> {
-        let r_id = self.add_background(&filename);
+        let r_id = self.add_background(&filename)?;
         self.worksheet.set_background(r_id);
         Ok(())
     }
 
-    pub fn insert_image<L: LocationRange, P: AsRef<Path>>(&mut self, loc_range: L,filename: &P) {
+    pub fn insert_image<L: LocationRange, P: AsRef<Path>>(&mut self, loc_range: L, filename: &P) -> WorkSheetResult<()> {
         let (from_row, from_col, to_row, to_col) = loc_range.to_range();
-        let r_id = self.add_drawing((from_row, from_col, to_row, to_col), filename);
+        let r_id = self.add_drawing((from_row, from_col, to_row, to_col), filename)?;
         self.worksheet.insert_image(r_id);
+        Ok(())
     }
 
     pub fn id(&self) -> u32 {

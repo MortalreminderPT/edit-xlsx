@@ -156,9 +156,9 @@ impl Relationships {
         (r_id, target)
     }
 
-    pub(crate) fn add_image(&mut self, id: u32) -> u32 {
+    pub(crate) fn add_image(&mut self, id: u32, image_extension: &str) -> u32 {
         let r_id = self.next_id();
-        self.relationship.push(RelationShip::new_image(r_id, id));
+        self.relationship.push(RelationShip::new_image(r_id, id, image_extension));
         r_id
     }
 
