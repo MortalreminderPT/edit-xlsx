@@ -23,6 +23,7 @@ use crate::xml::drawings::Drawings;
 use crate::xml::drawings::vml_drawing::VmlDrawing;
 use crate::xml::metadata::Metadata;
 use crate::xml::relationships::Relationships;
+use crate::xml::shared_string::SharedString;
 use crate::xml::worksheet::WorkSheet as XmlWorkSheet;
 use crate::xml::workbook::Workbook;
 use crate::xml::style::StyleSheet;
@@ -44,6 +45,7 @@ pub struct WorkSheet {
     drawings: Option<Drawings>,
     drawings_rel: Option<Relationships>,
     metadata: Rc<RefCell<Metadata>>,
+    shared_string: Rc<SharedString>,
 }
 
 impl Write for WorkSheet {}
@@ -282,7 +284,8 @@ impl WorkSheet {
         content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
         medias: Rc<RefCell<xml::medias::Medias>>,
         metadata: Rc<RefCell<Metadata>>,
-        worksheet: &WorkSheet
+        worksheet: &WorkSheet,
+        shared_string: Rc<SharedString>
     ) -> WorkSheet {
         let mut new_worksheet = Self::from_xml(
             sheet_id,
@@ -294,7 +297,8 @@ impl WorkSheet {
             style_sheet,
             content_types,
             medias,
-            metadata
+            metadata,
+            shared_string,
         );
         new_worksheet.worksheet = worksheet.worksheet.clone();
         new_worksheet.worksheet_rel = worksheet.worksheet_rel.clone();
@@ -316,6 +320,7 @@ impl WorkSheet {
         content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
         medias: Rc<RefCell<xml::medias::Medias>>,
         metadata: Rc<RefCell<Metadata>>,
+        shared_string: Rc<SharedString>,
     ) -> WorkSheet {
         let mut worksheet = XmlWorkSheet::from_path(&tmp_path, target).unwrap_or_default();
         // Prevent incorrect results from being filled into cells
@@ -348,6 +353,7 @@ impl WorkSheet {
             drawings,
             drawings_rel,
             metadata,
+            shared_string,
         }
     }
 }

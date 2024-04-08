@@ -9,22 +9,22 @@ use crate::xml::io::Io;
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename="sst")]
 pub(crate) struct SharedString {
-    #[serde(flatten)]
-    xmlns_attrs: XmlnsAttrs,
-    #[serde(rename = "@count", default)]
-    count: u32,
-    #[serde(rename = "@uniqueCount", default)]
-    unique_count: u32,
+    // #[serde(flatten)]
+    // xmlns_attrs: XmlnsAttrs,
+    // #[serde(rename = "@count", default)]
+    // count: u32,
+    // #[serde(rename = "@uniqueCount", default)]
+    // unique_count: u32,
     #[serde(rename = "si", default = "Vec::new")]
-    pub string_item: Vec<StringItem>,
+    string_item: Vec<StringItem>,
 }
 
 impl Default for SharedString {
     fn default() -> Self {
         Self {
-            xmlns_attrs: XmlnsAttrs::shared_string_default(),
-            count: 0,
-            unique_count: 0,
+            // xmlns_attrs: XmlnsAttrs::shared_string_default(),
+            // count: 0,
+            // unique_count: 0,
             string_item: vec![],
         }
     }
@@ -32,25 +32,31 @@ impl Default for SharedString {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct StringItem {
-    #[serde(rename = "t")]
-    pub text: String,
-    #[serde(rename = "phoneticPr", skip_serializing_if = "Option::is_none")]
-    phonetic_pr: Option<PhoneticPr>,
+    #[serde(rename = "t", default)]
+    text: String,
+    // #[serde(rename = "phoneticPr", skip_serializing_if = "Option::is_none")]
+    // phonetic_pr: Option<PhoneticPr>,
 }
 
 impl SharedString {
-    pub(crate) fn add_text(&mut self, text: &str) -> u32 {
-        let item = StringItem { text: String::from(text), phonetic_pr: None };
-        for i in 0..self.string_item.len() {
-            if self.string_item[i].text == item.text {
-                return i as u32;
-            }
+    pub(crate) fn get_text(&self, id: usize) -> Option<&str> {
+        match self.string_item.get(id) {
+            Some(string_item) => Some(string_item.text.as_str()),
+            None => None
         }
-        self.count += 1;
-        self.unique_count += 1;
-        self.string_item.push(item);
-        self.string_item.len() as u32 - 1
     }
+    // pub(crate) fn add_text(&mut self, text: &str) -> u32 {
+    //     let item = StringItem { text: String::from(text), phonetic_pr: None };
+    //     for i in 0..self.string_item.len() {
+    //         if self.string_item[i].text == item.text {
+    //             return i as u32;
+    //         }
+    //     }
+    //     self.count += 1;
+    //     self.unique_count += 1;
+    //     self.string_item.push(item);
+    //     self.string_item.len() as u32 - 1
+    // }
 }
 
 impl Io<SharedString> for SharedString {
@@ -63,9 +69,10 @@ impl Io<SharedString> for SharedString {
     }
 
     fn save<P: AsRef<Path>>(&self, file_path: P) {
-        let xml = se::to_string_with_root("sst", &self).unwrap();
-        let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
-        let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::SharedStringFile).unwrap();
-        file.write_all(xml.as_ref()).unwrap();
+        return;
+        // let xml = se::to_string_with_root("sst", &self).unwrap();
+        // let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
+        // let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::SharedStringFile).unwrap();
+        // file.write_all(xml.as_ref()).unwrap();
     }
 }

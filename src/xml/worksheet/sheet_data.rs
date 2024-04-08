@@ -1,3 +1,6 @@
+//! Some traits for managing deserialized Rows
+//! - Add, modify and delete Rows.
+//! - Add, modify and delete Cells in a Row by calling the Cells trait.
 pub(crate) mod cell;
 mod row;
 
@@ -70,22 +73,13 @@ impl SheetData {
     }
 
     pub(crate) fn get_value<L: Location>(&self, loc: &L) -> Option<&str> {
-        let row = self.get_row(loc.to_row());
-        if let Some(row) = row {
-            let col = loc.to_col();
-            // let cell = row.cells.iter().find(|cell| cell.loc.col == col);
-            let cell = row.get_cell(col);
-            if let Some(cell) = cell {
-                if let Some(text) = &cell.text {
-                    Some(text.as_str())
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        } else {
-            None
+        let (row, col) = loc.to_location();
+        let row = self.get_row(row);
+        match row {
+            Some(row) => {
+                row.get_display_cell(col).map(|v|v.as_ref())
+            },
+            None => None
         }
     }
 
