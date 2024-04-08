@@ -2,7 +2,7 @@ pub(crate) mod io;
 pub(crate) mod common;
 pub(crate) mod workbook;
 pub(crate) mod worksheet;
-mod shared_string;
+pub(crate) mod shared_string;
 pub(crate) mod style;
 pub(crate) mod content_types;
 pub(crate) mod medias;

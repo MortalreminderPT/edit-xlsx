@@ -1,10 +1,7 @@
-use std::{fs, slice, thread};
+use std::{fs, slice};
 use std::cell::RefCell;
-// use std::futures::join;
 use std::path::Path;
 use std::rc::Rc;
-use std::sync::Arc;
-use std::thread::JoinHandle;
 use futures::executor::block_on;
 use futures::join;
 use crate::api::worksheet::WorkSheet;
@@ -20,6 +17,7 @@ use crate::xml::medias::Medias;
 use crate::xml::metadata::Metadata;
 use crate::xml::style::StyleSheet;
 use crate::xml::relationships::Relationships;
+use crate::xml::shared_string::SharedString;
 
 #[derive(Debug)]
 pub struct Workbook {
@@ -35,6 +33,7 @@ pub struct Workbook {
     metadata: Rc<RefCell<Metadata>>,
     core_properties: Option<CoreProperties>,
     app_properties: Option<AppProperties>,
+    shared_string: Rc<SharedString>,
 }
 
 ///
@@ -89,6 +88,7 @@ impl Workbook {
             Rc::clone(&self.content_types),
             Rc::clone(&self.medias),
             Rc::clone(&self.metadata),
+            Rc::clone(&self.shared_string),
         );
         self.sheets.push(sheet);
         self.get_worksheet(sheet_id)
@@ -110,6 +110,7 @@ impl Workbook {
             Rc::clone(&self.content_types),
             Rc::clone(&self.medias),
             Rc::clone(&self.metadata),
+            Rc::clone(&self.shared_string),
         );
         self.sheets.push(sheet);
         self.get_worksheet(id)
@@ -134,6 +135,7 @@ impl Workbook {
             Rc::clone(&self.medias),
             Rc::clone(&self.metadata),
             copy_worksheet,
+            Rc::clone(&self.shared_string),
         );
         self.sheets.push(sheet);
         self.get_worksheet(sheet_id)
@@ -159,6 +161,7 @@ impl Workbook {
             Rc::clone(&self.medias),
             Rc::clone(&self.metadata),
             copy_worksheet,
+            Rc::clone(&self.shared_string),
         );
         self.sheets.push(sheet);
         self.get_worksheet(sheet_id)
@@ -233,9 +236,11 @@ impl Workbook {
         let content_types = ContentTypes::from_path_async(&tmp_path);
         let medias = Medias::from_path_async(&tmp_path);
         let metadata = Metadata::from_path_async(&tmp_path);
+        let shared_string = SharedString::from_path_async(&tmp_path);
         let (workbook, workbook_rel, style_sheet,
-            content_types, medias, metadata
-        ) = join!(workbook, workbook_rel, style_sheet, content_types, medias, metadata);
+            content_types, medias, metadata,
+            shared_string
+        ) = join!(workbook, workbook_rel, style_sheet, content_types, medias, metadata, shared_string);
 
         let workbook = Rc::new(RefCell::new(workbook.unwrap()));
         let workbook_rel = Rc::new(RefCell::new(workbook_rel.unwrap()));
@@ -243,6 +248,7 @@ impl Workbook {
         let content_types = Rc::new(RefCell::new(content_types.unwrap()));
         let medias = Rc::new(RefCell::new(medias.unwrap()));
         let metadata = Rc::new(RefCell::new(metadata.unwrap_or_default()));
+        let shared_string = Rc::new(shared_string.unwrap_or_default());
 
         let sheets = workbook.borrow().sheets.sheets.iter().map(
             |sheet_xml| {
@@ -257,6 +263,7 @@ impl Workbook {
                     Rc::clone(&content_types),
                     Rc::clone(&medias),
                     Rc::clone(&metadata),
+                    Rc::clone(&shared_string),
                 )
             }).collect::<Vec<WorkSheet>>();
 
@@ -273,6 +280,7 @@ impl Workbook {
             metadata,
             core_properties: None,
             app_properties: None,
+            shared_string,
         };
 
         Ok(workbook)

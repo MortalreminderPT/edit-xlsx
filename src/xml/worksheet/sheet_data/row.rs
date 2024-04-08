@@ -1,3 +1,5 @@
+//! Some traits for managing deserialized Cells
+//! - Add, modify and delete Cells.
 use serde::{Deserialize, Serialize};
 use crate::api::cell::formula::FormulaType;
 use crate::api::cell::values::{CellDisplay, CellValue};
@@ -58,6 +60,15 @@ impl Row {
         // 判断新增cell位置是否已经存在别的cell
         let cell = self.get_or_new_cell(col);
         cell.update_by_display(text, style);
+    }
+
+    pub(crate) fn get_display_cell(&self, col: u32) -> Option<&String> {
+        let cell = self.get_cell(col);
+        if let Some(cell) = cell {
+            return cell.text.as_ref()
+        } else {
+            None
+        }
     }
 
     pub(crate) fn add_formula_cell(&mut self, col: u32, formula: &str, formula_type: FormulaType, style: Option<u32>) {

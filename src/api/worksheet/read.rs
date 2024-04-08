@@ -22,8 +22,16 @@ impl _Read for WorkSheet {
     fn read_value<L: Location>(&self, loc: L) -> WorkSheetResult<&str> {
         let worksheet = &self.worksheet;
         let sheet_data = &worksheet.sheet_data;
+        let cell_type = sheet_data.get_cell_type(&loc);
         let value = sheet_data.get_value(&loc);
-        value.ok_or(WorkSheetError::RowError(RowError::CellError(CellError::CellNotFound)))
+        let text = match cell_type {
+            Some(CellType::SharedString) => {
+                let id: usize = value.unwrap_or("0").parse().unwrap();
+                self.shared_string.get_text(id)
+            },
+            _ => value
+        };
+        text.ok_or(WorkSheetError::RowError(RowError::CellError(CellError::CellNotFound)))
     }
 
     fn read_text<L: Location>(&self, loc: L) -> WorkSheetResult<&str> {
