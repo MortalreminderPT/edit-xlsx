@@ -85,6 +85,13 @@ impl FromFormat<FormatFont<'_>> for Font {
         self.underline = if format.underline { Some(Underline::default()) } else { None };
         self.italic = if format.italic { Some(Italic::default()) } else { None };
     }
+
+    fn set_format(&self, format: &mut FormatFont<'_>) {
+        format.bold = self.bold.is_some();
+        format.italic = self.italic.is_some();
+        format.underline = self.underline.is_some();
+        format.size = self.sz.get_format();
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]

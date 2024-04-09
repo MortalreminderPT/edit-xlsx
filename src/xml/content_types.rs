@@ -31,11 +31,30 @@ enum ContentType{
     }
 }
 
+impl ContentType {
+    fn get_extension(&self) -> Option<&str> {
+        if let ContentType::Default { extension, content_type } = self {
+            Some(&extension)
+        } else {
+            None
+        }
+    }
+}
+
+impl ContentTypes {
+    fn get_mut_by_extension(&self, extension: &str) -> bool {
+        self.content_types.iter().find(|c| c.get_extension() == Some(extension)).is_some()
+    }
+}
+
 impl ContentTypes {
     pub(crate) fn add_png(&mut self) {
         self.content_types.insert(ContentType::png_default());
     }
     pub(crate) fn add_bin(&mut self, extension: &str) {
+        if self.get_mut_by_extension(extension) {
+            return;
+        }
         self.content_types.insert(ContentType::octet_stream_default(extension));
     }
     pub(crate) fn add_drawing(&mut self, id: u32) { self.content_types.insert(ContentType::drawing_override(id)); }

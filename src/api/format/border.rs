@@ -1,18 +1,19 @@
+use std::fmt::{Display, Formatter};
 use crate::FormatColor;
 
 #[derive(Clone)]
 pub struct FormatBorder<'a> {
-    pub(crate) left: FormatBorderElement<'a>,
-    pub(crate) right: FormatBorderElement<'a>,
-    pub(crate) top: FormatBorderElement<'a>,
-    pub(crate) bottom: FormatBorderElement<'a>,
-    pub(crate) diagonal: FormatBorderElement<'a>,
+    pub left: FormatBorderElement<'a>,
+    pub right: FormatBorderElement<'a>,
+    pub top: FormatBorderElement<'a>,
+    pub bottom: FormatBorderElement<'a>,
+    pub diagonal: FormatBorderElement<'a>,
 }
 
 #[derive(Copy, Clone)]
 pub struct FormatBorderElement<'a> {
-    pub(crate) border_type: FormatBorderType,
-    pub(crate) color: FormatColor<'a>,
+    pub border_type: FormatBorderType,
+    pub color: FormatColor<'a>,
 }
 
 impl Default for FormatBorderElement<'_> {
@@ -54,6 +55,12 @@ pub enum FormatBorderType {
     SlantDashDot,
 }
 
+impl Display for FormatBorderType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.to_str())
+    }
+}
+
 impl Default for FormatBorderType {
     fn default() -> Self {
         Self::None
@@ -77,6 +84,25 @@ impl FormatBorderType {
             FormatBorderType::DashDotDot => "dashDotDot",
             FormatBorderType::MediumDashDotDot => "mediumDashDotDot",
             FormatBorderType::SlantDashDot => "slantDashDot",
+        }
+    }
+
+    pub(crate) fn from_str(border_str: &str) -> Self {
+        match border_str {
+            "thin" => FormatBorderType::Thin,
+            "medium" => FormatBorderType::Medium,
+            "dashed" => FormatBorderType::Dashed,
+            "dotted" => FormatBorderType::Dotted,
+            "thick" => FormatBorderType::Thick,
+            "double" => FormatBorderType::Double,
+            "hair" => FormatBorderType::Hair,
+            "mediumDashed" => FormatBorderType::MediumDashed,
+            "dashDot" => FormatBorderType::DashDot,
+            "mediumDashDot" => FormatBorderType::MediumDashDot,
+            "dashDotDot" => FormatBorderType::DashDotDot,
+            "mediumDashDotDot" => FormatBorderType::MediumDashDotDot,
+            "slantDashDot" => FormatBorderType::SlantDashDot,
+            _ => FormatBorderType::None,
         }
     }
 }

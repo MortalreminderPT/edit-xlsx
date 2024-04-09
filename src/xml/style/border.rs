@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use crate::api::format::border::{FormatBorder, FormatBorderElement};
+use crate::FormatBorderType;
 use crate::xml::common::FromFormat;
 use crate::xml::style::color::Color;
 
@@ -82,11 +83,24 @@ impl FromFormat<FormatBorder<'_>> for Border {
         self.bottom = BorderElement::from_format(&format.bottom);
         self.diagonal = BorderElement::from_format(&format.diagonal);
     }
+
+    fn set_format(&self, format: &mut FormatBorder<'_>) {
+        format.left = self.left.get_format();
+        // todo!()
+    }
 }
 
 impl FromFormat<FormatBorderElement<'_>> for BorderElement {
     fn set_attrs_by_format(&mut self, format: &FormatBorderElement) {
         self.style = Some(String::from(format.border_type.to_str()));
         self.color = Some(Color::from_format(&format.color));
+    }
+
+    fn set_format(&self, format: &mut FormatBorderElement<'_>) {
+        // format.color = self.color.unwrap_or_default();
+        match &self.style {
+            None => format.border_type = FormatBorderType::default(),
+            Some(style) => format.border_type = FormatBorderType::from_str(style)
+        }
     }
 }

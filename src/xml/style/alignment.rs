@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use crate::api::format::FormatAlign;
+use crate::FormatAlignType;
 use crate::xml::common::FromFormat;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
@@ -38,6 +39,13 @@ impl FromFormat<FormatAlign> for Alignment {
         }
         self.reading_order = format.reading_order;
         self.indent = format.indent;
+    }
+
+    fn set_format(&self, format: &mut FormatAlign) {
+        format.indent = self.indent;
+        format.reading_order = self.reading_order;
+        format.horizontal = FormatAlignType::from_str(self.horizontal.as_ref(), true);
+        format.vertical = FormatAlignType::from_str(self.horizontal.as_ref(), false);
     }
 }
 

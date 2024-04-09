@@ -1,5 +1,6 @@
 extern crate proc_macro;
 use std::hash::Hash;
+use std::ops::{Deref, DerefMut};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -72,13 +73,13 @@ impl XmlnsAttrs {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
-pub(crate) struct Element<T: Clone + PartialEq> {
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Default)]
+pub(crate) struct Element<T: Clone + PartialEq + Default> {
     #[serde(rename = "@val")]
     pub(crate) val: T
 }
 
-impl<T: Clone + PartialEq> Element<T> {
+impl<T: Clone + PartialEq + Default> Element<T> {
     pub(crate) fn from_val(val: T) -> Element<T> {
         Element {
             val
@@ -86,17 +87,12 @@ impl<T: Clone + PartialEq> Element<T> {
     }
 }
 
-impl<T:Clone + PartialEq + Default> Default for Element<T> {
-    fn default() -> Self {
-        Element {
-            val: T::default(),
-        }
-    }
-}
-
-impl<T: Clone + PartialEq + Default> FromFormat<T> for Element<T> {
+impl<T: Copy + Clone + PartialEq + Default> FromFormat<T> for Element<T> {
     fn set_attrs_by_format(&mut self, format: &T) {
         self.val = format.clone();
+    }
+    fn set_format(&self, format: &mut T) {
+        *format = self.val;
     }
 }
 
@@ -193,11 +189,29 @@ impl XmlnsAttrs {
 pub(crate) fn is_zero(num: &u32) -> bool {
     num.eq(&0)
 }
-pub(crate) trait FromFormat<T>: Default {
+pub(crate) trait FromFormat<T: Default>: Default {
     fn set_attrs_by_format(&mut self, format: &T);
+    fn set_format(&self, format: &mut T);
     fn from_format(format: &T) -> Self {
         let mut def = Self::default();
         def.set_attrs_by_format(format);
         def
+    }
+    fn get_format(&self) -> T {
+        let mut format = T::default();
+        self.set_format(&mut format);
+        format
+    }
+}
+
+impl<ApiFormat: Default, XmlFormat: Default + FromFormat<ApiFormat>> FromFormat<ApiFormat> for Option<&XmlFormat> {
+    fn set_attrs_by_format(&mut self, format: &ApiFormat) {
+    }
+
+    fn set_format(&self, format: &mut ApiFormat) {
+        *format = match self {
+            Some(format) => format.get_format(),
+            None => ApiFormat::default(),
+        }
     }
 }

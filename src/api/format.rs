@@ -36,6 +36,10 @@ impl<'a> Format<'a> {
     pub fn get_size(&self) -> f64 {
         self.font.size
     }
+
+    pub fn get_borders(&self) -> &FormatBorder {
+        &self.border
+    }
 }
 
 impl<'a> Format<'a> {

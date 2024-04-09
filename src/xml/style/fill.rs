@@ -66,6 +66,14 @@ impl FromFormat<FormatFill<'_>> for Fill {
         self.pattern_fill.fg_color = Some(fg_color);
         self.pattern_fill.pattern_type = String::from(format.pattern_type);
     }
+
+    fn set_format<'a>(&self, format: &'a mut FormatFill) {
+        let mut format_new = FormatFill::default();
+        format_new.fg_color = self.pattern_fill.fg_color.as_ref().get_format();
+        // format.fg_color = self.pattern_fill.fg_color.as_ref().unwrap().get_format();
+        // format_new.pattern_type = &self.pattern_fill.pattern_type.as_str();//.to_string();
+        *format = format_new
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]

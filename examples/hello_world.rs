@@ -46,7 +46,7 @@ fn main() -> WorkbookResult<()> {
     // Merge cells.
     worksheet.merge_range_with_format("A1:C3", "Merged Range", &merge_format)?;
     // Add an image
-    worksheet.insert_image("A4:C10", &"./examples/pics/rust.png");
+    worksheet.insert_image("A4:C10", &"./examples/pics/rust.png")?;
     workbook.save_as("examples/hello_world.xlsx")?;
     Ok(())
 }
