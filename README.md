@@ -80,7 +80,7 @@ fn main() -> WorkbookResult<()> {
         .set_border(FormatBorderType::Double)
         .set_align(FormatAlignType::Center)
         .set_align(FormatAlignType::VerticalCenter)
-        .set_background_color(FormatColor::RGB("00ffff00"));
+        .set_background_color(FormatColor::RGB("00ffff00".to_string()));
     // Merge cells.
     worksheet.merge_range_with_format("A1:C3", "Merged Range", &merge_format)?;
     // Add an image
