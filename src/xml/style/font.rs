@@ -76,25 +76,6 @@ impl Default for Font {
     }
 }
 
-impl FromFormat<FormatFont<'_>> for Font {
-    fn set_attrs_by_format(&mut self, format: &FormatFont) {
-        self.color = Some(Color::from_format(&format.color));
-        self.name = Element::from_val(format.name.to_string());
-        self.sz = Element::from_val(format.size);
-        self.bold = if format.bold { Some(Bold::default()) } else { None };
-        self.underline = if format.underline { Some(Underline::default()) } else { None };
-        self.italic = if format.italic { Some(Italic::default()) } else { None };
-    }
-
-    fn set_format(&self, format: &mut FormatFont<'_>) {
-        format.bold = self.bold.is_some();
-        format.italic = self.italic.is_some();
-        format.underline = self.underline.is_some();
-        format.size = self.sz.get_format();
-        format.name = self.name.val.to_string();
-    }
-}
-
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct Bold {
 

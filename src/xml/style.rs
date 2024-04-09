@@ -209,7 +209,6 @@ impl StyleSheet {
                 format.border = border.get_format();
                 let fill = &self.fills.as_ref().unwrap().get_fill(xf.fill_id);
                 format.fill = fill.get_format();
-                // let fill = &self.fills.as_ref().unwrap().get_fill(xf.fill_id);
             }
         }
     }

@@ -40,9 +40,9 @@ pub(crate) struct Border {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct BorderElement {
     #[serde(rename = "@style", skip_serializing_if = "Option::is_none")]
-    style: Option<String>,
+    pub(crate) style: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    color: Option<Color>,
+    pub(crate) color: Option<Color>,
 }
 
 impl Default for BorderElement {
@@ -71,39 +71,6 @@ impl Default for Borders {
         Borders {
             count: 0,
             border: vec![],
-        }
-    }
-}
-
-impl FromFormat<FormatBorder<'_>> for Border {
-    fn set_attrs_by_format(&mut self, format: &FormatBorder) {
-        self.left = BorderElement::from_format(&format.left);
-        self.right = BorderElement::from_format(&format.right);
-        self.top = BorderElement::from_format(&format.top);
-        self.bottom = BorderElement::from_format(&format.bottom);
-        self.diagonal = BorderElement::from_format(&format.diagonal);
-    }
-
-    fn set_format(&self, format: &mut FormatBorder<'_>) {
-        format.left = self.left.get_format();
-        format.right = self.right.get_format();
-        format.top = self.top.get_format();
-        format.bottom = self.bottom.get_format();
-        format.diagonal = self.diagonal.get_format();
-    }
-}
-
-impl FromFormat<FormatBorderElement<'_>> for BorderElement {
-    fn set_attrs_by_format(&mut self, format: &FormatBorderElement) {
-        self.style = Some(String::from(format.border_type.to_str()));
-        self.color = Some(Color::from_format(&format.color));
-    }
-
-    fn set_format(&self, format: &mut FormatBorderElement<'_>) {
-        // format.color = self.color.unwrap_or_default();
-        match &self.style {
-            None => format.border_type = FormatBorderType::default(),
-            Some(style) => format.border_type = FormatBorderType::from_str(style)
         }
     }
 }
