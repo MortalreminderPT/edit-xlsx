@@ -30,8 +30,8 @@ impl FromFormat<FormatColor> for Color {
     fn set_format(&self, format: &mut FormatColor) {
         *format = if let Some(id) = self.indexed {
             FormatColor::Index(id)
-        } else if let (Some(theme), Some(tint)) = (self.theme, self.tint) {
-            FormatColor::Theme(theme, tint)
+        } else if let (Some(theme), tint) = (self.theme, self.tint) {
+            FormatColor::Theme(theme, tint.unwrap_or_default())
         } else if let Some(color) = &self.rgb {
             FormatColor::RGB(color.clone())
         } else {

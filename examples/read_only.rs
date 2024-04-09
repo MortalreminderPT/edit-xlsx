@@ -2,7 +2,7 @@ use edit_xlsx::{Workbook, WorkbookResult, Read, Write};
 
 fn main() -> WorkbookResult<()> {
     // from an existed workbook
-    let mut reading_book = Workbook::from_path("examples/hello_world.xlsx")?;
+    let mut reading_book = Workbook::from_path("examples/xlsx/accounting.xlsx")?;
     reading_book.finish();
     // Read the first sheet
     let reading_sheet = reading_book.read_worksheet(1)?;
