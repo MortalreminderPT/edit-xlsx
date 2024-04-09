@@ -4,11 +4,11 @@ fn main() -> WorkbookResult<()> {
     // Create a new workbook called simple.xls and add some worksheets.
     let mut workbook = Workbook::new();
     let header1 = Format::default()
-        .set_color(FormatColor::RGB("00ffffff"))
-        .set_background_color(FormatColor::RGB("0074AC4C"));
+        .set_color(FormatColor::RGB("00ffffff".to_string()))
+        .set_background_color(FormatColor::RGB("0074AC4C".to_string()));
     let header2 = Format::default()
-        .set_color(FormatColor::RGB("00ffffff"))
-        .set_background_color(FormatColor::RGB("00528FD3"));
+        .set_color(FormatColor::RGB("00ffffff".to_string()))
+        .set_background_color(FormatColor::RGB("00528FD3".to_string()));
 
     //
     // Example of using the FILTER() function.
