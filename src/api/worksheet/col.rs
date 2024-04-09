@@ -1,6 +1,6 @@
+use std::collections::HashMap;
 use crate::api::cell::location::LocationRange;
 use crate::api::worksheet::format::_Format;
-use crate::api::worksheet::row::RowSet;
 use crate::api::worksheet::WorkSheet;
 use crate::Format;
 use crate::result::WorkSheetResult;

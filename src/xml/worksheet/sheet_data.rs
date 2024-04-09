@@ -9,7 +9,11 @@ use crate::api::cell::formula::FormulaType;
 use crate::api::cell::location::Location;
 use crate::api::cell::values::{CellDisplay, CellType, CellValue};
 use crate::api::worksheet::row::RowSet;
+use crate::result::CellError::CellNotFound;
+use crate::result::RowError::{CellError, RowNotFound};
 use crate::result::RowResult;
+use crate::result::WorkSheetError::RowError;
+use crate::WorkSheetResult;
 use crate::xml::worksheet::sheet_data::cell::Cell;
 use crate::xml::worksheet::sheet_data::row::{_OrderCell, Row};
 
@@ -32,6 +36,13 @@ impl SheetData {
         match self.rows.last() {
             Some(row) => row.row,
             None => 0
+        }
+    }
+
+    pub(crate) fn get_row_height(&self, row: u32) -> WorkSheetResult<f64> {
+        match self.get_row(row) {
+            Some(row) => row.height.ok_or(RowError(CellError(CellNotFound))),
+            None => Err(RowError(RowNotFound))
         }
     }
 

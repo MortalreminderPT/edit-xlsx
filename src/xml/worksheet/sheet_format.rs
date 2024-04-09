@@ -32,6 +32,10 @@ impl SheetFormatPr {
         self.default_row_height = height;
     }
 
+    pub(crate) fn get_default_row_height(&self) -> f64 {
+        self.default_row_height
+    }
+
     pub(crate) fn hide_unused_rows(&mut self, hide: bool) {
         self.zero_height = Some(hide as u8);
     }

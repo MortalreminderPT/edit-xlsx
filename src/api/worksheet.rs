@@ -187,6 +187,11 @@ impl WorkSheet {
         worksheet.set_default_row_height(height);
     }
 
+    pub fn get_default_row(&self) -> f64 {
+        let worksheet = &self.worksheet;
+        worksheet.get_default_row_height()
+    }
+
     pub fn hide_unused_rows(&mut self, hide: bool) {
         let worksheet = &mut self.worksheet;
         worksheet.hide_unused_rows(hide);

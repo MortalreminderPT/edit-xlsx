@@ -28,12 +28,8 @@ impl FromFormat<FormatFill> for Fill {
     }
 
     fn set_format<'a>(&self, format: &'a mut FormatFill) {
-        // let mut format_new = FormatFill::default();
         format.fg_color = self.pattern_fill.fg_color.as_ref().get_format();
         format.bg_color = self.pattern_fill.bg_color.as_ref().get_format();
         format.pattern_type = self.pattern_fill.pattern_type.to_string();
-        // format.fg_color = self.pattern_fill.fg_color.as_ref().unwrap().get_format();
-        // format_new.pattern_type = &self.pattern_fill.pattern_type.as_str();//.to_string();
-        // *format = format_new
     }
 }

@@ -159,6 +159,10 @@ impl WorkSheet {
         self.sheet_format_pr.set_default_row_height(height);
     }
 
+    pub(crate) fn get_default_row_height(&self) -> f64 {
+        self.sheet_format_pr.get_default_row_height()
+    }
+
     pub(crate) fn hide_unused_rows(&mut self, hide: bool) {
         self.sheet_format_pr.hide_unused_rows(hide);
     }
