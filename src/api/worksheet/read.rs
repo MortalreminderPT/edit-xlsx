@@ -9,9 +9,9 @@ pub trait Read: _Read {
     fn read_text<L: Location>(&self, loc: L) -> WorkSheetResult<&str> { self.read_value(loc) }
     fn read_string<L: Location>(&self, loc: L) -> WorkSheetResult<&str> { self.read_value(loc) }
     fn read_shared_string<L: Location>(&self, loc: L) -> WorkSheetResult<&str> { self.read_value(loc) }
-    fn read_number<L: Location>(&self, loc: L) -> WorkSheetResult<i32> { Ok(0) }
-    fn read_double<L: Location>(&self, loc: L) -> WorkSheetResult<f64> { Ok(0.0) }
-    fn read_boolean<L: Location>(&self, loc: L) -> WorkSheetResult<bool> { Ok(false) }
+    // fn read_number<L: Location>(&self, loc: L) -> WorkSheetResult<i32> { Ok(0) }
+    // fn read_double<L: Location>(&self, loc: L) -> WorkSheetResult<f64> { Ok(0.0) }
+    // fn read_boolean<L: Location>(&self, loc: L) -> WorkSheetResult<bool> { Ok(false) }
     fn read_url<L: Location>(&self, loc: L) -> WorkSheetResult<&str> { Ok("") }
     fn read_format<L: Location>(&self, loc: L) -> WorkSheetResult<Format> {self.read_format_all(loc)}
 }
@@ -30,7 +30,6 @@ impl _Read for WorkSheet {
         let cell_type = sheet_data.get_cell_type(&loc);
         cell_type.ok_or(WorkSheetError::RowError(RowError::CellError(CellError::CellNotFound)))
     }
-
     fn read_value<L: Location>(&self, loc: L) -> WorkSheetResult<&str> {
         let worksheet = &self.worksheet;
         let sheet_data = &worksheet.sheet_data;
@@ -59,12 +58,11 @@ impl _Read for WorkSheet {
             }
         }
     }
-
     fn read_format_all<L: Location>(&self, loc: L) -> WorkSheetResult<Format> {
         let worksheet = &self.worksheet;
         let sheet_data = &worksheet.sheet_data;
         match sheet_data.get_default_style(&loc) {
-            Some(style) => Ok(self.get_format(style)), // Ok(Format::from_style(&self.style_sheet.borrow(), style)),
+            Some(style) => Ok(self.get_format(style)),
             None => Err(WorkSheetError::FileNotFound)
         }
     }

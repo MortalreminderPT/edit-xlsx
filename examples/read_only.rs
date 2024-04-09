@@ -1,19 +1,20 @@
-use edit_xlsx::{Workbook, WorkbookResult, Read};
+use edit_xlsx::{Workbook, WorkbookResult, Read, Write, Col};
 
 fn main() -> WorkbookResult<()> {
     // from an existed workbook
-    let mut workbook = Workbook::from_path("examples/hello_world.xlsx")?;
-    workbook.finish();
+    let mut reading_book = Workbook::from_path("examples/xlsx/accounting.xlsx")?;
+    reading_book.finish();
     // Read the first sheet
-    let sheet = workbook.read_worksheet(1)?;
-    for row in 1..=sheet.max_row() {
-        for col in 1..=sheet.max_column() {
-            // print!("{}\t", sheet.read((row, col)).unwrap_or_default());
-            let format = sheet.read_format((row, col)).unwrap_or_default();
-            let borders = format.get_borders();
-            print!("{}\t", borders.left.border_type);
+    let reading_sheet = reading_book.read_worksheet(1)?;
+    let mut writing_book = Workbook::new();
+    let writing_sheet = writing_book.get_worksheet(1)?;
+    for row in 1..=reading_sheet.max_row() {
+        for col in 1..=reading_sheet.max_column() {
+            let text = reading_sheet.read((row, col)).unwrap_or_default();
+            let format = reading_sheet.read_format((row, col)).unwrap_or_default();
+            writing_sheet.write_with_format((row, col), text, &format).unwrap()
         }
-        println!()
     }
+    writing_book.save_as("./examples/new.xlsx")?;
     Ok(())
 }

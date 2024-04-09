@@ -1,4 +1,5 @@
 use std::slice::Iter;
+use crate::api::cell::Cell;
 use crate::api::cell::formula::FormulaType;
 use crate::api::cell::values::{CellDisplay, CellValue};
 use crate::api::cell::location::{Location, LocationRange};
@@ -94,6 +95,7 @@ pub trait Write: _Write {
 }
 
 pub(crate) trait _Write: _Format + _Hyperlink {
+    // fn write_cell<L: Location, T: CellDisplay + CellValue>(&mut self, loc: &L, cell: &Cell<T>) -> WorkSheetResult<()>;
     fn write_display_all<L: Location, T: CellDisplay + CellValue>(&mut self, loc: &L, data: &T, format: Option<&Format>) -> WorkSheetResult<()>;
     fn write_formula_all<L: Location>(&mut self, loc: &L, formula: &str, formula_type: FormulaType, format: Option<&Format>) -> WorkSheetResult<()>;
     fn write_hyperlink<L: Location>(&mut self, loc: &L, url: &str, data: &str, format: Option<&Format>) -> WorkSheetResult<()>;
@@ -108,6 +110,7 @@ impl _Write for WorkSheet {
         }
         let worksheet = &mut self.worksheet;
         let sheet_data = &mut worksheet.sheet_data;
+        // sheet_data.write_display(loc, data, style)?;
         sheet_data.write_display(loc, data, style)?;
         Ok(())
     }

@@ -45,7 +45,7 @@ pub(crate) struct Font {
     pub(crate) sz: Element<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) color: Option<Color>,
-    name: Element<String>,
+    pub(crate) name: Element<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     family: Option<Element<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -91,6 +91,7 @@ impl FromFormat<FormatFont<'_>> for Font {
         format.italic = self.italic.is_some();
         format.underline = self.underline.is_some();
         format.size = self.sz.get_format();
+        format.name = self.name.val.to_string();
     }
 }
 

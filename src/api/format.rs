@@ -5,6 +5,7 @@ pub use crate::api::format::border::{FormatBorder, FormatBorderElement, FormatBo
 pub use color::FormatColor;
 pub use crate::api::format::fill::FormatFill;
 pub use font::FormatFont;
+use crate::api::cell::values::CellType::String;
 
 mod align;
 mod color;
@@ -74,7 +75,7 @@ impl<'a> Format<'a> {
     }
 
     pub fn set_font(mut self, font_name: &'a str) -> Self {
-        self.font.name = font_name;
+        self.font.name = font_name.to_string();
         self
     }
 

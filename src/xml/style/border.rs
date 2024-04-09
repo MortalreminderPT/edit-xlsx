@@ -86,7 +86,10 @@ impl FromFormat<FormatBorder<'_>> for Border {
 
     fn set_format(&self, format: &mut FormatBorder<'_>) {
         format.left = self.left.get_format();
-        // todo!()
+        format.right = self.right.get_format();
+        format.top = self.top.get_format();
+        format.bottom = self.bottom.get_format();
+        format.diagonal = self.diagonal.get_format();
     }
 }
 

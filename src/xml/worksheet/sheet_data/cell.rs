@@ -7,6 +7,7 @@ use crate::api::cell::formula::FormulaType;
 use crate::api::cell::location::Location;
 use crate::xml::worksheet::sheet_data::cell::formula::Formula;
 use crate::api::cell::values::{CellDisplay, CellValue, CellType};
+use crate::result::RowResult;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Cell {
@@ -111,6 +112,21 @@ impl Cell {
         }
         self.cell_type = Some(text.to_cell_type());
         self.formula = None;
+    }
+
+    pub(crate) fn update<T: CellDisplay + CellValue>(
+        &mut self,
+        text: Option<&T>,
+        formula: Option<&str>,
+        formula_type: Option<FormulaType>,
+        style: Option<u32>
+    ) {
+        if let Some(text) = text {
+            self.update_by_display(text, style);
+        }
+        if let (Some(formula), Some(formula_type)) = (formula, formula_type) {
+            self.update_by_formula(formula, formula_type, style)
+        }
     }
 
     pub(crate) fn update_by_formula(&mut self, formula: &str, formula_type: FormulaType, style: Option<u32>) {

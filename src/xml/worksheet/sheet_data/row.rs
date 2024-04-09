@@ -56,6 +56,19 @@ impl Row {
         }
     }
 
+    pub(crate) fn add_cell<T: CellDisplay + CellValue>(
+        &mut self,
+        col: u32,
+        text: Option<&T>,
+        formula: Option<&str>,
+        formula_type: Option<FormulaType>,
+        style: Option<u32>
+    ) {
+        // 判断新增cell位置是否已经存在别的cell
+        let cell = self.get_or_new_cell(col);
+        cell.update(text, formula, formula_type, style)
+    }
+
     pub(crate) fn add_display_cell<T: CellDisplay + CellValue>(&mut self, col: u32, text: &T, style: Option<u32>) {
         // 判断新增cell位置是否已经存在别的cell
         let cell = self.get_or_new_cell(col);

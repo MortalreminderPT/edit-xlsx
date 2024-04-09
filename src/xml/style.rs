@@ -205,7 +205,7 @@ impl StyleSheet {
             if let Some(xf) = cell_xfs.get_xf(style_id) {
                 let font = &self.fonts.as_ref().unwrap().get_font(xf.font_id);
                 format.font = font.get_format();
-                let border = &self.borders.as_ref().unwrap().get_border(xf.fill_id);
+                let border = &self.borders.as_ref().unwrap().get_border(xf.border_id);
                 format.border = border.get_format();
                 let fill = &self.fills.as_ref().unwrap().get_fill(xf.fill_id);
                 format.fill = fill.get_format();
