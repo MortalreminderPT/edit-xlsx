@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use crate::api::cell::location::LocationRange;
 use crate::api::worksheet::format::_Format;
 use crate::api::worksheet::WorkSheet;
@@ -64,7 +63,7 @@ impl _Col for WorkSheet {
     fn set_col_by_colset<R: LocationRange>(&mut self, col_range: R, col_set: &ColSet) -> WorkSheetResult<()> {
         // let (start, end) = col_range.to_col_range();
         // for col in start..=end {
-            self.worksheet.set_col_by_colset(col_range, col_set)?;
+        self.worksheet.set_col_by_colset(col_range, col_set)?;
         // }
         Ok(())
     }

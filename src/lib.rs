@@ -4,6 +4,7 @@ mod xml;
 mod result;
 mod utils;
 mod api;
+mod core;
 
 pub use api::workbook::Workbook;
 pub use api::worksheet::WorkSheet;

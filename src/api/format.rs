@@ -15,10 +15,10 @@ pub mod border;
 
 #[derive(Default, Clone)]
 pub struct Format {
-    pub(crate) font: FormatFont,
-    pub(crate) border: FormatBorder,
-    pub(crate) fill: FormatFill,
-    pub(crate) align: FormatAlign,
+    pub font: FormatFont,
+    pub border: FormatBorder,
+    pub fill: FormatFill,
+    pub align: FormatAlign,
 }
 
 impl Format {
@@ -36,6 +36,10 @@ impl Format {
 
     pub fn get_size(&self) -> f64 {
         self.font.size
+    }
+
+    pub fn get_background(&self) -> &FormatFill {
+        &self.fill
     }
 
     pub fn get_borders(&self) -> &FormatBorder {

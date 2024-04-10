@@ -60,8 +60,8 @@ impl _Read for WorkSheet {
     }
     fn read_format_all<L: Location>(&self, loc: L) -> WorkSheetResult<Format> {
         let worksheet = &self.worksheet;
-        let sheet_data = &worksheet.sheet_data;
-        match sheet_data.get_default_style(&loc) {
+        // let sheet_data = &worksheet.sheet_data;
+        match worksheet.get_default_style(&loc) {
             Some(style) => Ok(self.get_format(style)),
             None => Err(WorkSheetError::FileNotFound)
         }
