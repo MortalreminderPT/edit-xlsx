@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::cmp;
 use std::collections::HashSet;
 use std::fmt::Display;
 use std::rc::Rc;
@@ -122,17 +123,6 @@ impl<T: Clone + Default> InternalTree<T> {
             }
         }
     }
-    // fn display(&self) {
-    //     match &self.left_child {
-    //         None => {},
-    //         Some(left_child) => left_child.borrow().display(),
-    //     };
-    //     // println!("[{}, {}]: {}", self.node.borrow().left, self.node.borrow().right, self.node.borrow().value.display());
-    //     match &self.right_child {
-    //         None => {},
-    //         Some(right_child) => right_child.borrow().display(),
-    //     };
-    // }
     fn recurse_insert(&self, v: &mut Vec<(i32, i32, T)>) {
         match &self.left_child {
             None => {},
@@ -159,13 +149,49 @@ impl<T: Clone + Default> InternalTree<T> {
             }
         }
     }
+    fn recurse_find_ran(&self, left: i32, right: i32, v: &mut Vec<(i32, i32, T)>) {
+        if right <= self.node.borrow().right && left >= self.node.borrow().left {
+            v.push((left, right, self.node.borrow().value.clone()));
+        } else if right <= self.node.borrow().left {
+            match &self.left_child {
+                None => {},
+                Some(left_child) => left_child.borrow_mut().recurse_find_ran(left, right, v),
+            };
+        } else if left >= self.node.borrow().right {
+            match &self.right_child {
+                None => {},
+                Some(right_child) => right_child.borrow_mut().recurse_find_ran(left, right, v),
+            };
+        } else {
+            println!("{} {} not in {} {}", left, right, self.node.borrow().left, self.node.borrow().right);
+            let mut set = HashSet::new();
+            set.insert(left);
+            set.insert(right);
+            set.insert(self.node.borrow().left);
+            set.insert(self.node.borrow().right);
+            let mut inters = set.iter().map(|v| *v).collect::<Vec<i32>>();// vec![left, right, new_left, new_right];
+            inters.sort();
+            for i in 0..inters.len() - 1 {
+                if inters[i] >= left && inters[i + 1] <= right {
+                    self.recurse_find_ran(inters[i], inters[i + 1], v);
+                }
+            }
+            // 0..4
+            // 4..5
+            // 5..150
+        }
+    }
 }
 
 impl<T: Clone + Default> InternalTree<T> {
     pub(crate) fn index(&self, id: i32) -> Option<T> {
         self.recurse_find(id)
     }
-
+    pub(crate) fn index_range(&self, left: i32, right: i32) -> Vec<(i32, i32, T)> {
+        let mut v = vec![];
+        self.recurse_find_ran(left, right, &mut v);
+        v
+    }
     pub(crate) fn update(&mut self, left: i32, right: i32, value: &T) -> Option<()> {
         if right - left < 1 {
             None
@@ -174,13 +200,11 @@ impl<T: Clone + Default> InternalTree<T> {
             Some(())
         }
     }
-
     pub(crate) fn from_vec(internals: &Vec<(i32, i32, T)>) -> InternalTree<T> {
         let mut tree: InternalTree<T> = InternalTree::from_internal(internals[0].0, internals[0].1);
         internals.iter().for_each(|i| tree.update(i.0, i.1, &i.2).unwrap());
         tree
     }
-
     pub(crate) fn to_vec(self) -> Vec<(i32, i32, T)> {
         let mut v = vec![];
         self.recurse_insert(&mut v);
@@ -192,12 +216,16 @@ impl<T: Clone + Default> InternalTree<T> {
 fn test_internal() {
     let internals = vec![(4, 8, 4..8), (3, 10, 3..10), (5, 7, 5..7), (100, 200, 100..200)];
     let internal_tree = InternalTree::from_vec(&internals);
-    println!("{:?}", internal_tree.index(6));
-    println!("{:?}", internal_tree.index(7));
-    println!("{:?}", internal_tree.index(60));
-    println!("{:?}", internal_tree.index(100));
-    println!("{:?}", internal_tree.index(99));
-    println!("{:?}", internal_tree.index(200));
+    // println!("{:?}", internal_tree.index(6));
+    // println!("{:?}", internal_tree.index(7));
+    // println!("{:?}", internal_tree.index(60));
+    // println!("{:?}", internal_tree.index(100));
+    // println!("{:?}", internal_tree.index(100));
+    // println!("{:?}", internal_tree.index(7));
+    // println!("{:?}", internal_tree.index(150));
+    // internal_tree.index_range(1, 700);
+    // internal_tree.index_range(0, 3);
+    println!("index: {:?}", internal_tree.index_range(1, 205));
     let ordered_internals = internal_tree.to_vec();
-    println!("{:?}", ordered_internals);
+    println!("res: {:?}", ordered_internals);
 }
