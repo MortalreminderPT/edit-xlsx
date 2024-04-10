@@ -46,8 +46,8 @@ pub(crate) struct WorkSheet {
     pub(crate) sheet_views: SheetViews,
     #[serde(rename = "sheetFormatPr")]
     sheet_format_pr: SheetFormatPr,
-    #[serde(rename = "cols", default)]
-    pub(crate) cols: Cols,
+    #[serde(rename = "cols", skip_serializing_if = "Option::is_none")]
+    pub(crate) cols: Option<Cols>,
     #[serde(rename = "sheetData", default)]
     pub(crate) sheet_data: SheetData,
     #[serde(rename = "mergeCells", skip_serializing_if = "Option::is_none")]
@@ -96,11 +96,17 @@ impl WorkSheet {
 impl WorkSheet {
     pub(crate) fn get_col<R: LocationRange>(&self, col_range: R) -> ColResult<Vec<(u32, u32, Column)>> {
         let (min, max) = col_range.to_col_range();
-        let res = self.cols
-            .index_range_col_tree(min, max)
-            .iter()
-            .map(|(min, max, col)| (*min, *max, col.to_api_column()))
-            .collect();
+        let res = match &self.cols {
+            None => {
+                vec![]
+            }
+            Some(cols) => {
+                cols.index_range_col_tree(min, max)
+                    .iter()
+                    .map(|(min, max, col)| (*min, *max, col.to_api_column()))
+                    .collect()
+            }
+        };
         Ok(res)
     }
 
@@ -124,7 +130,7 @@ impl WorkSheet {
             self.sheet_format_pr.set_outline_level_col(col.outline_level.unwrap_or(0) as u8);
             col.collapsed = Some(collapsed)
         }
-        self.cols.update_col_tree(min, max, col);
+        self.cols.get_or_insert(Cols::default()).update_col_tree(min, max, col);
         Ok(())
     }
 }
@@ -231,7 +237,7 @@ impl Default for WorkSheet {
             dimension: Some(Dimension::default()),
             sheet_views: SheetViews::default(),
             sheet_format_pr: SheetFormatPr::default(),
-            cols: Cols::default(),
+            cols: None,
             sheet_data: SheetData::default(),
             merge_cells: None,
             phonetic_pr: None,
