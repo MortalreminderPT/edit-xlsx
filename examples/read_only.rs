@@ -1,8 +1,8 @@
-use edit_xlsx::{Workbook, WorkbookResult, Read, Write, Col, Row, Format, FormatColor};
+use edit_xlsx::{Workbook, WorkbookResult, Col, Read, Write, Row, WorkSheetResult};
 
 fn main() -> WorkbookResult<()> {
     // from an existed workbook
-    let mut reading_book = Workbook::from_path("examples/xlsx/accounting.xlsx")?;
+    let mut reading_book = Workbook::from_path("examples/new.xlsx")?;
     reading_book.finish();
     // Read the first sheet
     let reading_sheet = reading_book.read_worksheet(1)?;
@@ -12,22 +12,35 @@ fn main() -> WorkbookResult<()> {
     // let bg_format = reading_sheet.read_format();
 
     // Synchronous column width
-    let widths = reading_sheet.get_column_width((1, 1, 1, 16384))?;
-    widths.iter().for_each(|(min, max, width)|{
-        if let Some(width) = width {
-            writing_sheet.set_column((1, *min, 1, *max), *width).unwrap();
+    let mut widths = reading_sheet.get_columns_with_format((1, 1, 1, 16384))?;
+    widths.iter_mut().for_each(|(min, max, column, format)| {
+        if let Some(format) = format {
+            writing_sheet.set_columns_with_format((1, *min, 1, *max), column, format).unwrap()
+        } else {
+            writing_sheet.set_columns((1, *min, 1, *max), column).unwrap()
         }
     });
+
+    // Read then write text and format
     for row in 1..=reading_sheet.max_row() {
         for col in 1..=reading_sheet.max_column() {
-            let text = reading_sheet.read((row, col)).unwrap_or_default();
-            let format = reading_sheet.read_format((row, col)).unwrap_or_default();
-            writing_sheet.write_with_format((row, col), text, &format).unwrap();
+            match (reading_sheet.read((row, col)), reading_sheet.read_format((row, col))) {
+                (Ok(text), Ok(format)) => {
+                    writing_sheet.write_with_format((row, col), text, &format).unwrap();
+                }
+                (Ok(text), _) => {
+                    writing_sheet.write((row, col), text).unwrap();
+                }
+                (_, Ok(format)) => {
+                    writing_sheet.write_with_format((row, col), "", &format).unwrap();
+                }
+                _ => {}
+            }
             if let Ok(height) = writing_sheet.get_row(row) {
                 writing_sheet.set_row(row, height)?;
             }
         }
     }
-    writing_book.save_as("./examples/new.xlsx")?;
+    writing_book.save_as("./examples/new2.xlsx")?;
     Ok(())
 }

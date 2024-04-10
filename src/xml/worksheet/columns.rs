@@ -1,6 +1,7 @@
 use std::cmp;
 use std::fmt::Debug;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use crate::api::worksheet::col::Column;
 use crate::core::internal_tree::InternalTree;
 use crate::result::ColResult;
 
@@ -21,10 +22,10 @@ impl Cols {
         self.col_tree.update(min as i32, max as i32 + 1, &col).unwrap();
     }
 
-    pub(crate) fn index_range_col_tree(&self, min: u32, max: u32) -> Vec<(u32, u32, Option<f64>)> {
+    pub(crate) fn index_range_col_tree(&self, min: u32, max: u32) -> Vec<(u32, u32, Col)> {
         self.col_tree.index_range(min as i32, max as i32 + 1)
             .iter()
-            .map(|(l, r, col)| (*l as u32, *r as u32 - 1, col.width))
+            .map(|(l, r, col)| (*l as u32, *r as u32 - 1, col.clone()))
             .collect()
     }
 }
@@ -36,6 +37,12 @@ impl Cols {
         col.style = style;
         col.hidden = hidden;
         col.best_fit = best_fit;
+        Ok(())
+    }
+
+    pub(crate) fn update_by_api_column(&mut self, min: u32, max: u32, api_column: &Column) -> ColResult<()> {
+        let col = Col::from_api_column(&api_column);
+        self.update_col_tree(min, max, col);
         Ok(())
     }
 
@@ -94,6 +101,9 @@ pub(crate) struct Col {
     pub(crate) custom_width: Option<u8>,
 }
 
+///
+/// Constructor
+///
 impl Col {
     fn new(min: u32, max: u32) -> Col {
         Col {
@@ -108,7 +118,25 @@ impl Col {
             custom_width: None,
         }
     }
+    fn from_api_column(column: &Column) -> Col {
+        let mut col = Col::default();
+        col.width = column.width;
+        col.custom_width = if column.width.is_some() { Some(1) } else { None };
+        col.style = column.style;
+        col.hidden = column.hidden;
+        col.outline_level = column.outline_level;
+        if let Some(collapsed) = column.collapsed {
+            // self.sheet_format_pr.set_outline_level_col(col.outline_level.unwrap_or(0) as u8);
+            col.collapsed = Some(collapsed)
+        }
+        col
+    }
+}
 
+///
+/// methods
+///
+impl Col {
     fn update_width(&mut self, width: Option<f64>) {
         self.width = width;
         if let Some(_) = width {
@@ -155,6 +183,24 @@ impl Col {
     }
 }
 
+///
+/// Convertor
+///
+impl Col {
+    pub(crate) fn to_api_column(&self) -> Column {
+        let mut col = Column::default();
+        col.width = self.width;
+        col.style = self.style;
+        col.hidden = self.hidden;
+        col.outline_level = self.outline_level;
+        col.collapsed = self.collapsed;
+        col
+    }
+}
+
+///
+/// Serializer and Deserializer for xml
+///
 impl Serialize for InternalTree<Col> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
         let mut v: Vec<(i32, i32, Col)> = self.to_vec();

@@ -2,6 +2,7 @@ pub(crate) mod write;
 pub(crate) mod row;
 pub(crate) mod col;
 pub(crate) mod read;
+pub(crate) mod column;
 mod format;
 mod hyperlink;
 mod image;

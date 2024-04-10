@@ -6,7 +6,7 @@ use crate::api::cell::location::{Location, LocationRange};
 use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::{Filters, FormatColor};
-use crate::api::worksheet::col::ColSet;
+use crate::api::worksheet::column::Column;
 use crate::result::{ColResult, WorkSheetResult};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
 use crate::xml::worksheet::auto_filter::AutoFilter;
@@ -90,59 +90,52 @@ impl WorkSheet {
     }
 }
 
+///
+/// Column xml method
+///
 impl WorkSheet {
-    pub(crate) fn set_col_by_colset<R: LocationRange>(&mut self, col_range: R, col_set: &ColSet) -> ColResult<()> {
+    pub(crate) fn get_col<R: LocationRange>(&self, col_range: R) -> ColResult<Vec<(u32, u32, Column)>> {
         let (min, max) = col_range.to_col_range();
-        let col = self.cols.get_or_new_col(min, max);
-        if let Some(width) = col_set.width {
-            col.width = Some(width);
-            col.custom_width = Some(1);
-        }
-        if let Some(style) = col_set.style {
-            col.style = Some(style);
-        }
-        if let Some(hidden) = col_set.hidden {
-            col.hidden = Some(hidden)
-        }
-        if let Some(outline_level) = col_set.outline_level {
-            col.outline_level = Some(outline_level)
-        }
-        if let Some(collapsed) = col_set.collapsed {
-            self.sheet_format_pr.set_outline_level_col(col.outline_level.unwrap_or(0) as u8);
-            col.collapsed = Some(collapsed)
-        }
-        Ok(())
+        let res = self.cols
+            .index_range_col_tree(min, max)
+            .iter()
+            .map(|(min, max, col)| (*min, *max, col.to_api_column()))
+            .collect();
+        Ok(res)
     }
 
-    pub(crate) fn set_col_by_colset_v2<R: LocationRange>(&mut self, col_range: R, col_set: &ColSet) -> ColResult<()> {
+    pub(crate) fn set_col_by_column<R: LocationRange>(&mut self, col_range: R, column: &Column) -> ColResult<()> {
         let (min, max) = col_range.to_col_range();
         let mut col = Col::default();
-        if let Some(width) = col_set.width {
+        if let Some(width) = column.width {
             col.width = Some(width);
             col.custom_width = Some(1);
         }
-        if let Some(style) = col_set.style {
+        if let Some(style) = column.style {
             col.style = Some(style);
         }
-        if let Some(hidden) = col_set.hidden {
+        if let Some(hidden) = column.hidden {
             col.hidden = Some(hidden)
         }
-        if let Some(outline_level) = col_set.outline_level {
+        if let Some(outline_level) = column.outline_level {
             col.outline_level = Some(outline_level)
         }
-        if let Some(collapsed) = col_set.collapsed {
+        if let Some(collapsed) = column.collapsed {
             self.sheet_format_pr.set_outline_level_col(col.outline_level.unwrap_or(0) as u8);
             col.collapsed = Some(collapsed)
         }
         self.cols.update_col_tree(min, max, col);
         Ok(())
     }
+}
+
+impl WorkSheet {
 
     pub(crate) fn get_default_style<L: Location>(&self, loc: &L) -> Option<u32> {
         let cell_style = self.sheet_data.get_default_style(loc);
         if let None = cell_style {
-            let col_style = self.cols.get_default_style(loc.to_col());
-            return col_style;
+            // let col_style = self.cols.get_default_style(loc.to_col());
+            return None;
         }
         cell_style
     }
