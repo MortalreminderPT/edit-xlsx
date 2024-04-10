@@ -1,15 +1,16 @@
 use std::cell::RefCell;
 use std::collections::HashSet;
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 use std::rc::Rc;
 
-struct Node<T: Clone + Default> {
+#[derive(Debug, Clone, Default)]
+struct Node<T: Debug + Clone + Default> {
     left: i32,
     right: i32,
     value: T,
 }
 
-impl<T: Clone + Default> Node<T> {
+impl<T: Debug + Clone + Default> Node<T> {
     fn new(left: i32, right: i32, value: &T) -> Node<T> {
         Node {
             left,
@@ -19,13 +20,14 @@ impl<T: Clone + Default> Node<T> {
     }
 }
 
-pub(crate) struct InternalTree<T: Clone + Default> {
+#[derive(Debug, Clone, Default)]
+pub(crate) struct InternalTree<T: Debug + Clone + Default> {
     node: Rc<RefCell<Node<T>>>,
     left_child: Option<Rc<RefCell<InternalTree<T>>>>,
     right_child: Option<Rc<RefCell<InternalTree<T>>>>,
 }
 
-impl<T: Clone + Default> InternalTree<T> {
+impl<T: Clone + Default + Debug> InternalTree<T> {
     fn new() -> InternalTree<T> {
         InternalTree {
             node: Rc::new(RefCell::new(Node::new(0, 1, &Default::default()))),
@@ -167,12 +169,15 @@ impl<T: Clone + Default> InternalTree<T> {
     }
 }
 
-impl<T: Clone + Default> InternalTree<T> {
+impl<T: Clone + Default + Debug> InternalTree<T> {
     pub(crate) fn index(&self, id: i32) -> Option<T> {
         self.recurse_find(id)
     }
     pub(crate) fn index_range(&self, left: i32, right: i32) -> Vec<(i32, i32, T)> {
         let mut v = vec![];
+        if left == right {
+            return v;
+        }
         self.recurse_find_ran(left, right, &mut v);
         v
     }
@@ -189,33 +194,41 @@ impl<T: Clone + Default> InternalTree<T> {
         internals.iter().for_each(|i| tree.update(i.0, i.1, &i.2).unwrap());
         tree
     }
-    pub(crate) fn to_vec(self) -> Vec<(i32, i32, T)> {
+    pub(crate) fn to_vec(&self) -> Vec<(i32, i32, T)> {
         let mut v = vec![];
         self.recurse_insert(&mut v);
         return v;
     }
 }
 
+// impl<T: Clone + Debug + Default + Serialize> Serialize for InternalTree<T> {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+//         let v = &self.to_vec();
+//         // se::to_string(v)
+//         serializer.serialize_some(v)
+//     }
+// }
+
+// impl<'de, T: Clone + Debug + Default + Deserialize<'de>> Deserialize<'de> for InternalTree<T> {
+//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+//         // let v: Vec<T> = Vec::new();
+//         let v: Vec<T> = Deserialize::deserialize(deserializer)?;
+//         let tree = InternalTree::default();
+//         Ok(tree)
+//     }
+// }
+
 #[test]
 fn test_internal() {
-    let internals = vec![(4, 8, 4..8), (3, 10, 3..10), (5, 7, 5..7), (100, 200, 100..200)];
+    let internals = vec![ (3, 10, 3..10), (4, 8, 4..8), (5, 7, 5..7), (100, 200, 100..200)];
     let internal_tree = InternalTree::from_vec(&internals);
-    // println!("{:?}", internal_tree.index(6));
-    // println!("{:?}", internal_tree.index(7));
-    // println!("{:?}", internal_tree.index(60));
-    // println!("{:?}", internal_tree.index(100));
-    // println!("{:?}", internal_tree.index(100));
-    // println!("{:?}", internal_tree.index(7));
-    // println!("{:?}", internal_tree.index(150));
-    // internal_tree.index_range(1, 700);
-    // internal_tree.index_range(0, 3);
     println!("index: {:?}", internal_tree.index_range(100, 200));
     println!("index: {:?}", internal_tree.index_range(100, 150));
     println!("index: {:?}", internal_tree.index_range(4, 100));
     println!("index: {:?}", internal_tree.index_range(7, 10));
     println!("index: {:?}", internal_tree.index_range(1, 4));
     println!("index: {:?}", internal_tree.index_range(999, 9999));
-    println!("index: {:?}", internal_tree.index_range(5, 8));
+    println!("index: {:?}", internal_tree.index_range(7, 7));
     let ordered_internals = internal_tree.to_vec();
     println!("res: {:?}", ordered_internals);
 }

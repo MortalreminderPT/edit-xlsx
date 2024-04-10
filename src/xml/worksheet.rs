@@ -10,7 +10,7 @@ use crate::api::worksheet::col::ColSet;
 use crate::result::{ColResult, WorkSheetResult};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
 use crate::xml::worksheet::auto_filter::AutoFilter;
-use crate::xml::worksheet::columns::Cols;
+use crate::xml::worksheet::columns::{Col, Cols};
 use crate::xml::worksheet::hyperlinks::Hyperlinks;
 use crate::xml::worksheet::ignore_errors::IgnoredErrors;
 use crate::xml::worksheet::merge_cells::MergeCells;
@@ -46,7 +46,7 @@ pub(crate) struct WorkSheet {
     pub(crate) sheet_views: SheetViews,
     #[serde(rename = "sheetFormatPr")]
     sheet_format_pr: SheetFormatPr,
-    #[serde(rename = "cols", default, skip_serializing_if = "Cols::is_empty")]
+    #[serde(rename = "cols", default)]
     pub(crate) cols: Cols,
     #[serde(rename = "sheetData", default)]
     pub(crate) sheet_data: SheetData,
@@ -111,6 +111,30 @@ impl WorkSheet {
             self.sheet_format_pr.set_outline_level_col(col.outline_level.unwrap_or(0) as u8);
             col.collapsed = Some(collapsed)
         }
+        Ok(())
+    }
+
+    pub(crate) fn set_col_by_colset_v2<R: LocationRange>(&mut self, col_range: R, col_set: &ColSet) -> ColResult<()> {
+        let (min, max) = col_range.to_col_range();
+        let mut col = Col::default();
+        if let Some(width) = col_set.width {
+            col.width = Some(width);
+            col.custom_width = Some(1);
+        }
+        if let Some(style) = col_set.style {
+            col.style = Some(style);
+        }
+        if let Some(hidden) = col_set.hidden {
+            col.hidden = Some(hidden)
+        }
+        if let Some(outline_level) = col_set.outline_level {
+            col.outline_level = Some(outline_level)
+        }
+        if let Some(collapsed) = col_set.collapsed {
+            self.sheet_format_pr.set_outline_level_col(col.outline_level.unwrap_or(0) as u8);
+            col.collapsed = Some(collapsed)
+        }
+        self.cols.update_col_tree(min, max, col);
         Ok(())
     }
 

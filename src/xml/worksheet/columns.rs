@@ -1,10 +1,25 @@
 use std::cmp;
-use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use crate::core::internal_tree::InternalTree;
 use crate::result::ColResult;
 
-#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub(crate) struct Cols {
-    col: Vec<Col>
+    #[serde(skip)]
+    col: Vec<Col>,
+    #[serde(rename = "col")]
+    col_tree: InternalTree<Col>
+}
+
+impl Cols {
+    pub(crate) fn new_col() -> Col {
+        Col::default()
+    }
+
+    pub(crate) fn update_col_tree(&mut self, min: u32, max: u32, col: Col) {
+        self.col_tree.update(min as i32, max as i32 + 1, &col).unwrap();
+    }
 }
 
 impl Cols {
@@ -49,7 +64,6 @@ impl Cols {
         self.col.is_empty()
     }
 }
-
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Default, Copy, Clone)]
 pub(crate) struct Col {
@@ -131,5 +145,32 @@ impl Col {
         if let None = self.custom_width {
             self.custom_width = col.custom_width;
         }
+    }
+}
+
+impl Serialize for InternalTree<Col> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        let mut v: Vec<(i32, i32, Col)> = self.to_vec();
+        let cols: Vec<Col> = v.iter_mut()
+            .map(|(l, r, c)| {
+                c.min = *l as u32;
+                c.max = *r as u32 - 1;
+                *c
+            })
+            // .map(|v| v.2)
+            .collect();
+        serializer.serialize_some(&cols)
+    }
+}
+
+impl<'de> Deserialize<'de> for InternalTree<Col> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        // let v: Vec<T> = Vec::new();
+        let col: Vec<Col> = Deserialize::deserialize(deserializer)?;
+        let mut v: Vec<(i32, i32, Col)> = Vec::new();
+        col.iter().for_each(|&c|v.push((c.min as i32, 1 + c.max as i32, c)));
+        // let v: Vec<(i32, i32, Col> = v.iter().map(|&v|(v.min, v.max + 1, v)).collect();
+        let tree = InternalTree::from_vec(&v);
+        Ok(tree)
     }
 }

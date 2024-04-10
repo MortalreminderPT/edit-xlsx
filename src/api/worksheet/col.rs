@@ -8,7 +8,7 @@ pub trait Col: _Col {
     fn set_column<R: LocationRange>(&mut self, col_range: R, width: f64) -> WorkSheetResult<()> {
         let mut col_set = ColSet::default();
         col_set.width = Some(width);
-        self.set_col_by_colset(col_range, &col_set)?;
+        self.set_col_by_colset_v2(col_range, &col_set)?;
         Ok(())
     }
     fn set_column_pixels<R: LocationRange>(&mut self, col_range: R, width: f64) -> WorkSheetResult<()> {
@@ -57,6 +57,7 @@ pub trait Col: _Col {
 
 pub(crate) trait _Col: _Format {
     fn set_col_by_colset<R: LocationRange>(&mut self, col_range: R, col_set: &ColSet) -> WorkSheetResult<()>;
+    fn set_col_by_colset_v2<R: LocationRange>(&mut self, col_range: R, col_set: &ColSet) -> WorkSheetResult<()>;
 }
 
 impl _Col for WorkSheet {
@@ -65,6 +66,11 @@ impl _Col for WorkSheet {
         // for col in start..=end {
         self.worksheet.set_col_by_colset(col_range, col_set)?;
         // }
+        Ok(())
+    }
+
+    fn set_col_by_colset_v2<R: LocationRange>(&mut self, col_range: R, col_set: &ColSet) -> WorkSheetResult<()> {
+        self.worksheet.set_col_by_colset_v2(col_range, col_set)?;
         Ok(())
     }
 }
