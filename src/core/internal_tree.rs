@@ -1,23 +1,7 @@
 use std::cell::RefCell;
-use std::cmp;
 use std::collections::HashSet;
 use std::fmt::Display;
 use std::rc::Rc;
-// trait Value {
-//     // fn display(&self) -> String;
-// }
-//
-// impl Value for String {
-//     // fn display(&self) -> String {
-//     //     self.to_string()
-//     // }
-// }
-//
-// impl Value for &str {
-//     // fn display(&self) -> String {
-//     //     self.to_string()
-//     // }
-// }
 
 struct Node<T: Clone + Default> {
     left: i32,
@@ -163,7 +147,7 @@ impl<T: Clone + Default> InternalTree<T> {
                 Some(right_child) => right_child.borrow_mut().recurse_find_ran(left, right, v),
             };
         } else {
-            println!("{} {} not in {} {}", left, right, self.node.borrow().left, self.node.borrow().right);
+            // println!("{} {} not in {} {}", left, right, self.node.borrow().left, self.node.borrow().right);
             let mut set = HashSet::new();
             set.insert(left);
             set.insert(right);
@@ -225,7 +209,13 @@ fn test_internal() {
     // println!("{:?}", internal_tree.index(150));
     // internal_tree.index_range(1, 700);
     // internal_tree.index_range(0, 3);
-    println!("index: {:?}", internal_tree.index_range(1, 205));
+    println!("index: {:?}", internal_tree.index_range(100, 200));
+    println!("index: {:?}", internal_tree.index_range(100, 150));
+    println!("index: {:?}", internal_tree.index_range(4, 100));
+    println!("index: {:?}", internal_tree.index_range(7, 10));
+    println!("index: {:?}", internal_tree.index_range(1, 4));
+    println!("index: {:?}", internal_tree.index_range(999, 9999));
+    println!("index: {:?}", internal_tree.index_range(5, 8));
     let ordered_internals = internal_tree.to_vec();
     println!("res: {:?}", ordered_internals);
 }
