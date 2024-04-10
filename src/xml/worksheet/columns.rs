@@ -131,6 +131,26 @@ impl Col {
         }
         col
     }
+
+    pub(crate) fn update_by_api_column(&mut self, column: &Column) {
+        if let Some(width) = column.width {
+            self.width = Some(width);
+            self.custom_width = Some(1);
+        }
+        if let Some(style) = column.style {
+            self.style = Some(style);
+        }
+        if let Some(hidden) = column.hidden {
+            self.hidden = Some(hidden)
+        }
+        if let Some(outline_level) = column.outline_level {
+            self.outline_level = Some(outline_level)
+        }
+        if let Some(collapsed) = column.collapsed {
+            // self.sheet_format_pr.set_outline_level_col(col.outline_level.unwrap_or(0) as u8);
+            self.collapsed = Some(collapsed)
+        }
+    }
 }
 
 ///

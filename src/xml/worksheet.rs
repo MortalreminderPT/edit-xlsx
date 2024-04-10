@@ -112,27 +112,48 @@ impl WorkSheet {
 
     pub(crate) fn set_col_by_column<R: LocationRange>(&mut self, col_range: R, column: &Column) -> ColResult<()> {
         let (min, max) = col_range.to_col_range();
-        let mut col = Col::default();
-        if let Some(width) = column.width {
-            col.width = Some(width);
-            col.custom_width = Some(1);
+        let cols = self.cols.get_or_insert(Cols::default()).index_range_col_tree(min, max);
+        if cols.is_empty() {
+            let mut col = Col::default();
+            col.update_by_api_column(column);
+            self.cols.get_or_insert(Cols::default()).update_col_tree(min, max, col);
         }
-        if let Some(style) = column.style {
-            col.style = Some(style);
+        let mut s = min;
+        for i in 0..cols.len() {
+            if s < cols[i].0 {
+                let mut col = Col::default();
+                col.update_by_api_column(column);
+                self.cols.get_or_insert(Cols::default()).update_col_tree(s, cols[i].0, col);
+            }
+            let mut col = cols[i].2;
+            col.update_by_api_column(column);
+            self.cols.get_or_insert(Cols::default()).update_col_tree(cols[i].0, cols[i].1, col);
+            s = cols[i].1
         }
-        if let Some(hidden) = column.hidden {
-            col.hidden = Some(hidden)
-        }
-        if let Some(outline_level) = column.outline_level {
-            col.outline_level = Some(outline_level)
-        }
-        if let Some(collapsed) = column.collapsed {
-            self.sheet_format_pr.set_outline_level_col(col.outline_level.unwrap_or(0) as u8);
-            col.collapsed = Some(collapsed)
-        }
-        self.cols.get_or_insert(Cols::default()).update_col_tree(min, max, col);
+        // if let Some(width) = column.width {
+        //     col.width = Some(width);
+        //     col.custom_width = Some(1);
+        // }
+        // if let Some(style) = column.style {
+        //     col.style = Some(style);
+        // }
+        // if let Some(hidden) = column.hidden {
+        //     col.hidden = Some(hidden)
+        // }
+        // if let Some(outline_level) = column.outline_level {
+        //     col.outline_level = Some(outline_level)
+        // }
+        // if let Some(collapsed) = column.collapsed {
+        //     self.sheet_format_pr.set_outline_level_col(col.outline_level.unwrap_or(0) as u8);
+        //     col.collapsed = Some(collapsed)
+        // }
+        // self.cols.get_or_insert(Cols::default()).update_col_tree(min, max, col);
         Ok(())
     }
+}
+
+impl WorkSheet {
+
 }
 
 impl WorkSheet {

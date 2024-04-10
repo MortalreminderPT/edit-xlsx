@@ -8,6 +8,7 @@ mod core;
 
 pub use api::workbook::Workbook;
 pub use api::worksheet::WorkSheet;
+pub use api::worksheet::column::Column;
 pub use api::format::Format;
 pub use api::format::FormatBorderType;
 pub use api::format::FormatAlignType;
