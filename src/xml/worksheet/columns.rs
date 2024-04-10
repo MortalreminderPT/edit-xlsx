@@ -20,6 +20,13 @@ impl Cols {
     pub(crate) fn update_col_tree(&mut self, min: u32, max: u32, col: Col) {
         self.col_tree.update(min as i32, max as i32 + 1, &col).unwrap();
     }
+
+    pub(crate) fn index_range_col_tree(&self, min: u32, max: u32) -> Vec<(u32, u32, Option<f64>)> {
+        self.col_tree.index_range(min as i32, max as i32 + 1)
+            .iter()
+            .map(|(l, r, col)| (*l as u32, *r as u32 - 1, col.width))
+            .collect()
+    }
 }
 
 impl Cols {
@@ -152,6 +159,9 @@ impl Serialize for InternalTree<Col> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
         let mut v: Vec<(i32, i32, Col)> = self.to_vec();
         let cols: Vec<Col> = v.iter_mut()
+            .filter(
+                |(l, r, _)| *l > 0 && *r > *l
+            )
             .map(|(l, r, c)| {
                 c.min = *l as u32;
                 c.max = *r as u32 - 1;
@@ -165,11 +175,9 @@ impl Serialize for InternalTree<Col> {
 
 impl<'de> Deserialize<'de> for InternalTree<Col> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
-        // let v: Vec<T> = Vec::new();
         let col: Vec<Col> = Deserialize::deserialize(deserializer)?;
         let mut v: Vec<(i32, i32, Col)> = Vec::new();
         col.iter().for_each(|&c|v.push((c.min as i32, 1 + c.max as i32, c)));
-        // let v: Vec<(i32, i32, Col> = v.iter().map(|&v|(v.min, v.max + 1, v)).collect();
         let tree = InternalTree::from_vec(&v);
         Ok(tree)
     }
