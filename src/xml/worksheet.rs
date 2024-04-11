@@ -130,41 +130,18 @@ impl WorkSheet {
             self.cols.get_or_insert(Cols::default()).update_col_tree(cols[i].0, cols[i].1, col);
             s = cols[i].1
         }
-        // if let Some(width) = column.width {
-        //     col.width = Some(width);
-        //     col.custom_width = Some(1);
-        // }
-        // if let Some(style) = column.style {
-        //     col.style = Some(style);
-        // }
-        // if let Some(hidden) = column.hidden {
-        //     col.hidden = Some(hidden)
-        // }
-        // if let Some(outline_level) = column.outline_level {
-        //     col.outline_level = Some(outline_level)
-        // }
         // if let Some(collapsed) = column.collapsed {
         //     self.sheet_format_pr.set_outline_level_col(col.outline_level.unwrap_or(0) as u8);
         //     col.collapsed = Some(collapsed)
         // }
-        // self.cols.get_or_insert(Cols::default()).update_col_tree(min, max, col);
         Ok(())
     }
 }
 
 impl WorkSheet {
 
-}
-
-impl WorkSheet {
-
     pub(crate) fn get_default_style<L: Location>(&self, loc: &L) -> Option<u32> {
-        let cell_style = self.sheet_data.get_default_style(loc);
-        if let None = cell_style {
-            // let col_style = self.cols.get_default_style(loc.to_col());
-            return None;
-        }
-        cell_style
+        self.sheet_data.get_default_style(loc)
     }
 
     pub(crate) fn add_merge_cell(&mut self, first_row: u32, first_col: u32, last_row: u32, last_col: u32) {
@@ -181,7 +158,7 @@ impl WorkSheet {
     }
 
     pub(crate) fn set_tab_color(&mut self, tab_color: &FormatColor) {
-        let sheet_pr = self.sheet_pr.get_or_insert(Default::default());
+        let sheet_pr = self.sheet_pr.get_or_insert(SheetPr::default());
         sheet_pr.set_tab_color(tab_color);
     }
 
@@ -190,7 +167,7 @@ impl WorkSheet {
     }
 
     pub(crate) fn insert_image(&mut self, r_id: u32) {
-        let drawing = self.drawing.get_or_insert(Default::default());
+        let drawing = self.drawing.get_or_insert(Drawing::default());
         drawing.r_id = Rel::from_id(r_id);
     }
 

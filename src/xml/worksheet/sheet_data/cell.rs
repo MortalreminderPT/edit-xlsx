@@ -7,7 +7,6 @@ use crate::api::cell::formula::FormulaType;
 use crate::api::cell::location::Location;
 use crate::xml::worksheet::sheet_data::cell::formula::Formula;
 use crate::api::cell::values::{CellDisplay, CellValue, CellType};
-use crate::result::RowResult;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Cell {

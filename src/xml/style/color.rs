@@ -26,4 +26,12 @@ impl Color {
     pub(crate) fn from_theme(theme: u8, tint: f64) -> Color {
         Color { indexed: None, rgb: None, theme: Some(theme), tint: Some(tint), auto: None }
     }
+
+    pub(crate) fn is_empty(&self) -> bool {
+        self.theme.is_none()
+            && self.tint.is_none()
+            && self.rgb.is_none()
+            && self.indexed.is_none()
+            && self.auto.is_none()
+    }
 }

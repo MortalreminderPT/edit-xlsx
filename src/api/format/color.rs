@@ -20,7 +20,7 @@ impl Default for FormatColor {
 impl FromFormat<FormatColor> for Color {
     fn set_attrs_by_format(&mut self, format: &FormatColor) {
         match format {
-            FormatColor::Default => return,
+            FormatColor::Default => *self = Color::default(),
             FormatColor::RGB(color) => *self = Color::from_rgb(color),
             FormatColor::Index(id) => *self = Color::from_index(*id),
             FormatColor::Theme(theme, tint) => *self = Color::from_theme(*theme, *tint),

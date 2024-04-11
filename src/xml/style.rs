@@ -181,13 +181,13 @@ impl Default for StyleSheet {
 
 impl StyleSheet {
     pub(crate) fn add_format(&mut self, format: &Format) -> u32 {
-        let fonts = self.fonts.get_or_insert(Default::default());
+        let fonts = self.fonts.get_or_insert(Fonts::default());
         let font = Font::from_format(&format.font);
         let font_id = fonts.add_font(&font);
-        let borders = self.borders.get_or_insert(Default::default());
+        let borders = self.borders.get_or_insert(Borders::default());
         let border = Border::from_format(&format.border);
         let border_id = borders.add_border(&border);
-        let fills = self.fills.get_or_insert(Default::default());
+        let fills = self.fills.get_or_insert(Fills::default());
         let fill = Fill::from_format(&format.fill);
         let fill_id = fills.add_fill(&fill);
         let mut xf = Xf::default();
@@ -196,7 +196,7 @@ impl StyleSheet {
         xf.font_id = font_id;
         xf.border_id = border_id;
         xf.fill_id = fill_id;
-        let cell_xfs = self.cell_xfs.get_or_insert(Default::default());
+        let cell_xfs = self.cell_xfs.get_or_insert(CellXfs::default());
         cell_xfs.add_xf(&xf)
     }
 
@@ -213,30 +213,6 @@ impl StyleSheet {
         }
     }
 }
-
-// trait Rearrange<E: Clone + Eq + Hash> {
-//     fn distinct(elements: &Vec<E>) -> (Vec<E>, HashMap<usize, usize>) {
-//         let mut distinct_elements = HashMap::new();
-//         for i in 0..elements.len() {
-//             let e = &elements[i];
-//             if !distinct_elements.contains_key(e) {
-//                 distinct_elements.insert(e, Vec::new());
-//             }
-//             distinct_elements.get_mut(e).unwrap().push(i);
-//         }
-//         let mut index_map = HashMap::new();
-//         let distinct_elements: Vec<(&E, &Vec<usize>)> = distinct_elements
-//             .iter()
-//             .map(|(&e, ids)| (e, ids))
-//             .collect();
-//         for i in 0..distinct_elements.len() {
-//             let (_, ids) = distinct_elements[i];
-//             ids.iter().for_each(|&id| { index_map.insert(id, i); });
-//         }
-//         let elements = distinct_elements.iter().map(|&e| e.0.clone()).collect::<Vec<E>>();
-//         (elements, index_map)
-//     }
-// }
 
 impl Io<StyleSheet> for StyleSheet {
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<StyleSheet> {
