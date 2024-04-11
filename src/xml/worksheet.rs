@@ -1,7 +1,10 @@
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
+use zip::read::ZipFile;
 use crate::api::cell::location::{Location, LocationRange};
 use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
@@ -280,6 +283,14 @@ struct HeaderFooter {
 struct PrintOptions {
     #[serde(rename = "@horizontalCentered", skip_serializing_if = "Option::is_none")]
     horizontal_centered: Option<u8>,
+}
+
+impl WorkSheet {
+    pub(crate) fn from_zip_file(file: &mut ZipFile) -> Self {
+        let mut xml = String::new();
+        file.read_to_string(&mut xml).unwrap();
+        de::from_str(&xml).unwrap_or_default()
+    }
 }
 
 impl WorkSheet {

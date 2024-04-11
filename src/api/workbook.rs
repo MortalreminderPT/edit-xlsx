@@ -83,7 +83,7 @@ impl Workbook {
             sheet_id,
             &name,
             &target,
-            &self.tmp_path,
+            &self.file_path,
             Rc::clone(&self.workbook),
             Rc::clone(&self.workbook_rel),
             // Weak::clone(&self.workbook_api),
@@ -105,7 +105,7 @@ impl Workbook {
             id,
             name,
             &target,
-            &self.tmp_path,
+            &self.file_path,
             Rc::clone(&self.workbook),
             Rc::clone(&self.workbook_rel),
             // Weak::clone(&self.workbook_api),
@@ -130,7 +130,7 @@ impl Workbook {
             sheet_id,
             &name,
             &target,
-            &self.tmp_path,
+            &self.file_path,
             Rc::clone(&self.workbook),
             Rc::clone(&self.workbook_rel),
             Rc::clone(&self.style_sheet),
@@ -156,7 +156,7 @@ impl Workbook {
             sheet_id,
             &name,
             &target,
-            &self.tmp_path,
+            &self.file_path,
             Rc::clone(&self.workbook),
             Rc::clone(&self.workbook_rel),
             Rc::clone(&self.style_sheet),
@@ -244,14 +244,19 @@ impl Workbook {
             (None, None, None, None, None, None);
         for i in 0..archive.len() {
             let mut file = archive.by_index(i)?;
-            match file.name() {
+            let file_name = file.name();
+            match file_name {
                 "xl/workbook.xml" => workbook_xml = Some(xml::workbook::Workbook::from_zip_file(&mut file)),
                 "xl/_rels/workbook.xml.rels" => workbook_rel = Some(Relationships::from_zip_file(&mut file)),
                 "[Content_Types].xml" => content_types = Some(ContentTypes::from_zip_file(&mut file)),
                 "xl/styles.xml" => style_sheet = Some(StyleSheet::from_zip_file(&mut file)),
                 "xl/metadata.xml" => metadata = Some(Metadata::from_zip_file(&mut file)),
                 "xl/sharedStrings.xml" => shared_string = Some(SharedString::from_zip_file(&mut file)),
-                _ => {},
+                _ => {
+                    // if file_name.starts_with("xl/worksheets/") {
+                    //
+                    // }
+                },
             }
         }
 
@@ -272,7 +277,8 @@ impl Workbook {
                     sheet_xml.sheet_id,
                     &sheet_xml.name,
                     &workbook_rel.borrow().get_target(&sheet_xml.r_id),
-                    &tmp_path,
+                    &file_path,
+                    // &tmp_path,
                     Rc::clone(&workbook),
                     Rc::clone(&workbook_rel),
                     Rc::clone(&style_sheet),
@@ -351,7 +357,7 @@ impl Workbook {
 
     pub fn finish(&mut self) {
         if !self.closed {
-            fs::remove_dir_all(&self.tmp_path).unwrap();
+            fs::remove_dir_all(&self.tmp_path);
             self.closed = true;
         }
     }

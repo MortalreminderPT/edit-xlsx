@@ -9,6 +9,7 @@ mod image;
 
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::fs::File;
 use std::path::Path;
 use std::rc::Rc;
 use crate::{Filters, FormatColor, WorkbookResult, xml};
@@ -318,30 +319,42 @@ impl WorkSheet {
         sheet_id: u32,
         name: &str,
         target: &str,
-        tmp_path: P,
+        file_path: P,
         workbook: Rc<RefCell<Workbook>>,
         workbook_rel: Rc<RefCell<Relationships>>,
-        // workbook_api: Weak<& mut ApiWorkbook>,
-        // worksheets_rel: Rc<RefCell<HashMap<u32, Relationships>>>,
         style_sheet: Rc<RefCell<StyleSheet>>,
         content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
         medias: Rc<RefCell<xml::medias::Medias>>,
         metadata: Rc<RefCell<Metadata>>,
         shared_string: Rc<SharedString>,
     ) -> WorkSheet {
-        let mut worksheet = XmlWorkSheet::from_path(&tmp_path, target).unwrap_or_default();
+        let file = File::open(&file_path).unwrap();
+        let mut archive = zip::ZipArchive::new(&file).unwrap();
+        let worksheet_file = &mut archive.by_name(&format!("xl/{target}"));
+        let mut worksheet = if let Ok(worksheet_file) = worksheet_file {
+            XmlWorkSheet::from_zip_file(worksheet_file)
+        } else {
+            XmlWorkSheet::default()
+        };
         // Prevent incorrect results from being filled into cells
         worksheet.sheet_data.clean_formula_value();
-        let worksheet_rel = Relationships::from_path(&tmp_path, XlsxFileType::WorksheetRels(sheet_id)).unwrap_or_default();
+        // let worksheet_rel = Relationships::from_path(&tmp_path, XlsxFileType::WorksheetRels(sheet_id)).unwrap_or_default();
+        let mut archive = zip::ZipArchive::new(&file).unwrap();
+        let worksheet_rel_file = &mut archive.by_name(&format!("xl/worksheets/_rels/sheet{sheet_id}.xml.rels"));
+        let worksheet_rel = if let Ok(worksheet_rel_file) = worksheet_rel_file {
+            Relationships::from_zip_file(worksheet_rel_file)
+        } else {
+            Relationships::default()
+        };
         // load drawings
         let (drawings, drawings_rel) = match worksheet_rel.get_drawings_rid() {
             Some(drawings_id) => {
-                (Drawings::from_path(&tmp_path, drawings_id).ok(), Relationships::from_path(&tmp_path, XlsxFileType::DrawingRels(drawings_id)).ok())
+                (Drawings::from_path(&file_path, drawings_id).ok(), Relationships::from_path(&file_path, XlsxFileType::DrawingRels(drawings_id)).ok())
             },
             None => (None, None)
         };
         let vml_drawing = match worksheet_rel.get_vml_drawing_rid() {
-            Some(vml_drawing_id) => VmlDrawing::from_path(&tmp_path, vml_drawing_id).ok(),
+            Some(vml_drawing_id) => VmlDrawing::from_path(&file_path, vml_drawing_id).ok(),
             None => None
         };
         WorkSheet {

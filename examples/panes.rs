@@ -6,7 +6,7 @@ fn main() -> WorkbookResult<()> {
         .set_align(FormatAlignType::Center)
         .set_align(FormatAlignType::VerticalCenter)
         .set_border(FormatBorderType::Medium)
-        .set_background_color(FormatColor::RGB("00D7E4BC"));
+        .set_background_color(FormatColor::RGB("00D7E4BC".to_string()));
     let center_format = Format::default().set_align(FormatAlignType::Center);
 
     // Create a new workbook
