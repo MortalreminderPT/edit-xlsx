@@ -330,6 +330,7 @@ impl WorkSheet {
     ) -> WorkSheet {
         let file = File::open(&file_path).unwrap();
         let mut archive = zip::ZipArchive::new(&file).unwrap();
+        // Read worksheet from zip dir
         let worksheet_file = &mut archive.by_name(&format!("xl/{target}"));
         let mut worksheet = if let Ok(worksheet_file) = worksheet_file {
             XmlWorkSheet::from_zip_file(worksheet_file)
@@ -338,7 +339,7 @@ impl WorkSheet {
         };
         // Prevent incorrect results from being filled into cells
         worksheet.sheet_data.clean_formula_value();
-        // let worksheet_rel = Relationships::from_path(&tmp_path, XlsxFileType::WorksheetRels(sheet_id)).unwrap_or_default();
+        // Read worksheet relationship from zip dir
         let mut archive = zip::ZipArchive::new(&file).unwrap();
         let worksheet_rel_file = &mut archive.by_name(&format!("xl/worksheets/_rels/sheet{sheet_id}.xml.rels"));
         let worksheet_rel = if let Ok(worksheet_rel_file) = worksheet_rel_file {
@@ -349,7 +350,17 @@ impl WorkSheet {
         // load drawings
         let (drawings, drawings_rel) = match worksheet_rel.get_drawings_rid() {
             Some(drawings_id) => {
-                (Drawings::from_path(&file_path, drawings_id).ok(), Relationships::from_path(&file_path, XlsxFileType::DrawingRels(drawings_id)).ok())
+                let mut archive = zip::ZipArchive::new(&file).unwrap();
+                let drawings_file = &mut archive
+                    .by_name(&format!("xl/drawings/drawing{drawings_id}.xml"))
+                    .unwrap();
+                let mut archive = zip::ZipArchive::new(&file).unwrap();
+                let drawings_rel_file = &mut archive
+                    .by_name(&format!("xl/drawings/_rels/drawing{drawings_id}.xml.rels"))
+                    .unwrap();
+                (Some(Drawings::from_zip_file(drawings_file))
+                 , Some(Relationships::from_zip_file(drawings_rel_file)))
+                // (Drawings::from_path(&file_path, drawings_id).ok(), Relationships::from_path(&file_path, XlsxFileType::DrawingRels(drawings_id)).ok())
             },
             None => (None, None)
         };
@@ -363,7 +374,6 @@ impl WorkSheet {
             target: format!("{target}"), // "".to_string(),
             workbook,
             workbook_rel,
-            // workbook_api,
             worksheet,
             worksheet_rel,
             style_sheet,

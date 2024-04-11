@@ -1,9 +1,11 @@
 pub(crate) mod vml_drawing;
 
 use std::io;
+use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
+use zip::read::ZipFile;
 use crate::api::cell::location::{Location, LocationRange};
 use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
@@ -245,6 +247,14 @@ struct AvLst {}
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct ClientData {}
+
+impl Drawings {
+    pub(crate) fn from_zip_file(mut file: &mut ZipFile) -> Self {
+        let mut xml = String::new();
+        file.read_to_string(&mut xml).unwrap();
+        de::from_str(&xml).unwrap_or_default()
+    }
+}
 
 impl Drawings {
     pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, drawing_id: u32) -> io::Result<Drawings> {
