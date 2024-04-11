@@ -44,11 +44,11 @@ pub struct Workbook {
 ///
 impl Workbook {
     fn get_core_properties(&mut self) -> &mut CoreProperties {
-        self.core_properties.get_or_insert(CoreProperties::from_path(&self.tmp_path).unwrap())
+        self.core_properties.get_or_insert(CoreProperties::from_path(&self.file_path).unwrap())
     }
 
     fn get_app_properties(&mut self) -> &mut AppProperties {
-        self.app_properties.get_or_insert(AppProperties::from_path(&self.tmp_path).unwrap())
+        self.app_properties.get_or_insert(AppProperties::from_path(&self.file_path).unwrap())
     }
 }
 
@@ -298,7 +298,6 @@ impl Workbook {
             app_properties: None,
             shared_string,
         };
-
         Ok(workbook)
     }
 

@@ -1,4 +1,6 @@
+use std::fs::File;
 use std::io;
+use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
@@ -93,7 +95,9 @@ struct VtI4 {
 
 impl AppProperties {
     pub(crate) fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<AppProperties> {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::AppProperties)?;
+        let file = File::open(&file_path)?;
+        let mut archive = zip::ZipArchive::new(file)?;
+        let mut file = archive.by_name("docProps/app.xml")?;
         let mut xml = String::new();
         file.read_to_string(&mut xml).unwrap();
         let properties: AppProperties = de::from_str(&xml).unwrap();

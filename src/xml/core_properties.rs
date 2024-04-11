@@ -1,9 +1,13 @@
+use std::fs::File;
 use std::io;
+use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
+use zip::read::ZipFile;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::Properties;
+use crate::xml::io::Io;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename(serialize = "cp:coreProperties", deserialize = "coreProperties"))]
@@ -76,7 +80,9 @@ impl CoreProperties {
 
 impl CoreProperties {
     pub(crate) fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<CoreProperties> {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::CoreProperties)?;
+        let file = File::open(&file_path)?;
+        let mut archive = zip::ZipArchive::new(file)?;
+        let mut file = archive.by_name("docProps/core.xml")?;
         let mut xml = String::new();
         file.read_to_string(&mut xml).unwrap();
         let properties: CoreProperties = de::from_str(&xml).unwrap();
