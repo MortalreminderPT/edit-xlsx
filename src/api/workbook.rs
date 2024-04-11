@@ -348,6 +348,8 @@ impl Workbook {
         }
         // package files
         zip_util::zip_dir(&self.tmp_path, file_path)?;
+        // clean cache
+        fs::remove_dir_all(&self.tmp_path).unwrap();
         Ok(())
     }
 
