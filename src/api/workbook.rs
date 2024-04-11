@@ -242,6 +242,7 @@ impl Workbook {
             , mut content_types, mut style_sheet
             , mut metadata, mut shared_string) =
             (None, None, None, None, None, None);
+        let mut medias = Medias::default();
         for i in 0..archive.len() {
             let mut file = archive.by_index(i)?;
             let file_name = file.name();
@@ -253,9 +254,9 @@ impl Workbook {
                 "xl/metadata.xml" => metadata = Some(Metadata::from_zip_file(&mut file)),
                 "xl/sharedStrings.xml" => shared_string = Some(SharedString::from_zip_file(&mut file)),
                 _ => {
-                    // if file_name.starts_with("xl/worksheets/") {
-                    //
-                    // }
+                    if file_name.starts_with("xl/media/") {
+                        medias.add_existed_media(&file_name);
+                    }
                 },
             }
         }
@@ -267,8 +268,7 @@ impl Workbook {
         let metadata = Rc::new(RefCell::new(metadata.unwrap_or_default()));
         let shared_string = Rc::new(shared_string.unwrap_or_default());
         let medias = Rc::new(RefCell::new(
-            // Medias::from_path(&tmp_path).unwrap_or_default()
-            Medias::default()
+            medias
         ));
 
         let sheets = workbook.borrow().sheets.sheets.iter().map(
