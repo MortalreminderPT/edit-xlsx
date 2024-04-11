@@ -6,12 +6,15 @@ pub(crate) mod xf;
 pub(crate) mod color;
 mod num_fmt;
 
+use std::fs::File;
 use std::hash::Hash;
 use std::io;
+use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
-use crate::api::format::{Format, FormatFont};
+use zip::read::ZipFile;
+use crate::api::format::Format;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::common::{FromFormat, XmlnsAttrs};
 use crate::xml::extension::ExtensionList;
@@ -214,7 +217,31 @@ impl StyleSheet {
     }
 }
 
+impl StyleSheet {
+    pub(crate) fn from_file(file: &File) -> StyleSheet {
+        let mut xml = String::new();
+        let mut archive = zip::ZipArchive::new(file).unwrap();
+        let file_path = "xl/styles.xml";
+        let style_sheet = match archive.by_name(&file_path) {
+            Ok(mut file) => {
+                file.read_to_string(&mut xml).unwrap();
+                de::from_str(&xml).unwrap()
+            }
+            Err(_) => {
+                StyleSheet::default()
+            }
+        };
+        style_sheet
+    }
+}
+
 impl Io<StyleSheet> for StyleSheet {
+    fn from_zip_file(mut file: &mut ZipFile) -> Self {
+        let mut xml = String::new();
+        file.read_to_string(&mut xml).unwrap();
+        de::from_str(&xml).unwrap_or_default()
+    }
+
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<StyleSheet> {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::StylesFile)?;
         let mut xml = String::new();

@@ -1,9 +1,12 @@
 use std::{fs, slice};
 use std::cell::RefCell;
+use std::fs::File;
 use std::path::Path;
 use std::rc::Rc;
+use std::time::{SystemTime, UNIX_EPOCH};
 use futures::executor::block_on;
 use futures::join;
+use zip::result::ZipError;
 use crate::api::worksheet::WorkSheet;
 use crate::file::XlsxFileType;
 use crate::utils::zip_util;
@@ -229,26 +232,39 @@ impl Workbook {
 
 impl Workbook {
     async fn from_path_async<P: AsRef<Path>>(file_path: P) -> WorkbookResult<Workbook> {
-        let tmp_path = Workbook::extract_tmp_dir(&file_path)?;
-        let workbook = xml::workbook::Workbook::from_path_async(&tmp_path);
-        let workbook_rel = Relationships::from_path_async(&tmp_path, XlsxFileType::WorkbookRels);
-        let style_sheet = StyleSheet::from_path_async(&tmp_path);
-        let content_types = ContentTypes::from_path_async(&tmp_path);
-        let medias = Medias::from_path_async(&tmp_path);
-        let metadata = Metadata::from_path_async(&tmp_path);
-        let shared_string = SharedString::from_path_async(&tmp_path);
-        let (workbook, workbook_rel, style_sheet,
-            content_types, medias, metadata,
-            shared_string
-        ) = join!(workbook, workbook_rel, style_sheet, content_types, medias, metadata, shared_string);
+        // let tmp_path = Workbook::extract_tmp_dir(&file_path)?;
+        let file_name = file_path.as_ref().file_name().ok_or(ZipError::FileNotFound)?;
+        let time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros();
+        let tmp_path = format!("./~${}_{}", file_name.to_str().ok_or(ZipError::FileNotFound)?, time);
+        let file = File::open(&file_path)?;
+        let mut archive = zip::ZipArchive::new(file)?;
+        let (mut workbook_xml, mut workbook_rel
+            , mut content_types, mut style_sheet
+            , mut metadata, mut shared_string) =
+            (None, None, None, None, None, None);
+        for i in 0..archive.len() {
+            let mut file = archive.by_index(i)?;
+            match file.name() {
+                "xl/workbook.xml" => workbook_xml = Some(xml::workbook::Workbook::from_zip_file(&mut file)),
+                "xl/_rels/workbook.xml.rels" => workbook_rel = Some(Relationships::from_zip_file(&mut file)),
+                "[Content_Types].xml" => content_types = Some(ContentTypes::from_zip_file(&mut file)),
+                "xl/styles.xml" => style_sheet = Some(StyleSheet::from_zip_file(&mut file)),
+                "xl/metadata.xml" => metadata = Some(Metadata::from_zip_file(&mut file)),
+                "xl/sharedStrings.xml" => shared_string = Some(SharedString::from_zip_file(&mut file)),
+                _ => {},
+            }
+        }
 
-        let workbook = Rc::new(RefCell::new(workbook.unwrap()));
-        let workbook_rel = Rc::new(RefCell::new(workbook_rel.unwrap()));
-        let style_sheet = Rc::new(RefCell::new(style_sheet.unwrap()));
-        let content_types = Rc::new(RefCell::new(content_types.unwrap()));
-        let medias = Rc::new(RefCell::new(medias.unwrap()));
+        let workbook = Rc::new(RefCell::new(workbook_xml.unwrap_or_default()));
+        let workbook_rel = Rc::new(RefCell::new(workbook_rel.unwrap_or_default()));
+        let content_types = Rc::new(RefCell::new(content_types.unwrap_or_default()));
+        let style_sheet = Rc::new(RefCell::new(style_sheet.unwrap_or_default()));
         let metadata = Rc::new(RefCell::new(metadata.unwrap_or_default()));
         let shared_string = Rc::new(shared_string.unwrap_or_default());
+        let medias = Rc::new(RefCell::new(
+            // Medias::from_path(&tmp_path).unwrap_or_default()
+            Medias::default()
+        ));
 
         let sheets = workbook.borrow().sheets.sheets.iter().map(
             |sheet_xml| {
@@ -292,10 +308,6 @@ impl Workbook {
         workbook
     }
 
-    fn extract_tmp_dir<P: AsRef<Path>>(file_path: P) -> WorkbookResult<String> {
-        Ok(zip_util::extract_dir(file_path)?)
-    }
-
     async fn save_async(&self) -> WorkbookResult<()> {
         let workbook = self.workbook.borrow();
         let workbook = workbook.save_async(&self.tmp_path);
@@ -317,6 +329,8 @@ impl Workbook {
         if self.closed {
             return Err(WorkbookError::FileNotFound);
         }
+        // Extract xlsx to tmp dir
+        zip_util::extract_dir(&self.file_path, &self.tmp_path)?;
         // save sheets
         self.sheets.iter().for_each(|s| s.save_as(&self.tmp_path).unwrap());
         block_on(self.save_async()).unwrap();

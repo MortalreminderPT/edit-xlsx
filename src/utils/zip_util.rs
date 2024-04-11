@@ -8,17 +8,17 @@ use zip::CompressionMethod;
 use zip::result::ZipError;
 use zip::write::FileOptions;
 
-pub(crate) fn extract_dir<P: AsRef<Path>>(file_path: P) -> zip::result::ZipResult<String> {
+pub(crate) fn extract_dir<P: AsRef<Path>>(file_path: P, target: &str) -> zip::result::ZipResult<String> {
     // parse the file name
     let file_name = file_path.as_ref().file_name().ok_or(ZipError::FileNotFound)?;
     // read file from file path
     let file = File::open(&file_path)?;
     let mut archive = zip::ZipArchive::new(file)?;
     // construct a base path for extracted files
-    let time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros();
-    let binding = format!("./~${}_{}", file_name.to_str().ok_or(ZipError::FileNotFound)?, time);
+    // let time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros();
+    // let binding = format!("./~${}_{}", file_name.to_str().ok_or(ZipError::FileNotFound)?, time);
     // let binding = "./~$".to_owned() + file_name.to_str().ok_or(ZipError::FileNotFound)?;
-    let base_path = Path::new(&binding);
+    let base_path = Path::new(&target);
     match fs::create_dir(&base_path) {
         Err(why) => println!("! {:?}", why.kind()),
         Ok(_) => {},
@@ -104,5 +104,32 @@ pub(crate) fn zip_dir<P: AsRef<Path>>(prefix: &str, file_path: P) -> zip::result
         }
     }
     zip.finish()?;
+    Ok(())
+}
+
+#[test]
+fn test() -> io::Result<()> {
+    let file = File::open("./examples/xlsx/accounting.xlsx")?;
+    // 创建 ZipArchive 对象
+    let mut archive = zip::ZipArchive::new(file)?;
+    let file_path = "xl/styles.xml";
+
+    for i in 0..archive.len() {
+        let mut file = archive.by_index(i)?;
+        println!("{}", file.name());
+        if file.name() == file_path {
+            let mut contents = String::new();
+            file.read_to_string(&mut contents)?;
+            println!("File contents: {}", contents);
+        }
+    }
+    // if let Some(mut file) = find_file(&mut archive, file_path)? {
+    //     // 读取文件内容
+    //     let mut contents = String::new();
+    //     file.read_to_string(&mut contents)?;
+    //     println!("File contents: {}", contents);
+    // } else {
+    //     println!("File not found: {}", file_path);
+    // }
     Ok(())
 }

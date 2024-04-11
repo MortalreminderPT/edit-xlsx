@@ -1,6 +1,10 @@
+use std::fs::File;
+use std::io;
+use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
+use zip::read::ZipFile;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::extension::{AddExtension, ExtensionList, ExtensionType};
 use crate::xml::io::Io;
@@ -178,7 +182,31 @@ impl Default for Rc {
     }
 }
 
+impl Metadata {
+    pub(crate) fn from_file(file: &File) -> Metadata {
+        let mut xml = String::new();
+        let mut archive = zip::ZipArchive::new(file).unwrap();
+        let file_path = "xl/sharedStrings.xml";
+        let metadata = match archive.by_name(&file_path) {
+            Ok(mut file) => {
+                file.read_to_string(&mut xml).unwrap();
+                de::from_str(&xml).unwrap()
+            }
+            Err(_) => {
+                 Metadata::default()
+            }
+        };
+        metadata
+    }
+}
+
 impl Io<Metadata> for Metadata {
+    fn from_zip_file(mut file: &mut ZipFile) -> Self {
+        let mut xml = String::new();
+        file.read_to_string(&mut xml).unwrap();
+        de::from_str(&xml).unwrap_or_default()
+    }
+
     fn from_path<P: AsRef<Path>>(file_path: P) -> std::io::Result<Metadata> {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::MetaData)?;
         let mut xml = String::new();

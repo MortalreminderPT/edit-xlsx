@@ -1,4 +1,7 @@
+use std::io;
 use std::path::{Path, PathBuf};
+use serde::Deserialize;
+use zip::read::ZipFile;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::io::Io;
 
@@ -19,7 +22,7 @@ impl Medias {
 }
 
 impl Io<Medias> for Medias {
-    fn from_path<P: AsRef<Path>>(file_path: P) -> std::io::Result<Medias> {
+    fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<Medias> {
         let mut medias = Medias { medias: vec![] };
         let mut id = 1;
         Ok(loop {
@@ -42,9 +45,13 @@ impl Io<Medias> for Medias {
     fn save<P: AsRef<Path>>(& self, file_path: P) {
         self.medias.iter().for_each(|m| { m.save(&file_path) });
     }
+
+    fn from_zip_file(file: &mut ZipFile) -> Medias {
+        todo!()
+    }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 struct Media {
     id: u32,
     file_path: PathBuf,
@@ -60,7 +67,7 @@ impl Media {
 }
 
 impl Io<Media> for Media {
-    fn from_path<P: AsRef<Path>>(_file_path: P) -> std::io::Result<Media> {
+    fn from_path<P: AsRef<Path>>(_file_path: P) -> io::Result<Media> {
         todo!()
     }
 
@@ -68,5 +75,9 @@ impl Io<Media> for Media {
         let extension = &self.file_path.extension().unwrap_or("png".as_ref()).to_string_lossy();
         let file_name = format!("image{}.{}", self.id, extension);
         XlsxFileWriter::copy_from(&file_path, XlsxFileType::Medias(file_name), &self.file_path).unwrap();
+    }
+
+    fn from_zip_file(file: &mut ZipFile) -> Media {
+        todo!()
     }
 }

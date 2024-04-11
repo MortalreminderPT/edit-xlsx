@@ -1,10 +1,14 @@
 mod bookviews;
 mod defined_names;
 
+use std::fs::File;
 use std::io;
+use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
+use zip::read::ZipFile;
+use zip::ZipArchive;
 use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::result::{WorkSheetError, WorkbookError};
@@ -12,6 +16,7 @@ use crate::WorkbookResult;
 use crate::xml::common::{XmlnsAttrs};
 use crate::xml::extension::ExtensionList;
 use crate::xml::io::Io;
+use crate::xml::style::StyleSheet;
 use crate::xml::workbook::bookviews::BookViews;
 use crate::xml::workbook::defined_names::DefinedNames;
 
@@ -220,7 +225,22 @@ impl Default for Workbook {
     }
 }
 
+impl Workbook {
+    pub(crate) fn from_file(file: &mut ZipFile) -> Workbook {
+        let mut xml = String::new();
+        // let file_path = "xl/workbook.xml";
+        file.read_to_string(&mut xml).unwrap();
+        de::from_str(&xml).unwrap_or_default()
+    }
+}
+
 impl Io<Workbook> for Workbook {
+    fn from_zip_file(file: &mut ZipFile) -> Self {
+        let mut xml = String::new();
+        file.read_to_string(&mut xml).unwrap();
+        de::from_str(&xml).unwrap_or_default()
+    }
+
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<Workbook> {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::WorkbookFile)?;
         let mut xml = String::new();

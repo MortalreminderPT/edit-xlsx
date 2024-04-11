@@ -1,11 +1,15 @@
 use std::collections::HashSet;
+use std::fs::File;
 use std::hash::Hash;
 use std::io;
+use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
+use zip::read::ZipFile;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::io::Io;
+use crate::xml::relationships::Relationships;
 
 #[derive(Debug, Deserialize, Serialize, Default)]
 pub(crate) struct ContentTypes {
@@ -91,7 +95,31 @@ impl ContentType {
     }
 }
 
+impl ContentTypes {
+    pub(crate) fn from_file(file: &File) -> ContentTypes {
+        let mut xml = String::new();
+        let mut archive = zip::ZipArchive::new(file).unwrap();
+        let file_path = "[Content_Types].xml";
+        let content_types = match archive.by_name(&file_path) {
+            Ok(mut file) => {
+                file.read_to_string(&mut xml).unwrap();
+                de::from_str(&xml).unwrap()
+            }
+            Err(_) => {
+                ContentTypes::default()
+            }
+        };
+        content_types
+    }
+}
+
 impl Io<ContentTypes> for ContentTypes {
+    fn from_zip_file(mut file: &mut ZipFile) -> Self {
+        let mut xml = String::new();
+        file.read_to_string(&mut xml).unwrap();
+        de::from_str(&xml).unwrap_or_default()
+    }
+
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<ContentTypes> {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::ContentTypes)?;
         let mut xml = String::new();

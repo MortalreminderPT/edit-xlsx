@@ -128,4 +128,8 @@ impl XlsxFileType {
     pub(crate) fn get_path<P: AsRef<Path>>(&self, base_path: P) -> PathBuf {
         base_path.as_ref().join(self.get_dir()).join(self.get_filename())
     }
+
+    pub(crate) fn get_relative_path(&self) -> String {
+        format!("{}/{}", self.get_dir(), self.get_filename())
+    }
 }

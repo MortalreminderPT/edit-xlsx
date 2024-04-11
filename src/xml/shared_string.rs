@@ -1,9 +1,11 @@
+use std::fs::File;
 use std::io;
+use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
+use zip::read::ZipFile;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
-use crate::xml::common::{PhoneticPr, XmlnsAttrs};
 use crate::xml::io::Io;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -59,7 +61,31 @@ impl SharedString {
     // }
 }
 
+impl SharedString {
+
+    pub(crate) fn from_file(file: &File) -> SharedString {
+        let mut xml = String::new();
+        let mut archive = zip::ZipArchive::new(file).unwrap();
+        let file_path = "xl/sharedStrings.xml";
+        let shared_string = match archive.by_name(&file_path) {
+            Ok(mut file) => {
+                file.read_to_string(&mut xml).unwrap();
+                de::from_str(&xml).unwrap()
+            }
+            Err(_) => {
+                SharedString::default()
+            }
+        };
+        shared_string
+    }
+}
+
 impl Io<SharedString> for SharedString {
+    fn from_zip_file(file: &mut ZipFile) -> Self {
+        let mut xml = String::new();
+        file.read_to_string(&mut xml).unwrap();
+        de::from_str(&xml).unwrap_or_default()
+    }
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<SharedString> {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SharedStringFile)?;
         let mut xml = String::new();
