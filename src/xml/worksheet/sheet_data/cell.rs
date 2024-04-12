@@ -4,7 +4,7 @@ use std::fmt::Formatter;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::{Error, Visitor};
 use crate::api::cell::formula::FormulaType;
-use crate::api::cell::location::Location;
+use crate::api::cell::location::{Location, LocationRange};
 use crate::xml::worksheet::sheet_data::cell::formula::Formula;
 use crate::api::cell::values::{CellDisplay, CellValue, CellType};
 
@@ -127,6 +127,14 @@ impl Sqref {
             row,
         }
     }
+
+    // pub(crate) fn from_location_range<L: LocationRange>(location_range: &L) -> Sqref {
+    //     let (from_row, from_col, from_row, from_col) = location_range.to_range();
+    //     Sqref {
+    //         col,
+    //         row,
+    //     }
+    // }
 }
 
 ///
@@ -142,6 +150,7 @@ impl<'de> Visitor<'de> for Sqref {
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> where E: Error {
         // let (row, col) = to_loc(&v);
         let sqref = Sqref::from_location(&v);
+        // let sqref = Sqref::from_location(&v);
         Ok(sqref)
     }
 }

@@ -13,12 +13,15 @@ use crate::result::{ColResult, WorkSheetResult};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
 use crate::xml::worksheet::auto_filter::AutoFilter;
 use crate::xml::worksheet::columns::{Col, Cols};
+use crate::xml::worksheet::conditional_formatting::ConditionalFormatting;
+use crate::xml::worksheet::data_validations::DataValidations;
 use crate::xml::worksheet::hyperlinks::Hyperlinks;
 use crate::xml::worksheet::ignore_errors::IgnoredErrors;
 use crate::xml::worksheet::merge_cells::MergeCells;
 use crate::xml::worksheet::page_margins::PageMargins;
 use crate::xml::worksheet::row_breaks::RowBreaks;
 use crate::xml::worksheet::sheet_format::SheetFormatPr;
+use crate::xml::worksheet::table_parts::TableParts;
 use self::sheet_views::SheetViews;
 use self::sheet_data::SheetData;
 use self::sheet_pr::SheetPr;
@@ -34,6 +37,9 @@ mod hyperlinks;
 mod page_margins;
 mod auto_filter;
 mod row_breaks;
+mod conditional_formatting;
+mod data_validations;
+mod table_parts;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename="worksheet")]
@@ -42,41 +48,47 @@ pub(crate) struct WorkSheet {
     xmlns_attrs: XmlnsAttrs,
     #[serde(rename = "sheetPr", default, skip_serializing_if = "Option::is_none")]
     sheet_pr: Option<SheetPr>,
-    #[serde(rename = "dimension", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "dimension", default, skip_serializing_if = "Option::is_none")]
     dimension: Option<Dimension>,
     #[serde(rename = "sheetViews")]
     pub(crate) sheet_views: SheetViews,
     #[serde(rename = "sheetFormatPr")]
     sheet_format_pr: SheetFormatPr,
-    #[serde(rename = "cols", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "cols", default, skip_serializing_if = "Option::is_none")]
     pub(crate) cols: Option<Cols>,
     #[serde(rename = "sheetData", default)]
     pub(crate) sheet_data: SheetData,
-    #[serde(rename = "mergeCells", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "mergeCells", default, skip_serializing_if = "Option::is_none")]
     merge_cells: Option<MergeCells>,
-    #[serde(rename = "phoneticPr", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "conditionalFormatting", default, skip_serializing_if = "Option::is_none")]
+    conditional_formatting: Option<ConditionalFormatting>,
+    #[serde(rename = "dataValidations", default, skip_serializing_if = "Option::is_none")]
+    data_validations: Option<DataValidations>,
+    #[serde(rename = "phoneticPr", default, skip_serializing_if = "Option::is_none")]
     phonetic_pr: Option<PhoneticPr>,
-    #[serde(rename = "hyperlinks", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "hyperlinks", default, skip_serializing_if = "Option::is_none")]
     hyperlinks: Option<Hyperlinks>,
-    #[serde(rename = "autoFilter", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "autoFilter", default, skip_serializing_if = "Option::is_none")]
     auto_filter: Option<AutoFilter>,
-    #[serde(rename = "printOptions", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "printOptions", default, skip_serializing_if = "Option::is_none")]
     print_options: Option<PrintOptions>,
     #[serde(rename = "pageMargins")]
     page_margins: PageMargins,
-    #[serde(rename = "pageSetup", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "pageSetup", default, skip_serializing_if = "Option::is_none")]
     page_setup: Option<PageSetup>,
-    #[serde(rename = "autoFilter", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "tableParts", default, skip_serializing_if = "Option::is_none")]
+    table_parts: Option<TableParts>,
+    #[serde(rename = "autoFilter", default, skip_serializing_if = "Option::is_none")]
     header_footer: Option<HeaderFooter>,
-    #[serde(rename = "rowBreaks", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "rowBreaks", default, skip_serializing_if = "Option::is_none")]
     row_breakers: Option<RowBreaks>,
-    #[serde(rename = "ignoredErrors", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "ignoredErrors", default, skip_serializing_if = "Option::is_none")]
     ignored_errors: Option<IgnoredErrors>,
-    #[serde(rename = "legacyDrawing", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "legacyDrawing", default, skip_serializing_if = "Option::is_none")]
     legacy_drawing: Option<Drawing>,
-    #[serde(rename = "drawing", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "drawing", default, skip_serializing_if = "Option::is_none")]
     drawing: Option<Drawing>,
-    #[serde(rename = "picture", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "picture", default, skip_serializing_if = "Option::is_none")]
     picture: Option<Picture>,
 }
 
@@ -257,9 +269,12 @@ impl Default for WorkSheet {
             cols: None,
             sheet_data: SheetData::default(),
             merge_cells: None,
+            conditional_formatting: None,
+            data_validations: None,
             phonetic_pr: None,
             page_margins: PageMargins::default(),
             page_setup: None,
+            table_parts: None,
             header_footer: None,
             print_options: None,
             row_breakers: None,

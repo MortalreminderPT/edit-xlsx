@@ -12,6 +12,8 @@ pub(crate) struct SheetFormatPr {
     zero_height: Option<u8>,
     #[serde(rename = "@outlineLevelCol", skip_serializing_if = "Option::is_none")]
     outline_level_col: Option<u8>,
+    #[serde(rename(serialize = "@x14ac:dyDescent", deserialize = "@dyDescent"), skip_serializing_if = "Option::is_none")]
+    x14ac_dy_descent: Option<f64>,
 }
 
 impl Default for SheetFormatPr {
@@ -22,6 +24,7 @@ impl Default for SheetFormatPr {
             custom_height: None,
             zero_height: None,
             outline_level_col: None,
+            x14ac_dy_descent: None,
         }
     }
 }
