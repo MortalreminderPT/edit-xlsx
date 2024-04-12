@@ -23,50 +23,15 @@ pub(crate) struct Cell {
     #[serde(rename = "v", skip_serializing_if = "Option::is_none")]
     pub(crate) text: Option<String>,
 }
-
 #[derive(Debug, Clone, Default, PartialEq)]
 pub(crate) struct Sqref {
     pub(crate) col: u32,
     pub(crate) row: u32,
 }
 
-impl Sqref {
-    pub(crate) fn from_location<L: Location>(location: &L) -> Sqref {
-        let (row, col) = location.to_location();
-        Sqref {
-            col,
-            row,
-        }
-    }
-}
-
-impl<'de> Visitor<'de> for Sqref {
-    type Value = Sqref;
-
-    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-        todo!()
-    }
-
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> where E: Error {
-        // let (row, col) = to_loc(&v);
-        let sqref = Sqref::from_location(&v);
-        Ok(sqref)
-    }
-}
-
-impl<'de> Deserialize<'de> for Sqref {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
-        let sqref = Sqref::default();
-        deserializer.deserialize_string(sqref)
-    }
-}
-
-impl Serialize for Sqref {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-        serializer.serialize_str(&(self.row, self.col).to_ref())
-    }
-}
-
+///
+/// Constructor
+///
 impl Cell {
     pub(crate) fn new<L: Location>(loc: L) -> Cell {
         Cell {
@@ -103,6 +68,14 @@ impl Cell {
     }
 }
 
+///
+/// Get
+///
+impl Cell {}
+
+///
+/// Update
+///
 impl Cell {
     pub(crate) fn update_by_display<T: CellDisplay + CellValue>(&mut self, text: &T, style: Option<u32>) {
         self.text = Some(text.to_display());
@@ -143,5 +116,43 @@ impl Cell {
         };
         let formula = Formula::from_formula_type(formula, formula_type);
         self.formula = Some(formula);
+    }
+}
+
+impl Sqref {
+    pub(crate) fn from_location<L: Location>(location: &L) -> Sqref {
+        let (row, col) = location.to_location();
+        Sqref {
+            col,
+            row,
+        }
+    }
+}
+
+///
+/// Serialize and Deserialize
+///
+impl<'de> Visitor<'de> for Sqref {
+    type Value = Sqref;
+
+    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+        todo!()
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> where E: Error {
+        // let (row, col) = to_loc(&v);
+        let sqref = Sqref::from_location(&v);
+        Ok(sqref)
+    }
+}
+impl<'de> Deserialize<'de> for Sqref {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        let sqref = Sqref::default();
+        deserializer.deserialize_string(sqref)
+    }
+}
+impl Serialize for Sqref {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        serializer.serialize_str(&(self.row, self.col).to_ref())
     }
 }

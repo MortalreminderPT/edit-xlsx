@@ -145,7 +145,16 @@ impl WorkSheet {
 impl WorkSheet {
 
     pub(crate) fn get_default_style<L: Location>(&self, loc: &L) -> Option<u32> {
-        self.sheet_data.get_default_style(loc)
+        let row_style = self.sheet_data.get_default_style(loc);
+        match row_style {
+            Some(style) => Some(style),
+            None => {
+                match &self.cols {
+                    None => None,
+                    Some(cols) => cols.get_default_style(loc.to_col()),
+                }
+            }
+        }
     }
 
     pub(crate) fn add_merge_cell(&mut self, first_row: u32, first_col: u32, last_row: u32, last_col: u32) {

@@ -67,7 +67,8 @@ impl Cols {
     }
 
     pub(crate) fn get_default_style(&self, col: u32) -> Option<u32> {
-        let col = self.col.iter().filter(|c| c.min <= col && c.max >= col).last();
+        // let col = self.col.iter().filter(|c| c.min <= col && c.max >= col).last();
+        let col = self.col_tree.index(col as i32);
         if let Some(col) = col {
             return col.style;
         }

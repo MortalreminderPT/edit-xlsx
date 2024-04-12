@@ -1,11 +1,12 @@
-use std::slice::Iter;
+use std::slice::{Iter, SliceIndex};
+use std::thread;
 use crate::api::cell::Cell;
 use crate::api::cell::formula::FormulaType;
 use crate::api::cell::values::{CellDisplay, CellValue};
 use crate::api::cell::location::{Location, LocationRange};
 use crate::api::worksheet::format::_Format;
 use crate::api::worksheet::hyperlink::_Hyperlink;
-use crate::Format;
+use crate::{Format, Workbook, WorkbookResult};
 use crate::api::worksheet::WorkSheet;
 use crate::result::WorkSheetResult;
 use crate::xml::extension::{AddExtension, ExtensionType};
@@ -18,7 +19,7 @@ pub trait Write: _Write {
     fn write_number<L: Location>(&mut self, loc: L, data: i32) -> WorkSheetResult<()> { self.write_display_all(&loc, &data, None) }
     fn write_double<L: Location>(&mut self, loc: L, data: f64) -> WorkSheetResult<()> { self.write_display_all(&loc, &data, None) }
     fn write_boolean<L: Location>(&mut self, loc: L, data: bool) -> WorkSheetResult<()> { self.write_display_all(&loc, &data, None) }
-    fn write_row<L: Location, T: CellDisplay + CellValue>(&mut self, loc: L, data: Iter<'_, T>) -> WorkSheetResult<()> {
+    fn write_row<L: Location, T: CellDisplay + CellValue>(&mut self, loc: L, data: &[T]) -> WorkSheetResult<()> {
         let (row, mut col) = loc.to_location();
         for data in data {
             self.write_display_all(&(row, col), data, None)?;
@@ -26,7 +27,7 @@ pub trait Write: _Write {
         }
         Ok(())
     }
-    fn write_column<L: Location, T: CellDisplay + CellValue>(&mut self, loc: L, data: Iter<'_, T>) -> WorkSheetResult<()> {
+    fn write_column<L: Location, T: CellDisplay + CellValue>(&mut self, loc: L, data: &[T]) -> WorkSheetResult<()> {
         let (mut row, col) = loc.to_location();
         for data in data {
             self.write_display_all(&(row, col), data, None)?;
