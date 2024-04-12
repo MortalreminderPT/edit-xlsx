@@ -40,7 +40,7 @@ mod row_breaks;
 pub(crate) struct WorkSheet {
     #[serde(flatten)]
     xmlns_attrs: XmlnsAttrs,
-    #[serde(rename = "sheetPr", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "sheetPr", default, skip_serializing_if = "Option::is_none")]
     sheet_pr: Option<SheetPr>,
     #[serde(rename = "dimension", skip_serializing_if = "Option::is_none")]
     dimension: Option<Dimension>,
@@ -309,7 +309,7 @@ impl WorkSheet {
         let mut xml = String::new();
         file.read_to_string(&mut xml).unwrap();
         // todo de::from_str(&xml).unwrap()
-        de::from_str(&xml).unwrap_or_default()
+        de::from_str(&xml).unwrap()
     }
 }
 

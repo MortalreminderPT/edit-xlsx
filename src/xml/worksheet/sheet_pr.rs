@@ -5,11 +5,11 @@ use crate::xml::style::color::Color;
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub(crate) struct SheetPr {
-    #[serde(rename = "@codeName", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@codeName", default, skip_serializing_if = "Option::is_none")]
     code_name: Option<String>,
-    #[serde(rename = "tabColor", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "tabColor", default, skip_serializing_if = "Option::is_none")]
     tab_color: Option<Color>,
-    #[serde(rename = "outlinePr", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "outlinePr", default, skip_serializing_if = "Option::is_none")]
     outline_pr: Option<OutlinePr>,
 }
 
