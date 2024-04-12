@@ -2,6 +2,7 @@ use std::cell::RefCell;
 pub(crate) use crate::api::cell::location::LocationRange;
 pub(crate) use crate::api::worksheet::column::Column;
 use crate::api::worksheet::format::_Format;
+use crate::api::worksheet::row::RowSet;
 use crate::api::worksheet::WorkSheet;
 use crate::Format;
 use crate::result::WorkSheetResult;

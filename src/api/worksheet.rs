@@ -196,6 +196,16 @@ impl WorkSheet {
         worksheet.get_default_row_height()
     }
 
+    pub fn set_default_column(&mut self, height: f64) {
+        let worksheet = &mut self.worksheet;
+        worksheet.set_default_col_width(height);
+    }
+
+    pub fn get_default_column(&self) -> f64 {
+        let worksheet = &self.worksheet;
+        worksheet.get_default_col_width()
+    }
+
     pub fn hide_unused_rows(&mut self, hide: bool) {
         let worksheet = &mut self.worksheet;
         worksheet.hide_unused_rows(hide);

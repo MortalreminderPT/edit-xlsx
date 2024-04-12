@@ -197,6 +197,14 @@ impl WorkSheet {
         self.sheet_format_pr.get_default_row_height()
     }
 
+    pub(crate) fn set_default_col_width(&mut self, width: f64) {
+        self.sheet_format_pr.set_default_col_width(width);
+    }
+
+    pub(crate) fn get_default_col_width(&self) -> f64 {
+        self.sheet_format_pr.get_default_col_width()
+    }
+
     pub(crate) fn hide_unused_rows(&mut self, hide: bool) {
         self.sheet_format_pr.hide_unused_rows(hide);
     }

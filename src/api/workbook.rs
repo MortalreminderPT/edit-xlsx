@@ -1,6 +1,8 @@
 use std::{fs, slice};
 use std::cell::RefCell;
+use std::collections::hash_map::DefaultHasher;
 use std::fs::File;
+use std::hash::{Hash, Hasher};
 use std::path::Path;
 use std::rc::Rc;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -9,7 +11,7 @@ use futures::join;
 use zip::result::ZipError;
 use crate::api::worksheet::WorkSheet;
 use crate::file::XlsxFileType;
-use crate::utils::zip_util;
+use crate::utils::{id_util, zip_util};
 use crate::result::{WorkSheetError, WorkbookError, WorkbookResult};
 use crate::{Properties, xml};
 use crate::xml::content_types::ContentTypes;
@@ -234,8 +236,8 @@ impl Workbook {
     async fn from_path_async<P: AsRef<Path>>(file_path: P) -> WorkbookResult<Workbook> {
         // let tmp_path = Workbook::extract_tmp_dir(&file_path)?;
         let file_name = file_path.as_ref().file_name().ok_or(ZipError::FileNotFound)?;
-        let time = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_micros();
-        let tmp_path = format!("./~${}_{}", file_name.to_str().ok_or(ZipError::FileNotFound)?, time);
+        let tmp_path = format!("./~${}_{:X}", file_name.to_str().ok_or(ZipError::FileNotFound)?, id_util::new_id());
+        // let tmp_path = format!("./~${}_{}", file_name.to_str().ok_or(ZipError::FileNotFound)?, time);
         let file = File::open(&file_path)?;
         let mut archive = zip::ZipArchive::new(file)?;
         let (mut workbook_xml, mut workbook_rel

@@ -14,7 +14,7 @@ mod tests {
 
     #[test]
     fn test_from_default_height() -> WorkbookResult<()> {
-        let mut workbook = Workbook::from_path("tests/xlsx/row.xlsx")?;
+        let mut workbook = Workbook::from_path("tests/xlsx/row_and_col.xlsx")?;
         let worksheet = workbook.get_worksheet(1)?;
         assert_eq!(20.0, worksheet.get_default_row());
         worksheet.set_default_row(30.8);
@@ -36,7 +36,7 @@ mod tests {
 
     #[test]
     fn test_from_custom_height() -> WorkbookResult<()> {
-        let mut workbook = Workbook::from_path("tests/xlsx/row.xlsx")?;
+        let mut workbook = Workbook::from_path("tests/xlsx/row_and_col.xlsx")?;
         let worksheet = workbook.get_worksheet(1)?;
         worksheet.set_row(1, 100.0)?;
         assert_eq!(100.0, worksheet.get_row(1)?);
