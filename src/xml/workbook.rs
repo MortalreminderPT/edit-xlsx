@@ -64,6 +64,16 @@ impl Workbook {
         Ok(name)
     }
 
+    pub(crate) fn add_worksheet_v2(&mut self, r_id: u32, default_name: Option<&str>) -> WorkbookResult<(u32, String)> {
+        let id = self.next_sheet_id();
+        let name = if let Some(default_name) = default_name { default_name.to_string() } else { format!("Sheet{id}") };
+        if let Some(_) = self.sheets.sheets.iter().find(|s| { s.name == name }) {
+            return Err(WorkbookError::SheetError(WorkSheetError::DuplicatedSheets));
+        }
+        self.sheets.sheets.push(Sheet::by_name(r_id, id, &name));
+        Ok((id, name))
+    }
+
     pub(crate) fn add_worksheet_by_name(&mut self, id: u32, r_id: u32, name: &str) -> WorkbookResult<()> { 
         if let Some(_) = self.sheets.sheets.iter().find(|s| { s.name == name }) {
             return Err(WorkbookError::SheetError(WorkSheetError::DuplicatedSheets));

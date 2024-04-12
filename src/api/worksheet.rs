@@ -12,10 +12,8 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::path::Path;
 use std::rc::Rc;
-use zip::result::ZipResult;
-use crate::{Filters, FormatColor, WorkbookResult, xml};
+use crate::{Filters, FormatColor, xml};
 use crate::api::cell::location::{Location, LocationRange};
-use crate::api::worksheet;
 use crate::api::worksheet::col::Col;
 use crate::api::worksheet::image::_Image;
 use crate::api::worksheet::read::Read;
@@ -30,6 +28,7 @@ use crate::xml::relationships::Relationships;
 use crate::xml::shared_string::SharedString;
 use crate::xml::worksheet::WorkSheet as XmlWorkSheet;
 use crate::xml::workbook::Workbook;
+use crate::api::workbook::Workbook as ApiWorkbook;
 use crate::xml::style::StyleSheet;
 
 #[derive(Debug)]
@@ -37,6 +36,7 @@ pub struct WorkSheet {
     pub(crate) id: u32,
     pub(crate) name: String,
     pub(crate) target: String,
+    pub(crate) target_id: u32,
     workbook: Rc<RefCell<Workbook>>,
     workbook_rel: Rc<RefCell<Relationships>>,
     // workbook_api: Weak<& mut ApiWorkbook>,
@@ -65,7 +65,7 @@ impl Read for WorkSheet {}
 impl WorkSheet {
     pub(crate) fn save_as<P: AsRef<Path>>(&self, file_path: P) -> WorkSheetResult<()> {
         self.worksheet.save(&file_path, &self.target);
-        self.worksheet_rel.save(&file_path, XlsxFileType::WorksheetRels(self.id));
+        self.worksheet_rel.save(&file_path, XlsxFileType::WorksheetRels(self.target_id));
         if let Some(_) = self.worksheet_rel.get_drawings_rid() {
             self.drawings.as_ref().unwrap().save(&file_path, self.id);
             self.drawings_rel.as_ref().unwrap().save(&file_path, XlsxFileType::DrawingRels(self.id));
@@ -232,36 +232,6 @@ impl WorkSheet {
         sheet.state = Some(String::from("hidden"));
     }
 
-    fn set_first_sheet(&mut self) {
-        self.change_id(1).unwrap();
-    }
-
-    fn change_id(&mut self, id: u32) -> WorkbookResult<()> {
-        // swap sheet
-        // let sheet_target = self.worksheets.borrow_mut().remove(&id).ok_or(SheetError::FileNotFound)?;
-        // let sheet = self.worksheets.borrow_mut().remove(&self.id).ok_or(SheetError::FileNotFound)?;
-        // self.worksheets.borrow_mut().insert(id, sheet);
-        // self.worksheets.borrow_mut().insert(self.id, sheet_target);
-        // // swap sheet rel
-        // let sheet_rel_target = self.worksheets_rel.borrow_mut().remove(&id);
-        // let sheet_rel = self.worksheets_rel.borrow_mut().remove(&self.id);
-        // if let Some(sheet_rel_target) = sheet_rel_target {
-        //     self.worksheets_rel.borrow_mut().insert(self.id, sheet_rel_target);
-        // }
-        // if let Some(sheet_rel) = sheet_rel {
-        //     self.worksheets_rel.borrow_mut().insert(id, sheet_rel);
-        // }
-        // // swap workbook sheet
-        // let loc = (self.id - 1) as usize;
-        // let workbook = &mut self.workbook.borrow_mut();
-        // let sheets = &mut workbook.sheets.sheets;
-        // sheets[loc].change_id(id);
-        // sheets[0].change_id(self.id);
-        // sheets.swap(0, loc);
-        // // change self id
-        Ok(())
-    }
-
     pub fn set_tab_color(&mut self, tab_color: &FormatColor) {
         self.worksheet.set_tab_color(tab_color);
     }
@@ -285,52 +255,63 @@ impl WorkSheet {
 }
 
 impl WorkSheet {
-    // pub(crate) fn add_drawings(&mut self, tmp_path: &str) {
-    // let worksheet_rel = &mut self.worksheet_rel;
-    // let drawings_id = worksheet_rel.list_drawings();
-    // drawings_id.iter().for_each(|&id| {
-    //     self.drawings.insert(id, Drawings::from_path(tmp_path, id).unwrap());
-    // });
-    // }
-
-    pub(crate) fn from_worksheet<P: AsRef<Path>>(
+    pub(crate) fn add_worksheet (
         sheet_id: u32,
         name: &str,
-        target: &str,
-        tmp_path: P,
-        workbook: Rc<RefCell<Workbook>>,
-        workbook_rel: Rc<RefCell<Relationships>>,
-        style_sheet: Rc<RefCell<StyleSheet>>,
-        content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
-        medias: Rc<RefCell<xml::medias::Medias>>,
-        metadata: Rc<RefCell<Metadata>>,
-        worksheet: &WorkSheet,
-        shared_string: Rc<SharedString>
+        target_id: u32,
+        workbook: &ApiWorkbook,
     ) -> WorkSheet {
-        let mut new_worksheet = Self::from_xml(
-            sheet_id,
-            name,
-            target,
-            tmp_path,
-            workbook,
-            workbook_rel,
-            style_sheet,
-            content_types,
-            medias,
-            metadata,
-            shared_string,
-        );
-        new_worksheet.worksheet = worksheet.worksheet.clone();
-        new_worksheet.worksheet_rel = worksheet.worksheet_rel.clone();
-        new_worksheet.drawings = worksheet.drawings.clone();
-        new_worksheet.drawings_rel = worksheet.drawings_rel.clone();
-        new_worksheet
+        Self {
+            id: sheet_id,
+            name: name.to_string(),
+            target: format!("worksheets/sheet{target_id}.xml"),
+            target_id,
+            workbook: workbook.workbook.clone(),
+            workbook_rel: workbook.workbook_rel.clone(),
+            worksheet: XmlWorkSheet::default(),
+            worksheet_rel: Relationships::default(),
+            style_sheet: workbook.style_sheet.clone(),
+            content_types: workbook.content_types.clone(),
+            medias: workbook.medias.clone(),
+            vml_drawing: None,
+            drawings: None,
+            drawings_rel: None,
+            metadata: workbook.metadata.clone(),
+            shared_string: workbook.shared_string.clone(),
+        }
+    }
+
+    pub(crate) fn from_worksheet_v2(
+        sheet_id: u32,
+        name: &str,
+        target_id: u32,
+        worksheet: &WorkSheet,
+    ) -> WorkSheet {
+        Self {
+            id: sheet_id,
+            name: name.to_string(),
+            target: format!("worksheets/sheet{target_id}.xml"),
+            target_id,
+            workbook: worksheet.workbook.clone(),
+            workbook_rel: worksheet.workbook_rel.clone(),
+            worksheet: worksheet.worksheet.clone(),
+            worksheet_rel: worksheet.worksheet_rel.clone(),
+            style_sheet: worksheet.style_sheet.clone(),
+            content_types: worksheet.content_types.clone(),
+            medias: worksheet.medias.clone(),
+            vml_drawing: None,
+            drawings: worksheet.drawings.clone(),
+            drawings_rel: worksheet.drawings_rel.clone(),
+            metadata: worksheet.metadata.clone(),
+            shared_string: worksheet.shared_string.clone(),
+        }
     }
 
     pub(crate) fn from_xml<P: AsRef<Path>>(
         sheet_id: u32,
         name: &str,
         target: &str,
+        target_id: u32,
         file_path: P,
         workbook: Rc<RefCell<Workbook>>,
         workbook_rel: Rc<RefCell<Relationships>>,
@@ -354,7 +335,8 @@ impl WorkSheet {
             };
         }
         {
-            if let Ok(mut worksheet_rel_file) = archive.by_name(&format!("xl/worksheets/_rels/sheet{sheet_id}.xml.rels")) {
+            let worksheet_rel_id: String = target.chars().filter(|&c| c >= '0' && c <= '9').collect();
+            if let Ok(mut worksheet_rel_file) = archive.by_name(&format!("xl/worksheets/_rels/sheet{worksheet_rel_id}.xml.rels")) {
                 worksheet_rel = Relationships::from_zip_file(&mut worksheet_rel_file);
             }
         }
@@ -379,6 +361,7 @@ impl WorkSheet {
             id: sheet_id,
             name: String::from(name),
             target: format!("{target}"),
+            target_id,
             workbook,
             workbook_rel,
             worksheet,
