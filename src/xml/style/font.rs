@@ -42,6 +42,24 @@ impl Fonts {
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct Font {
+    #[serde(rename = "b", skip_serializing_if = "Option::is_none")]
+    pub(crate) bold: Option<Bold>,
+    #[serde(rename = "i", skip_serializing_if = "Option::is_none")]
+    pub(crate) italic: Option<Italic>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    strike: Option<Element<u8>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    condense: Option<Element<u8>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    extend: Option<Element<u8>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    outline: Option<Element<u8>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    shadow: Option<Element<u8>>,
+    #[serde(rename = "u", skip_serializing_if = "Option::is_none")]
+    pub(crate) underline: Option<Underline>,
+    #[serde(rename = "vertAlign", skip_serializing_if = "Option::is_none")]
+    vert_align: Option<Element<String>>,
     pub(crate) sz: Element<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) color: Option<Color>,
@@ -52,12 +70,6 @@ pub(crate) struct Font {
     charset: Option<Element<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     scheme: Option<Element<String>>,
-    #[serde(rename = "b", skip_serializing_if = "Option::is_none")]
-    pub(crate) bold: Option<Bold>,
-    #[serde(rename = "i", skip_serializing_if = "Option::is_none")]
-    pub(crate) italic: Option<Italic>,
-    #[serde(rename = "u", skip_serializing_if = "Option::is_none")]
-    pub(crate) underline: Option<Underline>,
 }
 
 impl Default for Font {
@@ -71,7 +83,13 @@ impl Default for Font {
             scheme: None,
             bold: None,
             italic: None,
+            strike: None,
+            condense: None,
+            extend: None,
+            outline: None,
+            shadow: None,
             underline: None,
+            vert_align: None,
         }
     }
 }

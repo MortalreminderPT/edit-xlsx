@@ -21,34 +21,37 @@ use crate::xml::extension::ExtensionList;
 use crate::xml::io::Io;
 use crate::xml::style::alignment::Alignment;
 use crate::xml::style::border::{Border, Borders};
+use crate::xml::style::color::Color;
 use crate::xml::style::fill::{Fill, Fills};
 use crate::xml::style::font::{Font, Fonts};
-use crate::xml::style::num_fmt::NumFmts;
+use crate::xml::style::num_fmt::{NumFmt, NumFmts};
 use crate::xml::style::xf::Xf;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct StyleSheet {
     #[serde(flatten)]
     xmlns_attrs: XmlnsAttrs,
-    #[serde(rename = "numFmts", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "numFmts", default, skip_serializing_if = "Option::is_none")]
     num_fmts: Option<NumFmts>,
-    #[serde(rename = "fonts", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "fonts", default, skip_serializing_if = "Option::is_none")]
     pub(crate) fonts: Option<Fonts>,
-    #[serde(rename = "fills", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "fills", default, skip_serializing_if = "Option::is_none")]
     pub(crate) fills: Option<Fills>,
-    #[serde(rename = "borders", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "borders", default, skip_serializing_if = "Option::is_none")]
     pub(crate) borders: Option<Borders>,
-    #[serde(rename = "cellStyleXfs", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "cellStyleXfs", default, skip_serializing_if = "Option::is_none")]
     cell_style_xfs: Option<CellStyleXfs>,
-    #[serde(rename = "cellXfs", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "cellXfs", default, skip_serializing_if = "Option::is_none")]
     pub(crate) cell_xfs: Option<CellXfs>,
-    #[serde(rename = "cellStyles", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "cellStyles", default, skip_serializing_if = "Option::is_none")]
     cell_styles: Option<CellStyles>,
-    #[serde(rename = "dxfs", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "dxfs", default, skip_serializing_if = "Option::is_none")]
     dxfs: Option<Dxfs>,
-    #[serde(rename = "tableStyles", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "tableStyles", default, skip_serializing_if = "Option::is_none")]
     table_styles: Option<TableStyles>,
-    #[serde(rename = "extLst", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "colors", default, skip_serializing_if = "Option::is_none")]
+    colors: Option<Colors>,
+    #[serde(rename = "extLst", default, skip_serializing_if = "Option::is_none")]
     ext_lst: Option<ExtensionList>,
 }
 
@@ -142,6 +145,20 @@ impl Default for CellStyle {
 struct Dxfs {
     #[serde(rename = "@count", default)]
     count: u32,
+    #[serde(rename = "dxf", default, skip_serializing_if = "Vec::is_empty")]
+    dxf: Vec<Dxf>
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+struct Dxf {
+    #[serde(rename = "fill", skip_serializing_if = "Option::is_none")]
+    fill: Option<Fill>,
+    #[serde(rename = "font", skip_serializing_if = "Option::is_none")]
+    font: Option<Font>,
+    #[serde(rename = "alignment", skip_serializing_if = "Option::is_none")]
+    alignment: Option<Alignment>,
+    #[serde(rename = "numFmt", skip_serializing_if = "Option::is_none")]
+    num_fmt: Option<NumFmt>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -164,6 +181,18 @@ impl Default for TableStyles {
     }
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+struct Colors {
+    #[serde(rename = "mruColors", default)]
+    color: Option<MruColors>
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+struct MruColors {
+    #[serde(rename = "color", default)]
+    color: Vec<Color>
+}
+
 impl Default for StyleSheet {
     fn default() -> Self {
         StyleSheet {
@@ -177,6 +206,7 @@ impl Default for StyleSheet {
             cell_styles: Default::default(),
             dxfs: None,//Dxfs::default(),
             table_styles: Default::default(),
+            colors: None,
             ext_lst: None,
         }
     }
@@ -239,7 +269,7 @@ impl Io<StyleSheet> for StyleSheet {
     fn from_zip_file(mut file: &mut ZipFile) -> Self {
         let mut xml = String::new();
         file.read_to_string(&mut xml).unwrap();
-        de::from_str(&xml).unwrap_or_default()
+        de::from_str(&xml).unwrap()
     }
 
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<StyleSheet> {

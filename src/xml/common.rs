@@ -45,7 +45,7 @@ pub(crate) struct XmlnsAttrs {
     xmlns_xr3: Option<String>,
     #[serde(rename = "@xmlns:x16r2", skip_serializing_if = "Option::is_none")]
     xmlns_x16r2: Option<String>,
-    #[serde(rename(serialize = "@xr:uid", deserialize = "@uid"), skip_serializing_if = "Option::is_none")]
+    #[serde(rename(serialize = "@xr:uid", deserialize = "@uid"), default, skip_serializing_if = "Option::is_none")]
     xr_uid: Option<String>,
 }
 

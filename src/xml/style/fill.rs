@@ -37,7 +37,7 @@ pub(crate) struct Fill {
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct PatternFill {
-    #[serde(rename = "@patternType")]
+    #[serde(rename = "@patternType", default, skip_serializing_if = "String::is_empty")]
     pub(crate) pattern_type: String,
     #[serde(rename = "fgColor", default, skip_serializing_if = "Color::is_empty")]
     pub(crate) fg_color: Color,

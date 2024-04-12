@@ -308,6 +308,7 @@ impl WorkSheet {
     pub(crate) fn from_zip_file(file: &mut ZipFile) -> Self {
         let mut xml = String::new();
         file.read_to_string(&mut xml).unwrap();
+        // todo de::from_str(&xml).unwrap()
         de::from_str(&xml).unwrap_or_default()
     }
 }

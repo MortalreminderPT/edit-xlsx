@@ -5,6 +5,8 @@ use crate::xml::style::color::Color;
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub(crate) struct SheetPr {
+    #[serde(rename = "@codeName", skip_serializing_if = "Option::is_none")]
+    code_name: Option<String>,
     #[serde(rename = "tabColor", skip_serializing_if = "Option::is_none")]
     tab_color: Option<Color>,
     #[serde(rename = "outlinePr", skip_serializing_if = "Option::is_none")]
@@ -37,6 +39,7 @@ impl Default for OutlinePr {
 impl SheetPr {
     fn new(color: &FormatColor) -> SheetPr {
         SheetPr {
+            code_name: None,
             tab_color: Default::default(), //Color::from_format(color),
             outline_pr: None,
         }

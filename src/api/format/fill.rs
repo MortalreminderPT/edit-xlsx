@@ -1,7 +1,7 @@
 use crate::FormatColor;
 use crate::xml::common::FromFormat;
 use crate::xml::style::color::Color;
-use crate::xml::style::fill::Fill;
+use crate::xml::style::fill::{Fill, PatternFill};
 
 #[derive(Clone)]
 pub struct FormatFill {
