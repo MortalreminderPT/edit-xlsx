@@ -28,8 +28,8 @@ fn main() -> WorkbookResult<()> {
         // In older versions of Excel, you could use the write_old_formula method:
         // worksheet.write_old_formula("B3", "=Exchange_rate")?;
         worksheet.write("F1", "Fill in some arrays on the right->")?;
-        worksheet.write_column("G1", sales.iter())?;
-        worksheet.write_column("H1", units.iter())?;
+        worksheet.write_column("G1", &sales)?;
+        worksheet.write_column("H1", &units)?;
     }
 
     workbook.save_as("examples/defined_name.xlsx")?;

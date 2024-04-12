@@ -5,7 +5,7 @@ fn main() -> WorkbookResult<()> {
     let mut workbook = Workbook::new();
     // Set up some worksheets and set tab colors
     let worksheet1 = workbook.get_worksheet(1)?;
-    worksheet1.set_tab_color(&FormatColor::RGB("00ff0000".to_string())); // Red
+    worksheet1.set_tab_color(&FormatColor::RGB(255, 0, 0)); // Red
     let worksheet2 = workbook.add_worksheet()?;
     worksheet2.set_tab_color(&FormatColor::Index(11)); // Green
     let worksheet3 = workbook.add_worksheet()?;

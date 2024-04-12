@@ -1,6 +1,4 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
-use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
@@ -268,6 +266,9 @@ impl Default for WorkSheet {
             ignored_errors: None,
             picture: None,
             hyperlinks: None,
+            // drawing: Some(
+            //     Drawing::default()
+            // ),
             drawing: None,
             auto_filter: None,
             legacy_drawing: None,

@@ -26,7 +26,7 @@ fn main() -> WorkbookResult<()> {
         // // Make the header row larger.
         worksheet.set_row_with_format(1, 20.0, &Format::default().set_bold())?;
         // Make the headers bold.
-        worksheet.write_row("A1", headers.iter())?;
+        worksheet.write_row("A1", &headers)?;
     }
 
     //

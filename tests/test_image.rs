@@ -24,6 +24,12 @@ mod tests {
         workbook.save_as("tests/output/image_test_from.xlsx")?;
         Ok(())
     }
+    #[test]
+    fn test_from_readonly() -> WorkbookResult<()> {
+        let mut workbook = Workbook::from_path("tests/xlsx/image_nao.xlsx")?;
+        workbook.save_as("tests/output/image_test_from_readonly.xlsx")?;
+        Ok(())
+    }
 
     #[test]
     fn test_from_png() -> WorkbookResult<()> {

@@ -16,7 +16,7 @@ fn main() -> WorkbookResult<()> {
         .set_border(FormatBorderType::Double)
         .set_align(FormatAlignType::Center)
         .set_align(FormatAlignType::VerticalCenter)
-        .set_background_color(FormatColor::RGB("00ffff00".to_string()));
+        .set_background_color(FormatColor::RGB(255, 255, 0));
 
     // Merge 3 cells.
     worksheet.merge_range_with_format("B4:D4", "Merged Range", &merge_format)?;

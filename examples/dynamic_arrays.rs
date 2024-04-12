@@ -4,11 +4,11 @@ fn main() -> WorkbookResult<()> {
     // Create a new workbook called simple.xls and add some worksheets.
     let mut workbook = Workbook::new();
     let header1 = Format::default()
-        .set_color(FormatColor::RGB("00ffffff".to_string()))
-        .set_background_color(FormatColor::RGB("0074AC4C".to_string()));
+        .set_color(FormatColor::RGB(255, 255, 255))
+        .set_background_color(FormatColor::RGB(74, 196, 12));
     let header2 = Format::default()
-        .set_color(FormatColor::RGB("00ffffff".to_string()))
-        .set_background_color(FormatColor::RGB("00528FD3".to_string()));
+        .set_color(FormatColor::RGB(255, 255, 255))
+        .set_background_color(FormatColor::RGB(40, 253, 3));
 
     //
     // Example of using the FILTER() function.
@@ -233,10 +233,10 @@ fn write_worksheet_data(worksheet: &mut WorkSheet, header: &Format) -> WorkSheet
     ];
     let mut row_num = 2;
     for data in data {
-        worksheet.write_row((row_num, 1), data.iter())?;
+        worksheet.write_row((row_num, 1), &data)?;
         row_num += 1;
     }
     let units = [6380, 5619, 4565, 5323, 4394, 7195, 5231, 2427, 4213, 3239, 6520, 1310, 6274, 4894, 7580, 9814];
-    worksheet.write_column("D2", units.iter())?;
+    worksheet.write_column("D2", &units)?;
     Ok(())
 }

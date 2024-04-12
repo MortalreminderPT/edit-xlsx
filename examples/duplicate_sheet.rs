@@ -17,13 +17,13 @@ fn main() -> WorkbookResult<()> {
     jan.write("A1", "Accounting Journal in Jan.")?;
     jan.set_name("Jan.")?;
     for row in 6..=15 {
-        jan.write_row((row, 3), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].iter())?;
+        jan.write_row((row, 3), &[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])?;
     }
     let feb = workbook.duplicate_worksheet(1)?;
     feb.write("A1", "Accounting Journal in Feb.")?;
     feb.set_name("Feb.")?;
     for row in 6..=15 {
-        feb.write_row((row, 3), [2, 4, 6, 8, 10, 12, 14, 16, 18, 20].iter())?;
+        feb.write_row((row, 3), &[2, 4, 6, 8, 10, 12, 14, 16, 18, 20])?;
     }
     // activate the Feb. sheet.
     feb.activate();
@@ -32,7 +32,7 @@ fn main() -> WorkbookResult<()> {
     mar.write("A1", "Accounting Journal in Mar.")?;
     mar.set_name("Mar.")?;
     for col in 'C'..='L' {
-        mar.write_column(&format!("{col}6"), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].iter())?;
+        mar.write_column(&format!("{col}6"), &[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])?;
     }
     workbook.save_as("examples/duplicate_sheet.xlsx")?;
     Ok(())

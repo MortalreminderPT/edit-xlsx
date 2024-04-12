@@ -124,16 +124,16 @@ fn main() -> WorkbookResult<()> {
     let worksheet3 = workbook.add_worksheet_by_name("Outline Columns")?;
     // Add bold format to the first row.
     worksheet3.set_row_with_format(1, 15.0, &bold)?;
-    worksheet3.write_row("A1", ["Month", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Total"].iter())?;
+    worksheet3.write_row("A1", &["Month", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Total"])?;
     worksheet3.set_column_with_format("A:A", 10.0, &bold)?;
     worksheet3.set_column("B:G", 10.0)?;
     worksheet3.set_column_level("B:G", 1)?;
     worksheet3.set_column("H:H", 10.0)?;
-    worksheet3.write_column("A2", ["North", "South", "East", "East"].iter())?;
-    worksheet3.write_row("B2", [50, 20, 15, 25, 65, 80].iter())?;
-    worksheet3.write_row("B3", [10, 20, 30, 50, 50, 50].iter())?;
-    worksheet3.write_row("B4", [45, 75, 50, 15, 75, 100].iter())?;
-    worksheet3.write_row("B5", [15, 15, 55, 35, 20, 50].iter())?;
+    worksheet3.write_column("A2", &["North", "South", "East", "East"])?;
+    worksheet3.write_row("B2", &[50, 20, 15, 25, 65, 80])?;
+    worksheet3.write_row("B3", &[10, 20, 30, 50, 50, 50])?;
+    worksheet3.write_row("B4", &[45, 75, 50, 15, 75, 100])?;
+    worksheet3.write_row("B5", &[15, 15, 55, 35, 20, 50])?;
     worksheet3.write_formula("H2", "=SUM(B2:G2)")?;
     worksheet3.write_formula("H3", "=SUM(B3:G3)")?;
     worksheet3.write_formula("H4", "=SUM(B4:G4)")?;
@@ -159,7 +159,7 @@ fn main() -> WorkbookResult<()> {
         "Level 1",
     ];
     let worksheet4 = workbook.add_worksheet_by_name("Outline levels")?;
-    worksheet4.write_column("A1", levels.iter())?;
+    worksheet4.write_column("A1", &levels)?;
 
     worksheet4.set_row_level(1, 1)?;
     worksheet4.set_row_level(2, 2)?;
