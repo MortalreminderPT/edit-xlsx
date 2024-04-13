@@ -20,7 +20,7 @@ mod tests {
     #[test]
     fn test_from_write_analysis_tabs() -> WorkbookResult<()> {
         let mut workbook = Workbook::from_path("tests/xlsx/appraisal_score.xlsx")?;
-        let worksheet = workbook.get_worksheet_by_name("Template")?;
+        let worksheet = workbook.get_worksheet_mut_by_name("Template")?;
         let texts: Vec<String> = (1..=100).into_iter().map(|i| format!("Text{i}")).collect();
         // test write col
         worksheet.write_column("B2", &texts)?;
@@ -31,7 +31,7 @@ mod tests {
     #[test]
     fn test_from_write() -> WorkbookResult<()> {
         let mut workbook = Workbook::from_path("tests/xlsx/appraisal_score.xlsx")?;
-        let worksheet = workbook.get_worksheet_by_name("Template")?;
+        let worksheet = workbook.get_worksheet_mut_by_name("Template")?;
         // test write cell
         worksheet.write("P1", "Text")?;
         let texts: Vec<String> = (1..=100).into_iter().map(|i| format!("Text{i}")).collect();

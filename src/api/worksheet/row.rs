@@ -10,12 +10,12 @@ use crate::result::WorkSheetResult;
 /// only the parts that are not None are applied to the Row's modifications.
 ///
 #[derive(Copy, Debug, Clone, Default)]
-pub(crate) struct Row {
-    pub(crate) height: Option<f64>,
+pub struct Row {
+    pub height: Option<f64>,
     pub(crate) style: Option<u32>,
-    pub(crate) outline_level: Option<u32>,
-    pub(crate) hidden: Option<u8>,
-    pub(crate) collapsed: Option<u8>,
+    pub outline_level: Option<u32>,
+    pub hidden: Option<u8>,
+    pub collapsed: Option<u8>,
 }
 
 pub trait WorkSheetRow: _Row {

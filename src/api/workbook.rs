@@ -75,6 +75,26 @@ impl Workbook {
             .find(|sheet| sheet.id == id).ok_or(WorkSheetError::FileNotFound)?;
         Ok(sheet)
     }
+    
+    pub fn get_worksheet_by_name(&self, name: &str) -> WorkbookResult<&WorkSheet> {
+        let sheet = self.sheets
+            .iter()
+            .find(|sheet| sheet.name == name);
+        match sheet {
+            Some(sheet) => Ok(sheet),
+            None => Err(WorkbookError::SheetError(WorkSheetError::FileNotFound))
+        }
+    }
+    
+    pub fn get_worksheet_mut_by_name(&mut self, name: &str) -> WorkbookResult<& mut WorkSheet> {
+        let sheet = self.sheets
+            .iter_mut()
+            .find(|sheet| sheet.name == name);
+        match sheet {
+            Some(sheet) => Ok(sheet),
+            None => Err(WorkbookError::SheetError(WorkSheetError::FileNotFound))
+        }
+    }
 
     pub fn add_worksheet(&mut self) -> WorkbookResult<&mut WorkSheet> {
         let (r_id, target_id) = self.workbook_rel.borrow_mut().add_worksheet_v2();
@@ -150,16 +170,6 @@ impl Workbook {
 
     pub fn worksheets(&self) -> slice::Iter<WorkSheet> {
         self.sheets.iter()
-    }
-
-    pub fn get_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<& mut WorkSheet> {
-        let sheet = self.sheets
-            .iter_mut()
-            .find(|sheet| sheet.name == name);
-        match sheet {
-            Some(sheet) => Ok(sheet),
-            None => Err(WorkbookError::SheetError(WorkSheetError::FileNotFound))
-        }
     }
 
     pub fn read_only_recommended(&mut self) -> WorkbookResult<()> {
