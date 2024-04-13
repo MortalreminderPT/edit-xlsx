@@ -154,7 +154,7 @@ dependencies = [
 
 [[package]]
 name = "edit-xlsx"
-version = "0.3.9"
+version = "0.4.0"
 dependencies = [
  "futures",
  "quick-xml",

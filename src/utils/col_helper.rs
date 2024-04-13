@@ -38,6 +38,12 @@ pub(crate) fn to_loc(loc_ref: &str) -> (u32, u32) {
 }
 
 #[test]
+fn test_max_col () {
+    let s = to_col_name(16384);
+    println!("{s}")
+}
+
+#[test]
 fn test_col () {
     for i in 1..5_000_000 {
         let s = to_col_name(i);

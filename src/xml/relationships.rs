@@ -4,8 +4,10 @@ mod rel;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use std::io;
+use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
+use zip::read::ZipFile;
 use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::relationships::rel::RelationShip;
@@ -18,7 +20,7 @@ pub(crate) struct Relationships {
     #[serde(rename = "Relationship", default)]
     relationship: Vec<RelationShip>,
     #[serde(skip)]
-    pub(crate) targets: Targets,
+    targets: Targets,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -36,31 +38,32 @@ impl Targets {
         ids.push(id);
     }
 
-    fn next_target(&mut self, rel_type: RelType) -> String {
-        let key = rel_type.get_type();
-        let value = self.target.get_mut(key);
-        let max_id: u32 = match value {
-            None => {
-                let vec = vec![1];
-                self.target.insert(key.to_string(), vec);
-                1
-            }
-            Some(ids) => {
-                let &max_id = ids.iter().max().unwrap_or(&1);
-                ids.push(max_id + 1);
-                max_id + 1
-            }
-        };
-        let id = max_id + 1;// max_id + 1;
+    fn next_target(&mut self, rel_type: RelType, id: u32) -> String {
+        // let key = rel_type.get_type();
+        // let value = self.target.get_mut(key);
+        // let max_id: u32 = match value {
+        //     None => {
+        //         let vec = vec![1];
+        //         self.target.insert(key.to_string(), vec);
+        //         1
+        //     }
+        //     Some(ids) => {
+        //         let &max_id = ids.iter().max().unwrap_or(&1);
+        //         ids.push(max_id + 1);
+        //         max_id + 1
+        //     }
+        // };
+        // let id = max_id + 1;// max_id + 1;
         match rel_type {
             RelType::Worksheets => format!("worksheets/sheet{id}.xml"),
             RelType::Theme => format!("theme/theme{id}.xml"),
             RelType::Styles => String::from("styles.xml"),
             RelType::Images => format!("../media/image{id}.png"),
-            RelType::Hyperlinks => { "".to_string() }
             RelType::Drawings => format!("../drawings/drawing{id}.xml"),
+            RelType::Hyperlinks => { "".to_string() }
             RelType::MetaData => "metadata.xml".to_string(),
             RelType::CalcChain => "calcChain.xml".to_string(),
+            RelType::Table => format!("../tables/table{id}.xml"),
             RelType::SharedStrings => { "".to_string() }
             RelType::PrinterSettings => { "".to_string() }
             RelType::VmlDrawing => { "".to_string() }
@@ -85,8 +88,32 @@ impl Default for Relationships {
 }
 
 impl Relationships {
-    fn next_id(&self) -> u32 {
+    pub(crate) fn next_id(&self) -> u32 {
         1 + self.relationship.len() as u32
+    }
+
+    ///
+    /// Add a worksheet in workbook.rel and return the target id and rid
+    ///
+    pub(crate) fn add_worksheet_v2(&mut self) -> (u32, u32) {
+        let r_id = self.next_id();
+        let sheet_target_id: u32 = 1 + self.relationship
+            .iter()
+            .filter(|r| r.rel_type == RelType::Worksheets)
+            .map(|r| r.target[16..r.target.len() - 4].parse().unwrap_or(0))
+            .max()
+            .unwrap_or(0);
+        let rel = RelationShip::new(r_id, RelType::Worksheets, &format!("worksheets/sheet{sheet_target_id}.xml"), None);
+        self.relationship.push(rel);
+        (r_id, sheet_target_id)
+    }
+
+    pub(crate) fn next_sheet_target_id(&self) -> u32 {
+        1 + self.relationship.iter()
+            .filter(|r| r.rel_type == RelType::Worksheets)
+            .map(|r| r.target.chars().filter(|&c| c >= '0' && c <= '9').collect::<String>().parse().unwrap_or(0))
+            .max()
+            .unwrap_or(0)
     }
 
     pub(crate) fn get_drawings_rid(&self) -> Option<u32> {
@@ -112,18 +139,14 @@ impl Relationships {
         self.get_rid_by_type(RelType::VmlDrawing).first().copied()
     }
 
-    pub(crate) fn get_target(&self, r_id: &Rel) -> &String {
-        self.relationship.iter()
+    pub(crate) fn get_target(&self, r_id: &Rel) -> (&String, u32) {
+        let target = self.relationship.iter()
             .find(|r| r.id == *r_id)
             .map(|r| &r.target)
-            .unwrap()
+            .unwrap();
+        let target_id: u32 = target[16..target.len() - 4].parse().unwrap();
+        (target, target_id)
     }
-
-    // pub(crate) fn list_targets(&self, r_ids: Vec<Rel>) -> Vec<&String> {
-    //     self.relationship.iter().filter(
-    //         |r| r_ids.contains(&r.id)
-    //     ).map(|r| &r.target).collect()
-    // }
 
     fn get_rid_by_type(&self, rel_type: RelType) -> Vec<u32> {
         self.relationship
@@ -150,15 +173,15 @@ impl Relationships {
 
     pub(crate) fn add_worksheet(&mut self, id: u32) -> (u32, String) {
         let r_id = self.next_id();
-        let target = self.targets.next_target(RelType::Worksheets);
+        let target = self.targets.next_target(RelType::Worksheets, id);
         let rel = RelationShip::new(r_id, RelType::Worksheets, &target, None);
         self.relationship.push(rel);
-        (r_id, target)
+        (r_id, target.clone())
     }
 
-    pub(crate) fn add_image(&mut self, id: u32) -> u32 {
+    pub(crate) fn add_image(&mut self, id: u32, image_extension: &str) -> u32 {
         let r_id = self.next_id();
-        self.relationship.push(RelationShip::new_image(r_id, id));
+        self.relationship.push(RelationShip::new_image(r_id, id, image_extension));
         r_id
     }
 
@@ -192,6 +215,12 @@ impl Relationships {
 
     pub(crate) async fn save_async<P: AsRef<Path>>(&self, file_path: P, rel_type: XlsxFileType) {
         self.save(file_path, rel_type)
+    }
+
+    pub(crate) fn from_zip_file(file: &mut ZipFile) -> Relationships {
+        let mut xml = String::new();
+        file.read_to_string(&mut xml).unwrap();
+        de::from_str(&xml).unwrap()
     }
 
     pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, rel_type: XlsxFileType) -> io::Result<Relationships> {

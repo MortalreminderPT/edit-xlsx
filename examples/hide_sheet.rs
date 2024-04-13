@@ -1,16 +1,16 @@
-use edit_xlsx::{Col, Workbook, WorkbookResult, Write};
+use edit_xlsx::{WorkSheetCol, Workbook, WorkbookResult, Write};
 
 fn main() -> WorkbookResult<()> {
     // Create a new workbook
     let mut workbook = Workbook::new();
-    let worksheet1 = workbook.get_worksheet(1)?;
+    let worksheet1 = workbook.get_worksheet_mut(1)?;
 
-    worksheet1.set_column("A:A", 30.0)?;
+    worksheet1.set_columns_width("A:A", 30.0)?;
     worksheet1.write("A1", "Sheet2 is hidden")?;
 
     // Hide Sheet2. It won't be visible until it is unhidden in Excel.
     let worksheet2 = workbook.add_worksheet()?;
-    worksheet2.set_column("A:A", 30.0)?;
+    worksheet2.set_columns_width("A:A", 30.0)?;
     // worksheet2.activate();
     worksheet2.hide();
     worksheet2.write("A1", "Now it's my turn to find you!")?;
@@ -22,7 +22,7 @@ fn main() -> WorkbookResult<()> {
     //    worksheet1.hide();
 
     let worksheet3 = workbook.add_worksheet()?;
-    worksheet3.set_column("A:A", 30.0)?;
+    worksheet3.set_columns_width("A:A", 30.0)?;
     worksheet3.write("A1", "Sheet2 is hidden")?;
 
     workbook.save_as("examples/hide_sheet.xlsx")?;

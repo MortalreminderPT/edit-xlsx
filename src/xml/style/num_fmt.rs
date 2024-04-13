@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct NumFmts {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -8,7 +8,7 @@ pub(crate) struct NumFmts {
     num_fmt: Vec<NumFmt>,
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub(crate) struct NumFmt {
     #[serde(rename = "@numFmtId", default)]
     num_fmt_id: u32,

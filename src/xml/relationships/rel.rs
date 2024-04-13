@@ -53,11 +53,11 @@ impl RelationShip {
         }
     }
 
-    pub(crate) fn new_image(r_id: u32, id: u32) -> RelationShip {
+    pub(crate) fn new_image(r_id: u32, id: u32, image_extension: &str) -> RelationShip {
         RelationShip {
             id: Rel::from_id(r_id),
             rel_type: RelType::Images,
-            target: format!("../media/image{id}.png"),
+            target: format!("../media/image{id}.{image_extension}"),
             target_mode: None,
         }
     }

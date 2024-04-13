@@ -155,6 +155,57 @@ impl LocationRange for &str {
     }
 }
 
+impl LocationRange for &String {
+    fn to_range_ref(&self) -> String {
+        self.to_string()
+    }
+
+    fn to_range(&self) -> (u32, u32, u32, u32) {
+        let locs = self.split_once(':').unwrap();
+        let start = locs.0.to_location();
+        let end = locs.1.to_location();
+        (start.0, start.1, end.0, end.1)
+    }
+
+    fn to_row_range_ref(&self) -> String {
+        let locs = self.split_once(':').unwrap();
+        let start_row = locs.0.chars().filter(|&c| c >= '0' && c <= '9').collect::<String>();
+        let end_row = locs.1.chars().filter(|&c| c >= '0' && c <= '9').collect::<String>();
+        format!("{}:{}", start_row, end_row)
+    }
+
+    fn to_row_range(&self) -> (u32, u32) {
+        let locs = self.split_once(':').unwrap();
+        let start_row: u32 = locs.0.chars().filter(|&c| c >= '0' && c <= '9').collect::<String>().parse().unwrap();
+        let end_row: u32 = locs.1.chars().filter(|&c| c >= '0' && c <= '9').collect::<String>().parse().unwrap();
+        (start_row, end_row)
+    }
+
+    fn to_col_range_ref(&self) -> String {
+        let locs = self.split_once(':').unwrap();
+        let start_col = locs.0.chars().filter(|&c| c >= 'A' && c <= 'Z').collect::<String>();
+        let end_col = locs.1.chars().filter(|&c| c >= 'A' && c <= 'Z').collect::<String>();
+        format!("{}:{}", start_col, end_col)
+    }
+
+    fn to_col_range(&self) -> (u32, u32) {
+        let locs = self.split_once(':').unwrap();
+        let start_col = locs.0.chars().filter(|&c| c >= 'A' && c <= 'Z').collect::<String>();
+        let end_col = locs.1.chars().filter(|&c| c >= 'A' && c <= 'Z').collect::<String>();
+        (to_col(&start_col), to_col(&end_col))
+    }
+
+    fn start_ref(&self) -> String {
+        let locs = self.split_once(':').unwrap();
+        locs.0.to_string()
+    }
+
+    fn end_ref(&self) -> String {
+        let locs = self.split_once(':').unwrap();
+        locs.1.to_string()
+    }
+}
+
 impl LocationRange for (u32, u32, u32, u32) {
     fn to_range_ref(&self) -> String {
         format!("{}{}:{}{}", to_col_name(self.1), self.0, to_col_name(self.3), self.2)

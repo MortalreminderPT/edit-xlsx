@@ -3,10 +3,12 @@ pub(crate) mod formula;
 use std::fmt::Formatter;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::{Error, Visitor};
+use crate::api::cell::Cell as ApiCell;
 use crate::api::cell::formula::FormulaType;
 use crate::api::cell::location::Location;
 use crate::xml::worksheet::sheet_data::cell::formula::Formula;
 use crate::api::cell::values::{CellDisplay, CellValue, CellType};
+use crate::result::CellResult;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Cell {
@@ -23,50 +25,15 @@ pub(crate) struct Cell {
     #[serde(rename = "v", skip_serializing_if = "Option::is_none")]
     pub(crate) text: Option<String>,
 }
-
 #[derive(Debug, Clone, Default, PartialEq)]
 pub(crate) struct Sqref {
     pub(crate) col: u32,
     pub(crate) row: u32,
 }
 
-impl Sqref {
-    pub(crate) fn from_location<L: Location>(location: &L) -> Sqref {
-        let (row, col) = location.to_location();
-        Sqref {
-            col,
-            row,
-        }
-    }
-}
-
-impl<'de> Visitor<'de> for Sqref {
-    type Value = Sqref;
-
-    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
-        todo!()
-    }
-
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> where E: Error {
-        // let (row, col) = to_loc(&v);
-        let sqref = Sqref::from_location(&v);
-        Ok(sqref)
-    }
-}
-
-impl<'de> Deserialize<'de> for Sqref {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
-        let sqref = Sqref::default();
-        deserializer.deserialize_string(sqref)
-    }
-}
-
-impl Serialize for Sqref {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-        serializer.serialize_str(&(self.row, self.col).to_ref())
-    }
-}
-
+///
+/// Constructor
+///
 impl Cell {
     pub(crate) fn new<L: Location>(loc: L) -> Cell {
         Cell {
@@ -103,6 +70,25 @@ impl Cell {
     }
 }
 
+///
+/// Convertor
+///
+impl Cell {
+    pub(crate) fn to_api_cell(&self) -> ApiCell<String> {
+        let mut api_cell = ApiCell::default();
+        api_cell.text = self.text.clone();
+        if let Some(formula) = &self.formula {
+            api_cell.formula = Some(formula.get_formula().to_string())
+        }
+        api_cell.cell_type = self.cell_type.clone();
+        api_cell.style = self.style;
+        api_cell
+    }
+}
+
+///
+/// Update
+///
 impl Cell {
     pub(crate) fn update_by_display<T: CellDisplay + CellValue>(&mut self, text: &T, style: Option<u32>) {
         self.text = Some(text.to_display());
@@ -111,6 +97,47 @@ impl Cell {
         }
         self.cell_type = Some(text.to_cell_type());
         self.formula = None;
+    }
+
+    pub(crate) fn update<T: CellDisplay + CellValue>(
+        &mut self,
+        text: Option<&T>,
+        formula: Option<&str>,
+        formula_type: Option<FormulaType>,
+        style: Option<u32>
+    ) {
+        if let Some(text) = text {
+            self.update_by_display(text, style);
+        }
+        if let (Some(formula), Some(formula_type)) = (formula, formula_type) {
+            self.update_by_formula(formula, formula_type, style)
+        }
+    }
+
+    pub(crate) fn update_by_api_cell<T: CellDisplay + CellValue>(&mut self, api_cell: &ApiCell<T>) -> CellResult<()> {
+        if let Some(text) = &api_cell.text {
+            self.text = Some(text.to_display());
+            self.cell_type = Some(text.to_cell_type());
+        }
+        if let Some(style) = &api_cell.style {
+            self.style = Some(*style)
+        }
+        if let Some(formula) = &api_cell.formula {
+            // match api_cell.formula_type {
+            //     Some(FormulaType::OldFormula(_)) => {
+            //         self.cell_type = None;
+            //         self.text = None;
+            //     },
+            //     _ => {
+            //         self.text = Some(String::from("0"));
+            //         self.cm = Some(1);
+            //     }
+            // }
+            self.text = Some(String::from("0"));
+            self.cm = Some(1);
+            self.formula = Some(Formula::from_formula_type(formula, api_cell.formula_type.clone().unwrap()))
+        }
+        Ok(())
     }
 
     pub(crate) fn update_by_formula(&mut self, formula: &str, formula_type: FormulaType, style: Option<u32>) {
@@ -128,5 +155,52 @@ impl Cell {
         };
         let formula = Formula::from_formula_type(formula, formula_type);
         self.formula = Some(formula);
+    }
+}
+
+impl Sqref {
+    pub(crate) fn from_location<L: Location>(location: &L) -> Sqref {
+        let (row, col) = location.to_location();
+        Sqref {
+            col,
+            row,
+        }
+    }
+
+    // pub(crate) fn from_location_range<L: LocationRange>(location_range: &L) -> Sqref {
+    //     let (from_row, from_col, from_row, from_col) = location_range.to_range();
+    //     Sqref {
+    //         col,
+    //         row,
+    //     }
+    // }
+}
+
+///
+/// Serialize and Deserialize
+///
+impl<'de> Visitor<'de> for Sqref {
+    type Value = Sqref;
+
+    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+        todo!()
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> where E: Error {
+        // let (row, col) = to_loc(&v);
+        let sqref = Sqref::from_location(&v);
+        // let sqref = Sqref::from_location(&v);
+        Ok(sqref)
+    }
+}
+impl<'de> Deserialize<'de> for Sqref {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        let sqref = Sqref::default();
+        deserializer.deserialize_string(sqref)
+    }
+}
+impl Serialize for Sqref {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        serializer.serialize_str(&(self.row, self.col).to_ref())
     }
 }

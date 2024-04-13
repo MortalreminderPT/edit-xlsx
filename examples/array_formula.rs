@@ -4,7 +4,7 @@ fn main() -> WorkbookResult<()> {
     // Create a new workbook
     let mut workbook = Workbook::new();
     // Use the default worksheet
-    let worksheet = workbook.get_worksheet(1)?;
+    let worksheet = workbook.get_worksheet_mut(1)?;
     // Write some test data.
     worksheet.write("B1", 500)?;
     worksheet.write("B2", 10)?;

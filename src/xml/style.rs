@@ -6,11 +6,14 @@ pub(crate) mod xf;
 pub(crate) mod color;
 mod num_fmt;
 
+use std::fs::File;
 use std::hash::Hash;
 use std::io;
+use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
+use zip::read::ZipFile;
 use crate::api::format::Format;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::common::{FromFormat, XmlnsAttrs};
@@ -18,38 +21,41 @@ use crate::xml::extension::ExtensionList;
 use crate::xml::io::Io;
 use crate::xml::style::alignment::Alignment;
 use crate::xml::style::border::{Border, Borders};
+use crate::xml::style::color::Color;
 use crate::xml::style::fill::{Fill, Fills};
 use crate::xml::style::font::{Font, Fonts};
-use crate::xml::style::num_fmt::NumFmts;
+use crate::xml::style::num_fmt::{NumFmt, NumFmts};
 use crate::xml::style::xf::Xf;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct StyleSheet {
     #[serde(flatten)]
     xmlns_attrs: XmlnsAttrs,
-    #[serde(rename = "numFmts", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "numFmts", default, skip_serializing_if = "Option::is_none")]
     num_fmts: Option<NumFmts>,
-    #[serde(rename = "fonts", skip_serializing_if = "Option::is_none")]
-    fonts: Option<Fonts>,
-    #[serde(rename = "fills", skip_serializing_if = "Option::is_none")]
-    fills: Option<Fills>,
-    #[serde(rename = "borders", skip_serializing_if = "Option::is_none")]
-    borders: Option<Borders>,
-    #[serde(rename = "cellStyleXfs", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "fonts", default, skip_serializing_if = "Option::is_none")]
+    pub(crate) fonts: Option<Fonts>,
+    #[serde(rename = "fills", default, skip_serializing_if = "Option::is_none")]
+    pub(crate) fills: Option<Fills>,
+    #[serde(rename = "borders", default, skip_serializing_if = "Option::is_none")]
+    pub(crate) borders: Option<Borders>,
+    #[serde(rename = "cellStyleXfs", default, skip_serializing_if = "Option::is_none")]
     cell_style_xfs: Option<CellStyleXfs>,
-    #[serde(rename = "cellXfs", skip_serializing_if = "Option::is_none")]
-    cell_xfs: Option<CellXfs>,
-    #[serde(rename = "cellStyles", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "cellXfs", default, skip_serializing_if = "Option::is_none")]
+    pub(crate) cell_xfs: Option<CellXfs>,
+    #[serde(rename = "cellStyles", default, skip_serializing_if = "Option::is_none")]
     cell_styles: Option<CellStyles>,
-    #[serde(rename = "dxfs", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "dxfs", default, skip_serializing_if = "Option::is_none")]
     dxfs: Option<Dxfs>,
-    #[serde(rename = "tableStyles", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "tableStyles", default, skip_serializing_if = "Option::is_none")]
     table_styles: Option<TableStyles>,
-    #[serde(rename = "extLst", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "colors", default, skip_serializing_if = "Option::is_none")]
+    colors: Option<Colors>,
+    #[serde(rename = "extLst", default, skip_serializing_if = "Option::is_none")]
     ext_lst: Option<ExtensionList>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct CellStyleXfs {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -65,7 +71,7 @@ impl Default for CellStyleXfs {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct CellXfs {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -92,9 +98,13 @@ impl CellXfs {
         self.xf.push(xf.clone());
         self.xf.len() as u32 - 1
     }
+
+    pub(crate) fn get_xf(&self, id: u32) -> Option<&Xf> {
+        self.xf.get(id as usize)
+    }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct CellStyles {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -111,7 +121,7 @@ impl Default for CellStyles {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct CellStyle {
     #[serde(rename = "@name")]
     name: String,
@@ -131,13 +141,27 @@ impl Default for CellStyle {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct Dxfs {
     #[serde(rename = "@count", default)]
     count: u32,
+    #[serde(rename = "dxf", default, skip_serializing_if = "Vec::is_empty")]
+    dxf: Vec<Dxf>
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+struct Dxf {
+    #[serde(rename = "fill", skip_serializing_if = "Option::is_none")]
+    fill: Option<Fill>,
+    #[serde(rename = "font", skip_serializing_if = "Option::is_none")]
+    font: Option<Font>,
+    #[serde(rename = "alignment", skip_serializing_if = "Option::is_none")]
+    alignment: Option<Alignment>,
+    #[serde(rename = "numFmt", skip_serializing_if = "Option::is_none")]
+    num_fmt: Option<NumFmt>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct TableStyles {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -157,6 +181,18 @@ impl Default for TableStyles {
     }
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+struct Colors {
+    #[serde(rename = "mruColors", default)]
+    color: Option<MruColors>
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+struct MruColors {
+    #[serde(rename = "color", default)]
+    color: Vec<Color>
+}
+
 impl Default for StyleSheet {
     fn default() -> Self {
         StyleSheet {
@@ -170,6 +206,7 @@ impl Default for StyleSheet {
             cell_styles: Default::default(),
             dxfs: None,//Dxfs::default(),
             table_styles: Default::default(),
+            colors: None,
             ext_lst: None,
         }
     }
@@ -177,13 +214,13 @@ impl Default for StyleSheet {
 
 impl StyleSheet {
     pub(crate) fn add_format(&mut self, format: &Format) -> u32 {
-        let fonts = self.fonts.get_or_insert(Default::default());
+        let fonts = self.fonts.get_or_insert(Fonts::default());
         let font = Font::from_format(&format.font);
         let font_id = fonts.add_font(&font);
-        let borders = self.borders.get_or_insert(Default::default());
+        let borders = self.borders.get_or_insert(Borders::default());
         let border = Border::from_format(&format.border);
         let border_id = borders.add_border(&border);
-        let fills = self.fills.get_or_insert(Default::default());
+        let fills = self.fills.get_or_insert(Fills::default());
         let fill = Fill::from_format(&format.fill);
         let fill_id = fills.add_fill(&fill);
         let mut xf = Xf::default();
@@ -192,36 +229,50 @@ impl StyleSheet {
         xf.font_id = font_id;
         xf.border_id = border_id;
         xf.fill_id = fill_id;
-        let cell_xfs = self.cell_xfs.get_or_insert(Default::default());
+        let cell_xfs = self.cell_xfs.get_or_insert(CellXfs::default());
         cell_xfs.add_xf(&xf)
+    }
+
+    pub(crate) fn update_format(&self, format: &mut Format, style_id: u32) {
+        if let Some(cell_xfs) = &self.cell_xfs {
+            if let Some(xf) = cell_xfs.get_xf(style_id) {
+                let font = &self.fonts.as_ref().unwrap().get_font(xf.font_id);
+                format.font = font.get_format();
+                let border = &self.borders.as_ref().unwrap().get_border(xf.border_id);
+                format.border = border.get_format();
+                let fill = &self.fills.as_ref().unwrap().get_fill(xf.fill_id);
+                format.fill = fill.get_format();
+            }
+        }
     }
 }
 
-// trait Rearrange<E: Clone + Eq + Hash> {
-//     fn distinct(elements: &Vec<E>) -> (Vec<E>, HashMap<usize, usize>) {
-//         let mut distinct_elements = HashMap::new();
-//         for i in 0..elements.len() {
-//             let e = &elements[i];
-//             if !distinct_elements.contains_key(e) {
-//                 distinct_elements.insert(e, Vec::new());
-//             }
-//             distinct_elements.get_mut(e).unwrap().push(i);
-//         }
-//         let mut index_map = HashMap::new();
-//         let distinct_elements: Vec<(&E, &Vec<usize>)> = distinct_elements
-//             .iter()
-//             .map(|(&e, ids)| (e, ids))
-//             .collect();
-//         for i in 0..distinct_elements.len() {
-//             let (_, ids) = distinct_elements[i];
-//             ids.iter().for_each(|&id| { index_map.insert(id, i); });
-//         }
-//         let elements = distinct_elements.iter().map(|&e| e.0.clone()).collect::<Vec<E>>();
-//         (elements, index_map)
-//     }
-// }
+impl StyleSheet {
+    pub(crate) fn from_file(file: &File) -> StyleSheet {
+        let mut xml = String::new();
+        let mut archive = zip::ZipArchive::new(file).unwrap();
+        let file_path = "xl/styles.xml";
+        let style_sheet = match archive.by_name(&file_path) {
+            Ok(mut file) => {
+                file.read_to_string(&mut xml).unwrap();
+                de::from_str(&xml).unwrap()
+            }
+            Err(_) => {
+                StyleSheet::default()
+            }
+        };
+        style_sheet
+    }
+}
 
 impl Io<StyleSheet> for StyleSheet {
+    fn from_zip_file(mut file: &mut ZipFile) -> Self {
+        let mut xml = String::new();
+        // file.read_to_string(&mut xml).unwrap();
+        file.read_to_string(&mut xml).unwrap_or_default();
+        de::from_str(&xml).unwrap()
+    }
+
     fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<StyleSheet> {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::StylesFile)?;
         let mut xml = String::new();

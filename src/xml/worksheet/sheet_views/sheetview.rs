@@ -9,19 +9,21 @@ pub mod selection;
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub(crate) struct SheetView {
-    #[serde(rename = "@showGridLines", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@showGridLines", default, skip_serializing_if = "Option::is_none")]
     show_grid_lines: Option<u8>,
-    #[serde(rename = "@tabSelected", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@showRowColHeaders", default, skip_serializing_if = "Option::is_none")]
+    show_row_col_headers: Option<u8>,
+    #[serde(rename = "@tabSelected", default, skip_serializing_if = "Option::is_none")]
     tab_selected: Option<u8>,
-    #[serde(rename = "@view", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@view", default, skip_serializing_if = "Option::is_none")]
     view: Option<String>,
-    #[serde(rename = "@zoomScaleNormal", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@zoomScaleNormal", default, skip_serializing_if = "Option::is_none")]
     zoom_scale_normal: Option<u32>,
-    #[serde(rename = "@zoomScale", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@zoomScale", default, skip_serializing_if = "Option::is_none")]
     zoom_scale: Option<u16>,
-    #[serde(rename = "@topLeftCell", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@topLeftCell", default, skip_serializing_if = "Option::is_none")]
     top_left_cell: Option<String>,
-    #[serde(rename = "@rightToLeft", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "@rightToLeft", default, skip_serializing_if = "Option::is_none")]
     right_to_left: Option<u8>,
     #[serde(rename = "@workbookViewId")]
     workbook_view_id: u32,

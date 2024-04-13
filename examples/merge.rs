@@ -1,14 +1,14 @@
-use edit_xlsx::{Format, Workbook, WorkbookResult, FormatColor, FormatAlignType, Col, Write, Row, FormatBorderType};
+use edit_xlsx::{Format, Workbook, WorkbookResult, FormatColor, FormatAlignType, WorkSheetCol, Write, WorkSheetRow, FormatBorderType};
 
 fn main() -> WorkbookResult<()> {
     let mut workbook = Workbook::new();
-    let worksheet = workbook.get_worksheet(1)?;
+    let worksheet = workbook.get_worksheet_mut(1)?;
 
     // Increase the cell size of the merged cells to highlight the formatting.
-    worksheet.set_column("B:D", 18.0)?;
-    worksheet.set_row(4, 40.0)?;
-    worksheet.set_row(7, 30.0)?;
-    worksheet.set_row(8, 30.0)?;
+    worksheet.set_columns_width("B:D", 18.0)?;
+    worksheet.set_row_height(4, 40.0)?;
+    worksheet.set_row_height(7, 30.0)?;
+    worksheet.set_row_height(8, 30.0)?;
 
     // Create a format to use in the merged range.
     let merge_format = Format::default()
@@ -16,7 +16,7 @@ fn main() -> WorkbookResult<()> {
         .set_border(FormatBorderType::Double)
         .set_align(FormatAlignType::Center)
         .set_align(FormatAlignType::VerticalCenter)
-        .set_background_color(FormatColor::RGB("00ffff00"));
+        .set_background_color(FormatColor::RGB(255, 255, 0));
 
     // Merge 3 cells.
     worksheet.merge_range_with_format("B4:D4", "Merged Range", &merge_format)?;

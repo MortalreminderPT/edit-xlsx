@@ -12,6 +12,8 @@ pub(crate) struct SheetFormatPr {
     zero_height: Option<u8>,
     #[serde(rename = "@outlineLevelCol", skip_serializing_if = "Option::is_none")]
     outline_level_col: Option<u8>,
+    #[serde(rename(serialize = "@x14ac:dyDescent", deserialize = "@dyDescent"), skip_serializing_if = "Option::is_none")]
+    x14ac_dy_descent: Option<f64>,
 }
 
 impl Default for SheetFormatPr {
@@ -22,6 +24,7 @@ impl Default for SheetFormatPr {
             custom_height: None,
             zero_height: None,
             outline_level_col: None,
+            x14ac_dy_descent: None,
         }
     }
 }
@@ -30,6 +33,19 @@ impl SheetFormatPr {
     pub(crate) fn set_default_row_height(&mut self, height: f64) {
         self.custom_height = Some(1);
         self.default_row_height = height;
+    }
+
+    pub(crate) fn get_default_row_height(&self) -> f64 {
+        self.default_row_height
+    }
+
+    pub(crate) fn set_default_col_width(&mut self, width: f64) {
+        self.custom_height = Some(1);
+        self.default_col_width = Some(width);
+    }
+
+    pub(crate) fn get_default_col_width(&self) -> f64 {
+        self.default_col_width.unwrap_or(8.11)
     }
 
     pub(crate) fn hide_unused_rows(&mut self, hide: bool) {

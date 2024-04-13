@@ -1,4 +1,4 @@
-use edit_xlsx::{Col, Format, Row, Workbook, WorkbookResult, Write};
+use edit_xlsx::{WorkSheetCol, Format, WorkSheetRow, Workbook, WorkbookResult, Write};
 
 fn main() -> WorkbookResult<()> {
     // Create a new workbook
@@ -28,7 +28,7 @@ fn main() -> WorkbookResult<()> {
     worksheet1.set_row_level(11, 1)?;
 
     // Adjust the column width for clarity
-    worksheet1.set_column("A:A", 20.0)?;
+    worksheet1.set_columns_width("A:A", 20.0)?;
 
     // Add the data, labels and formulas
     worksheet1.write_with_format("A1", "Region", &bold)?;
@@ -89,7 +89,7 @@ fn main() -> WorkbookResult<()> {
     worksheet2.collapse_row(12)?;
 
     // Adjust the column width for clarity
-    worksheet2.set_column("A:A", 20.0)?;
+    worksheet2.set_columns_width("A:A", 20.0)?;
 
     // Add the data, labels and formulas
     worksheet2.write_with_format("A1", "Region", &bold)?;
@@ -123,17 +123,17 @@ fn main() -> WorkbookResult<()> {
     //
     let worksheet3 = workbook.add_worksheet_by_name("Outline Columns")?;
     // Add bold format to the first row.
-    worksheet3.set_row_with_format(1, 15.0, &bold)?;
-    worksheet3.write_row("A1", ["Month", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Total"].iter())?;
-    worksheet3.set_column_with_format("A:A", 10.0, &bold)?;
-    worksheet3.set_column("B:G", 10.0)?;
-    worksheet3.set_column_level("B:G", 1)?;
-    worksheet3.set_column("H:H", 10.0)?;
-    worksheet3.write_column("A2", ["North", "South", "East", "East"].iter())?;
-    worksheet3.write_row("B2", [50, 20, 15, 25, 65, 80].iter())?;
-    worksheet3.write_row("B3", [10, 20, 30, 50, 50, 50].iter())?;
-    worksheet3.write_row("B4", [45, 75, 50, 15, 75, 100].iter())?;
-    worksheet3.write_row("B5", [15, 15, 55, 35, 20, 50].iter())?;
+    worksheet3.set_row_height_with_format(1, 15.0, &bold)?;
+    worksheet3.write_row("A1", &["Month", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Total"])?;
+    worksheet3.set_columns_width_with_format("A:A", 10.0, &bold)?;
+    worksheet3.set_columns_width("B:G", 10.0)?;
+    worksheet3.set_columns_level("B:G", 1)?;
+    worksheet3.set_columns_width("H:H", 10.0)?;
+    worksheet3.write_column("A2", &["North", "South", "East", "East"])?;
+    worksheet3.write_row("B2", &[50, 20, 15, 25, 65, 80])?;
+    worksheet3.write_row("B3", &[10, 20, 30, 50, 50, 50])?;
+    worksheet3.write_row("B4", &[45, 75, 50, 15, 75, 100])?;
+    worksheet3.write_row("B5", &[15, 15, 55, 35, 20, 50])?;
     worksheet3.write_formula("H2", "=SUM(B2:G2)")?;
     worksheet3.write_formula("H3", "=SUM(B3:G3)")?;
     worksheet3.write_formula("H4", "=SUM(B4:G4)")?;
@@ -159,7 +159,7 @@ fn main() -> WorkbookResult<()> {
         "Level 1",
     ];
     let worksheet4 = workbook.add_worksheet_by_name("Outline levels")?;
-    worksheet4.write_column("A1", levels.iter())?;
+    worksheet4.write_column("A1", &levels)?;
 
     worksheet4.set_row_level(1, 1)?;
     worksheet4.set_row_level(2, 2)?;

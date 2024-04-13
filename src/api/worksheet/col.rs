@@ -1,80 +1,134 @@
-use crate::api::cell::location::LocationRange;
+use std::collections::HashMap;
+pub(crate) use crate::api::cell::location::LocationRange;
 use crate::api::worksheet::format::_Format;
-use crate::api::worksheet::row::RowSet;
 use crate::api::worksheet::WorkSheet;
 use crate::Format;
 use crate::result::WorkSheetResult;
 
-pub trait Col: _Col {
-    fn set_column<R: LocationRange>(&mut self, col_range: R, width: f64) -> WorkSheetResult<()> {
-        let mut col_set = ColSet::default();
-        col_set.width = Some(width);
-        self.set_col_by_colset(col_range, &col_set)?;
+#[derive(Copy, Clone, Default, Debug)]
+pub struct Column {
+    pub width: Option<f64>,
+    pub(crate) style: Option<u32>,
+    pub outline_level: Option<u32>,
+    pub hidden: Option<u8>,
+    pub collapsed: Option<u8>,
+}
+
+pub trait WorkSheetCol: _Col {
+    ///
+    /// get methods
+    ///
+    fn get_columns<R: LocationRange>(&self, col_range: R) -> WorkSheetResult<HashMap<String, Column>> {
+        self.list_by_range(col_range)
+    }
+    fn get_columns_with_format<R: LocationRange>(&self, col_range: R) -> WorkSheetResult<HashMap<String, (Column, Option<Format>)>> {
+        let all = self.list_by_range(col_range)?
+            .iter()
+            .map(|(k, v)| (
+                k.clone(),
+                (*v,
+                 match v.style {
+                     None => None,
+                     Some(style) => Some(self.get_format(style))
+                 })
+            ))
+            .collect();
+        Ok(all)
+    }
+    fn get_columns_width<R: LocationRange>(&self, col_range: R) -> WorkSheetResult<HashMap<String, Option<f64>>> {
+        let columns = self.list_by_range(col_range)?;
+        let widths = columns.iter().map(|(k, v)| (k.clone(), v.width)).collect();
+        Ok(widths)
+    }
+
+    ///
+    /// set methods
+    ///
+
+    ///
+    /// set columns fields and formats
+    ///
+    fn set_columns<R: LocationRange>(&mut self, col_range: R, column: &Column) -> WorkSheetResult<()> {
+        self.set_by_column(col_range, column)?;
         Ok(())
     }
-    fn set_column_pixels<R: LocationRange>(&mut self, col_range: R, width: f64) -> WorkSheetResult<()> {
-        let mut col_set = ColSet::default();
-        col_set.width = Some(0.5 * width);
-        self.set_col_by_colset(col_range, &col_set)?;
+    fn set_columns_with_format<R: LocationRange>(&mut self, col_range: R, column: &Column, format: &Format) -> WorkSheetResult<()> {
+        let mut col = column.clone();
+        col.style = Some(self.add_format(format));
+        self.set_by_column(col_range, &col)?;
         Ok(())
     }
 
-    fn set_column_with_format<R: LocationRange>(&mut self, col_range: R, width: f64, format: &Format) -> WorkSheetResult<()> {
-        let mut col_set = ColSet::default();
-        col_set.style = Some(self.add_format(format));
+    ///
+    /// set columns width and formats
+    ///
+    fn set_columns_width<R: LocationRange>(&mut self, col_range: R, width: f64) -> WorkSheetResult<()> {
+        let mut col_set = Column::default();
         col_set.width = Some(width);
-        self.set_col_by_colset(col_range, &col_set)?;
+        self.set_by_column(col_range, &col_set)?;
         Ok(())
     }
-    fn set_column_pixels_with_format<R: LocationRange>(&mut self, col_range: R, width: f64, format: &Format) -> WorkSheetResult<()> {
-        let mut col_set = ColSet::default();
+    fn set_columns_width_pixels<R: LocationRange>(&mut self, col_range: R, width: f64) -> WorkSheetResult<()> {
+        let mut col_set = Column::default();
+        col_set.width = Some(0.5 * width);
+        self.set_by_column(col_range, &col_set)?;
+        Ok(())
+    }
+    fn set_columns_width_with_format<R: LocationRange>(&mut self, col_range: R, width: f64, format: &Format) -> WorkSheetResult<()> {
+        let mut col_set = Column::default();
+        col_set.style = Some(self.add_format(format));
+        col_set.width = Some(width);
+        self.set_by_column(col_range, &col_set)?;
+        Ok(())
+    }
+    fn set_columns_width_pixels_with_format<R: LocationRange>(&mut self, col_range: R, width: f64, format: &Format) -> WorkSheetResult<()> {
+        let mut col_set = Column::default();
         col_set.style = Some(self.add_format(format));
         col_set.width = Some(0.5 * width);
-        self.set_col_by_colset(col_range, &col_set)?;
+        self.set_by_column(col_range, &col_set)?;
         Ok(())
     }
 
-    fn hide_column<R: LocationRange>(&mut self, col_range: R) -> WorkSheetResult<()> {
-        let mut col_set = ColSet::default();
+    ///
+    /// hide columns
+    ///
+    fn hide_columns<R: LocationRange>(&mut self, col_range: R) -> WorkSheetResult<()> {
+        let mut col_set = Column::default();
         col_set.hidden = Some(1);
-        self.set_col_by_colset(col_range, &col_set)?;
+        self.set_by_column(col_range, &col_set)?;
         Ok(())
     }
 
-    fn set_column_level<R: LocationRange>(&mut self, col_range: R, level: u32) -> WorkSheetResult<()> {
-        let mut col_set = ColSet::default();
+    ///
+    /// collapse columns
+    ///
+    fn set_columns_level<R: LocationRange>(&mut self, col_range: R, level: u32) -> WorkSheetResult<()> {
+        let mut col_set = Column::default();
         col_set.outline_level = Some(level);
-        self.set_col_by_colset(col_range, &col_set)?;
+        self.set_by_column(col_range, &col_set)?;
         Ok(())
     }
-
-    fn collapse_col<R: LocationRange>(&mut self, col_range: R) -> WorkSheetResult<()> {
-        let mut col_set = ColSet::default();
+    fn collapse_columns<R: LocationRange>(&mut self, col_range: R) -> WorkSheetResult<()> {
+        let mut col_set = Column::default();
         col_set.collapsed = Some(1);
-        self.set_col_by_colset(col_range, &col_set)?;
+        self.set_by_column(col_range, &col_set)?;
         Ok(())
     }
 }
 
 pub(crate) trait _Col: _Format {
-    fn set_col_by_colset<R: LocationRange>(&mut self, col_range: R, col_set: &ColSet) -> WorkSheetResult<()>;
+    fn set_by_column<R: LocationRange>(&mut self, col_range: R, col_set: &Column) -> WorkSheetResult<()>;
+    fn list_by_range<R: LocationRange>(&self, col_range: R) -> WorkSheetResult<HashMap<String, Column>>;
 }
 
 impl _Col for WorkSheet {
-    fn set_col_by_colset<R: LocationRange>(&mut self, col_range: R, col_set: &ColSet) -> WorkSheetResult<()> {
-        // let (start, end) = col_range.to_col_range();
-        // for col in start..=end {
-            self.worksheet.set_col_by_colset(col_range, col_set)?;
-        // }
+    fn set_by_column<R: LocationRange>(&mut self, col_range: R, col_set: &Column) -> WorkSheetResult<()> {
+        self.worksheet.set_col_by_column(col_range, col_set)?;
         Ok(())
     }
-}
 
-#[derive(Debug, Default)]
-pub(crate) struct ColSet {
-    pub(crate) width: Option<f64>,
-    pub(crate) style: Option<u32>,
-    pub(crate) outline_level: Option<u32>,
-    pub(crate) hidden: Option<u8>,
-    pub(crate) collapsed: Option<u8>,
+    fn list_by_range<R: LocationRange>(&self, col_range: R) -> WorkSheetResult<HashMap<String, Column>> {
+        let columns = self.worksheet.get_col(col_range)?;
+        Ok(columns)
+    }
 }

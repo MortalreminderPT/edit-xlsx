@@ -12,6 +12,17 @@ impl Hyperlinks {
         let hyperlink = Hyperlink::new(&loc.to_ref(), r_id);
         self.hyperlink.push(hyperlink)
     }
+
+    pub(crate) fn get_hyperlink<L: Location>(&self, loc: &L) -> Option<String> {
+        let loc = loc.to_ref();
+        let h = self.hyperlink.iter()
+            .filter(|h| loc == h.hyperlink_ref)
+            .last();
+        match h {
+            None => None,
+            Some(h) => h.display.clone()
+        }
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -26,7 +37,7 @@ struct Hyperlink {
     display: Option<String>,
     #[serde(rename = "@tooltip", skip_serializing_if = "Option::is_none")]
     tooltip: Option<String>,
-    #[serde(rename(serialize = "@xr:uid", deserialize = "@uid"), skip_serializing_if = "String::is_empty")]
+    #[serde(rename(serialize = "@xr:uid", deserialize = "@uid"), default, skip_serializing_if = "String::is_empty")]
     uid: String,
 }
 

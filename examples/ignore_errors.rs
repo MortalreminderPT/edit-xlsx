@@ -1,9 +1,9 @@
 use std::collections::HashMap;
-use edit_xlsx::{Workbook, WorkbookResult, Col, Write};
+use edit_xlsx::{Workbook, WorkbookResult, WorkSheetCol, Write};
 
 fn main() -> WorkbookResult<()> {
     let mut workbook = Workbook::new();
-    let worksheet = workbook.get_worksheet(1)?;
+    let worksheet = workbook.get_worksheet_mut(1)?;
 
     // Write strings that looks like numbers. This will cause an Excel warning.
     worksheet.write_string("C2", "123".to_string())?;
@@ -23,7 +23,7 @@ fn main() -> WorkbookResult<()> {
     worksheet.ignore_errors(error_map);
 
     // Write some descriptions for the cells and make the column wider for clarity.
-    worksheet.set_column("B:B", 16.0)?;
+    worksheet.set_columns_width("B:B", 16.0)?;
     worksheet.write("B2", "Warning:")?;
     worksheet.write("B3", "Warning turned off:")?;
     worksheet.write("B5", "Warning:")?;

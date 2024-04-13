@@ -1,5 +1,5 @@
 use std::fs;
-use edit_xlsx::{Col, Filter, Filters, Format, Row, Workbook, WorkbookResult, Write};
+use edit_xlsx::{WorkSheetCol, Filter, Filters, Format, WorkSheetRow, Workbook, WorkbookResult, Write};
 
 fn main() -> WorkbookResult<()> {
     // Prepare autofilter data
@@ -20,20 +20,20 @@ fn main() -> WorkbookResult<()> {
     workbook.add_worksheet()?;
 
     // Set up several sheets with the same data.
-    for worksheet in workbook.worksheets() {
+    for worksheet in workbook.worksheets_mut() {
         // Make the columns wider.
-        worksheet.set_column("A:D", 12.0)?;
+        worksheet.set_columns_width("A:D", 12.0)?;
         // // Make the header row larger.
-        worksheet.set_row_with_format(1, 20.0, &Format::default().set_bold())?;
+        worksheet.set_row_height_with_format(1, 20.0, &Format::default().set_bold())?;
         // Make the headers bold.
-        worksheet.write_row("A1", headers.iter())?;
+        worksheet.write_row("A1", &headers)?;
     }
 
     //
     // Example 1. Autofilter without conditions.
     //
 
-    let worksheet1 = workbook.get_worksheet(1)?;
+    let worksheet1 = workbook.get_worksheet_mut(1)?;
     // Set the autofilter.
     worksheet1.autofilter("A1:D51");
     let mut row = 2;
@@ -55,7 +55,7 @@ fn main() -> WorkbookResult<()> {
     //
     // Example 2. Autofilter with a filter condition in the first column.
     //
-    let worksheet2 = workbook.get_worksheet(2)?;
+    let worksheet2 = workbook.get_worksheet_mut(2)?;
     // Set the autofilter.
     worksheet2.autofilter("A1:D51");
     // Add filter criteria.
@@ -87,7 +87,7 @@ fn main() -> WorkbookResult<()> {
     //
     // Example 3. Autofilter with a filter condition in the first column.
     //
-    let worksheet3 = workbook.get_worksheet(3)?;
+    let worksheet3 = workbook.get_worksheet_mut(3)?;
     // Set the autofilter.
     worksheet3.autofilter("A1:D51");
     // Add filter criteria.
@@ -120,7 +120,7 @@ fn main() -> WorkbookResult<()> {
     //
     // Example 4. Autofilter with filter conditions in two columns.
     //
-    let worksheet4 = workbook.get_worksheet(4)?;
+    let worksheet4 = workbook.get_worksheet_mut(4)?;
     // Set the autofilter.
     worksheet4.autofilter("A1:D51");
     // Add filter criteria.
@@ -159,7 +159,7 @@ fn main() -> WorkbookResult<()> {
     //
     // Example 5. Autofilter with a filter list condition in one of the columns.
     //
-    let worksheet5 = workbook.get_worksheet(5)?;
+    let worksheet5 = workbook.get_worksheet_mut(5)?;
     // Set the autofilter.
     worksheet5.autofilter("A1:D51");
     // Add filter criteria.
@@ -190,7 +190,7 @@ fn main() -> WorkbookResult<()> {
     //
     // Example 6. Autofilter with filter for blanks.
     //
-    let worksheet6 = workbook.get_worksheet(6)?;
+    let worksheet6 = workbook.get_worksheet_mut(6)?;
     // Set the autofilter.
     worksheet6.autofilter("A1:D51");
     // Add filter criteria.
@@ -224,7 +224,7 @@ fn main() -> WorkbookResult<()> {
     //
     // Example 7. Autofilter with filter for non-blanks.
     //
-    let worksheet7 = workbook.get_worksheet(7)?;
+    let worksheet7 = workbook.get_worksheet_mut(7)?;
     // Set the autofilter.
     worksheet7.autofilter("A1:D51");
     // Add filter criteria.

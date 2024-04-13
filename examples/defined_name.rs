@@ -1,4 +1,4 @@
-use edit_xlsx::{Col, Format, FormatColor, Workbook, WorkbookResult, WorkSheet, WorkSheetResult, Write};
+use edit_xlsx::{WorkSheetCol, Format, FormatColor, Workbook, WorkbookResult, WorkSheet, WorkSheetResult, Write};
 
 fn main() -> WorkbookResult<()> {
     // Create a new workbook
@@ -14,9 +14,9 @@ fn main() -> WorkbookResult<()> {
     // Write some text in the file and one of the defined names in a formula.
     let sales = ["Apple", "Grape", "Pear", "Banana", "Apple", "Grape", "Pear", "Banana", "Banana", "Pear"];
     let units = [10, 12, 32, 16, 13, 50, 25, 8, 33, 95];
-    for worksheet in workbook.worksheets() {
-        worksheet.set_column("A:B", 40.0)?;
-        worksheet.set_column("F:F", 40.0)?;
+    for worksheet in workbook.worksheets_mut() {
+        worksheet.set_columns_width("A:B", 40.0)?;
+        worksheet.set_columns_width("F:F", 40.0)?;
         worksheet.write("A1", "This worksheet contains some defined names.")?;
         worksheet.write("B1", "Show defined name Sales on the right->")?;
         worksheet.write_formula("C1", "=Sales")?;
@@ -28,8 +28,8 @@ fn main() -> WorkbookResult<()> {
         // In older versions of Excel, you could use the write_old_formula method:
         // worksheet.write_old_formula("B3", "=Exchange_rate")?;
         worksheet.write("F1", "Fill in some arrays on the right->")?;
-        worksheet.write_column("G1", sales.iter())?;
-        worksheet.write_column("H1", units.iter())?;
+        worksheet.write_column("G1", &sales)?;
+        worksheet.write_column("H1", &units)?;
     }
 
     workbook.save_as("examples/defined_name.xlsx")?;

@@ -1,4 +1,4 @@
-use edit_xlsx::{Col, Format, FormatAlignType, FormatBorderType, FormatColor, Row, Workbook, WorkbookResult, Write};
+use edit_xlsx::{WorkSheetCol, Format, FormatAlignType, FormatBorderType, FormatColor, WorkSheetRow, Workbook, WorkbookResult, Write};
 
 fn main() -> WorkbookResult<()> {
     let header_format = Format::default()
@@ -6,7 +6,7 @@ fn main() -> WorkbookResult<()> {
         .set_align(FormatAlignType::Center)
         .set_align(FormatAlignType::VerticalCenter)
         .set_border(FormatBorderType::Medium)
-        .set_background_color(FormatColor::RGB("00D7E4BC"));
+        .set_background_color(FormatColor::RGB(126, 75, 12));
     let center_format = Format::default().set_align(FormatAlignType::Center);
 
     // Create a new workbook
@@ -18,8 +18,8 @@ fn main() -> WorkbookResult<()> {
     let worksheet1 = workbook.add_worksheet_by_name("Panes 1")?;
     worksheet1.freeze_panes("A2")?;
     // Other sheet formatting.
-    worksheet1.set_column("A:I", 16.0)?;
-    worksheet1.set_row(0, 20.0)?;
+    worksheet1.set_columns_width("A:I", 16.0)?;
+    worksheet1.set_row_height(0, 20.0)?;
     worksheet1.set_selection("C3:C3")?;
 
     // Some text to demonstrate scrolling.
@@ -40,7 +40,7 @@ fn main() -> WorkbookResult<()> {
     worksheet2.freeze_panes("B1")?;
 
     // Other sheet formatting.
-    worksheet2.set_column("A:A", 16.0)?;
+    worksheet2.set_columns_width("A:A", 16.0)?;
     worksheet2.set_selection("C3:C3")?;
 
     // Some text to demonstrate scrolling.
@@ -58,8 +58,8 @@ fn main() -> WorkbookResult<()> {
     worksheet3.freeze_panes((2, 2))?;
 
     // Other sheet formatting.
-    worksheet3.set_column("A:Z", 16.0)?;
-    worksheet3.set_row(1, 20.0)?;
+    worksheet3.set_columns_width("A:Z", 16.0)?;
+    worksheet3.set_row_height(1, 20.0)?;
     worksheet3.set_selection("C3:C3")?;
     worksheet3.write_with_format((1, 1), "", &header_format)?;
 
@@ -82,7 +82,7 @@ fn main() -> WorkbookResult<()> {
     //
     let worksheet4 = workbook.add_worksheet_by_name("Panes 4")?;
     // Set the default row height is 17 and set the column width is 13
-    worksheet4.set_column("A:Z", 13.0)?;
+    worksheet4.set_columns_width("A:Z", 13.0)?;
     worksheet4.set_default_row(17.0);
     worksheet4.split_panes(2.0 * 13.0, 2.0 * 17.0)?;
     worksheet4.set_selection("C3:C3")?;

@@ -12,15 +12,41 @@ mod fill;
 mod font;
 pub mod border;
 
-#[derive(Default)]
-pub struct Format<'a> {
-    pub(crate) font: FormatFont<'a>,
-    pub(crate) border: FormatBorder<'a>,
-    pub(crate) fill: FormatFill<'a>,
-    pub(crate) align: FormatAlign,
+#[derive(Default, Clone, Debug)]
+pub struct Format {
+    pub font: FormatFont,
+    pub border: FormatBorder,
+    pub fill: FormatFill,
+    pub align: FormatAlign,
 }
 
-impl<'a> Format<'a> {
+impl Format {
+    pub fn is_bold(&self) -> bool {
+        self.font.bold
+    }
+
+    pub fn is_italic(&self) -> bool {
+        self.font.italic
+    }
+
+    pub fn is_underline(&self) -> bool {
+        self.font.underline
+    }
+
+    pub fn get_size(&self) -> f64 {
+        self.font.size
+    }
+
+    pub fn get_background(&self) -> &FormatFill {
+        &self.fill
+    }
+
+    pub fn get_borders(&self) -> &FormatBorder {
+        &self.border
+    }
+}
+
+impl Format {
     pub fn set_bold(mut self) -> Self {
         self.font.bold = true;
         self
@@ -46,62 +72,62 @@ impl<'a> Format<'a> {
         self
     }
 
-    pub fn set_color<'b: 'a>(mut self, format_color: FormatColor<'b>) -> Self {
+    pub fn set_color(mut self, format_color: FormatColor) -> Self {
         self.font.color = format_color;
         self
     }
 
-    pub fn set_font(mut self, font_name: &'a str) -> Self {
-        self.font.name = font_name;
+    pub fn set_font(mut self, font_name: &str) -> Self {
+        self.font.name = font_name.to_string();
         self
     }
 
-    pub fn set_border<'b: 'a>(mut self, format_border_type: FormatBorderType) -> Self {
+    pub fn set_border(mut self, format_border_type: FormatBorderType) -> Self {
         let mut format_border = FormatBorderElement::default();
         format_border.border_type = format_border_type;
-        self.border.left = format_border;
-        self.border.right = format_border;
-        self.border.top = format_border;
-        self.border.bottom = format_border;
+        self.border.left = format_border.clone();
+        self.border.right = format_border.clone();
+        self.border.top = format_border.clone();
+        self.border.bottom = format_border.clone();
         self.border.diagonal = format_border;
         self
     }
 
-    pub fn set_border_left<'b: 'a>(mut self, format_border_type: FormatBorderType) -> Self {
+    pub fn set_border_left(mut self, format_border_type: FormatBorderType) -> Self {
         let mut format_border = FormatBorderElement::default();
         format_border.border_type = format_border_type;
         self.border.left = format_border;
         self
     }
 
-    pub fn set_border_right<'b: 'a>(mut self, format_border_type: FormatBorderType) -> Self {
+    pub fn set_border_right(mut self, format_border_type: FormatBorderType) -> Self {
         let mut format_border = FormatBorderElement::default();
         format_border.border_type = format_border_type;
         self.border.right = format_border;
         self
     }
 
-    pub fn set_border_top<'b: 'a>(mut self, format_border_type: FormatBorderType) -> Self {
+    pub fn set_border_top(mut self, format_border_type: FormatBorderType) -> Self {
         let mut format_border = FormatBorderElement::default();
         format_border.border_type = format_border_type;
         self.border.top = format_border;
         self
     }
 
-    pub fn set_border_bottom<'b: 'a>(mut self, format_border_type: FormatBorderType) -> Self {
+    pub fn set_border_bottom(mut self, format_border_type: FormatBorderType) -> Self {
         let mut format_border = FormatBorderElement::default();
         format_border.border_type = format_border_type;
         self.border.bottom = format_border;
         self
     }
 
-    pub fn set_background_color<'b: 'a>(mut self, format_color: FormatColor<'b>) -> Self {
-        self.fill.pattern_type = "solid";
+    pub fn set_background_color(mut self, format_color: FormatColor) -> Self {
+        self.fill.pattern_type = "solid".to_string();
         self.fill.fg_color = format_color;
         self
     }
 
-    pub fn set_align<'b: 'a>(mut self, format_align_type: FormatAlignType) -> Self {
+    pub fn set_align(mut self, format_align_type: FormatAlignType) -> Self {
         match format_align_type {
             FormatAlignType::Left | FormatAlignType::Center | FormatAlignType::Right =>
                 self.align.horizontal = Some(format_align_type),

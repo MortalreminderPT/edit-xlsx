@@ -1,4 +1,4 @@
-use edit_xlsx::{Col, Format, FormatColor, Row, Workbook, WorkbookResult, WorkSheet, Write};
+use edit_xlsx::{WorkSheetCol, Format, FormatColor, WorkSheetRow, Workbook, WorkbookResult, WorkSheet, Write};
 
 fn main() -> WorkbookResult<()> {
     // Create a new workbook
@@ -124,17 +124,17 @@ fn main() -> WorkbookResult<()> {
     // Example 5: Create a worksheet with outlined columns.
     //
     let worksheet5 = workbook.add_worksheet_by_name("Outline Columns")?;
-    worksheet5.set_row_with_format(1, 15.0, &bold)?;
-    worksheet5.write_row("A1", ["Month", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Total"].iter())?;
-    worksheet5.set_column_with_format("A:A", 10.0, &bold)?;
-    worksheet5.set_column("B:G", 5.0)?;
-    worksheet5.set_column_level("B:G", 1)?;
-    worksheet5.set_column("H:H", 10.0)?;
-    worksheet5.write_column("A2", ["North", "South", "East", "East"].iter())?;
-    worksheet5.write_row("B2", [50, 20, 15, 25, 65, 80].iter())?;
-    worksheet5.write_row("B3", [10, 20, 30, 50, 50, 50].iter())?;
-    worksheet5.write_row("B4", [45, 75, 50, 15, 75, 100].iter())?;
-    worksheet5.write_row("B5", [15, 15, 55, 35, 20, 50].iter())?;
+    worksheet5.set_row_height_with_format(1, 15.0, &bold)?;
+    worksheet5.write_row("A1", &["Month", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Total"])?;
+    worksheet5.set_columns_width_with_format("A:A", 10.0, &bold)?;
+    worksheet5.set_columns_width("B:G", 5.0)?;
+    worksheet5.set_columns_level("B:G", 1)?;
+    worksheet5.set_columns_width("H:H", 10.0)?;
+    worksheet5.write_column("A2", &["North", "South", "East", "East"])?;
+    worksheet5.write_row("B2", &[50, 20, 15, 25, 65, 80])?;
+    worksheet5.write_row("B3", &[10, 20, 30, 50, 50, 50])?;
+    worksheet5.write_row("B4", &[45, 75, 50, 15, 75, 100])?;
+    worksheet5.write_row("B5", &[15, 15, 55, 35, 20, 50])?;
     worksheet5.write_formula("H2", "=SUM(B2:G2)")?;
     worksheet5.write_formula("H3", "=SUM(B3:G3)")?;
     worksheet5.write_formula("H4", "=SUM(B4:G4)")?;
@@ -148,19 +148,19 @@ fn main() -> WorkbookResult<()> {
     // This is the same as the previous example except with collapsed columns.
     //
     let worksheet6 = workbook.add_worksheet_by_name("Collapsed Columns")?;
-    worksheet6.set_row_with_format(1, 15.0, &bold)?;
-    worksheet6.write_row("A1", ["Month", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Total"].iter())?;
-    worksheet6.set_column_with_format("A:H", 10.0, &bold)?;
-    worksheet6.set_column_level("B:G", 1)?;
-    worksheet6.set_column_level("C:F", 2)?;
-    worksheet6.set_column_level("D:E", 3)?;
-    worksheet6.hide_column("D:E")?;
-    worksheet6.collapse_col("D:E")?;
-    worksheet6.write_column("A2", ["North", "South", "East", "East"].iter())?;
-    worksheet6.write_row("B2", [50, 20, 15, 25, 65, 80].iter())?;
-    worksheet6.write_row("B3", [10, 20, 30, 50, 50, 50].iter())?;
-    worksheet6.write_row("B4", [45, 75, 50, 15, 75, 100].iter())?;
-    worksheet6.write_row("B5", [15, 15, 55, 35, 20, 50].iter())?;
+    worksheet6.set_row_height_with_format(1, 15.0, &bold)?;
+    worksheet6.write_row("A1", &["Month", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Total"])?;
+    worksheet6.set_columns_width_with_format("A:H", 10.0, &bold)?;
+    worksheet6.set_columns_level("B:G", 1)?;
+    worksheet6.set_columns_level("C:F", 2)?;
+    worksheet6.set_columns_level("D:E", 3)?;
+    worksheet6.hide_columns("D:E")?;
+    worksheet6.collapse_columns("D:E")?;
+    worksheet6.write_column("A2", &["North", "South", "East", "East"])?;
+    worksheet6.write_row("B2", &[50, 20, 15, 25, 65, 80])?;
+    worksheet6.write_row("B3", &[10, 20, 30, 50, 50, 50])?;
+    worksheet6.write_row("B4", &[45, 75, 50, 15, 75, 100])?;
+    worksheet6.write_row("B5", &[15, 15, 55, 35, 20, 50])?;
     worksheet6.write_formula("H2", "=SUM(B2:G2)")?;
     worksheet6.write_formula("H3", "=SUM(B3:G3)")?;
     worksheet6.write_formula("H4", "=SUM(B4:G4)")?;

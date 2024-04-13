@@ -1,15 +1,17 @@
-use std::{fs, slice, thread};
+use std::{fs, slice};
 use std::cell::RefCell;
-// use std::futures::join;
+use std::collections::hash_map::DefaultHasher;
+use std::fs::File;
+use std::hash::{Hash, Hasher};
 use std::path::Path;
 use std::rc::Rc;
-use std::sync::Arc;
-use std::thread::JoinHandle;
+use std::time::{SystemTime, UNIX_EPOCH};
 use futures::executor::block_on;
 use futures::join;
+use zip::result::ZipError;
 use crate::api::worksheet::WorkSheet;
 use crate::file::XlsxFileType;
-use crate::utils::zip_util;
+use crate::utils::{id_util, zip_util};
 use crate::result::{WorkSheetError, WorkbookError, WorkbookResult};
 use crate::{Properties, xml};
 use crate::xml::content_types::ContentTypes;
@@ -20,6 +22,7 @@ use crate::xml::medias::Medias;
 use crate::xml::metadata::Metadata;
 use crate::xml::style::StyleSheet;
 use crate::xml::relationships::Relationships;
+use crate::xml::shared_string::SharedString;
 
 #[derive(Debug)]
 pub struct Workbook {
@@ -27,23 +30,27 @@ pub struct Workbook {
     pub(crate) tmp_path: String,
     pub(crate) file_path: String,
     closed: bool,
-    workbook: Rc<RefCell<xml::workbook::Workbook>>,
-    style_sheet: Rc<RefCell<StyleSheet>>,
-    workbook_rel: Rc<RefCell<Relationships>>,
-    content_types: Rc<RefCell<ContentTypes>>,
-    medias: Rc<RefCell<Medias>>,
-    metadata: Rc<RefCell<Metadata>>,
-    core_properties: Option<CoreProperties>,
-    app_properties: Option<AppProperties>,
+    pub(crate) workbook: Rc<RefCell<xml::workbook::Workbook>>,
+    pub(crate) style_sheet: Rc<RefCell<StyleSheet>>,
+    pub(crate) workbook_rel: Rc<RefCell<Relationships>>,
+    pub(crate) content_types: Rc<RefCell<ContentTypes>>,
+    pub(crate) medias: Rc<RefCell<Medias>>,
+    pub(crate) metadata: Rc<RefCell<Metadata>>,
+    pub(crate) core_properties: Option<CoreProperties>,
+    pub(crate) app_properties: Option<AppProperties>,
+    pub(crate) shared_string: Rc<SharedString>,
 }
 
+///
+/// Private methods
+///
 impl Workbook {
     fn get_core_properties(&mut self) -> &mut CoreProperties {
-        self.core_properties.get_or_insert(CoreProperties::from_path(&self.tmp_path).unwrap())
+        self.core_properties.get_or_insert(CoreProperties::from_path(&self.file_path).unwrap())
     }
 
     fn get_app_properties(&mut self) -> &mut AppProperties {
-        self.app_properties.get_or_insert(AppProperties::from_path(&self.tmp_path).unwrap())
+        self.app_properties.get_or_insert(AppProperties::from_path(&self.file_path).unwrap())
     }
 }
 
@@ -55,103 +62,77 @@ impl Workbook {
         wb
     }
 
-    pub fn get_worksheet(&mut self, id: u32) -> WorkbookResult<& mut WorkSheet> {
+    pub fn get_worksheet_mut(&mut self, id: u32) -> WorkbookResult<&mut WorkSheet> {
         let sheet = self.sheets
             .iter_mut()
             .find(|sheet| sheet.id == id).ok_or(WorkSheetError::FileNotFound)?;
         Ok(sheet)
     }
 
-    pub fn add_worksheet(&mut self) -> WorkbookResult<& mut WorkSheet> {
-        let sheet_id = self.workbook.borrow().next_sheet_id();
-        let (r_id, target) = self.workbook_rel.borrow_mut().add_worksheet(sheet_id);
-        // let name = self.names.next_sheet_name();
-        let name = self.workbook.borrow_mut().add_worksheet(sheet_id, r_id)?;
-        let sheet = WorkSheet::from_xml(
-            sheet_id,
-            &name,
-            &target,
-            &self.tmp_path,
-            Rc::clone(&self.workbook),
-            Rc::clone(&self.workbook_rel),
-            // Weak::clone(&self.workbook_api),
-            Rc::clone(&self.style_sheet),
-            Rc::clone(&self.content_types),
-            Rc::clone(&self.medias),
-            Rc::clone(&self.metadata),
-        );
-        self.sheets.push(sheet);
-        self.get_worksheet(sheet_id)
+    pub fn get_worksheet(&self, id: u32) -> WorkbookResult<&WorkSheet> {
+        let sheet = self.sheets
+            .iter()
+            .find(|sheet| sheet.id == id).ok_or(WorkSheetError::FileNotFound)?;
+        Ok(sheet)
+    }
+    
+    pub fn get_worksheet_by_name(&self, name: &str) -> WorkbookResult<&WorkSheet> {
+        let sheet = self.sheets
+            .iter()
+            .find(|sheet| sheet.name == name);
+        match sheet {
+            Some(sheet) => Ok(sheet),
+            None => Err(WorkbookError::SheetError(WorkSheetError::FileNotFound))
+        }
+    }
+    
+    pub fn get_worksheet_mut_by_name(&mut self, name: &str) -> WorkbookResult<& mut WorkSheet> {
+        let sheet = self.sheets
+            .iter_mut()
+            .find(|sheet| sheet.name == name);
+        match sheet {
+            Some(sheet) => Ok(sheet),
+            None => Err(WorkbookError::SheetError(WorkSheetError::FileNotFound))
+        }
     }
 
-    pub fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<& mut WorkSheet> {
-        let id = self.workbook.borrow().next_sheet_id();
-        let (r_id, target) = self.workbook_rel.borrow_mut().add_worksheet(id);
-        self.workbook.borrow_mut().add_worksheet_by_name(id, r_id, name)?;
-        let sheet = WorkSheet::from_xml(
-            id,
-            name,
-            &target,
-            &self.tmp_path,
-            Rc::clone(&self.workbook),
-            Rc::clone(&self.workbook_rel),
-            // Weak::clone(&self.workbook_api),
-            Rc::clone(&self.style_sheet),
-            Rc::clone(&self.content_types),
-            Rc::clone(&self.medias),
-            Rc::clone(&self.metadata),
-        );
-        self.sheets.push(sheet);
-        self.get_worksheet(id)
+    pub fn add_worksheet(&mut self) -> WorkbookResult<&mut WorkSheet> {
+        let (r_id, target_id) = self.workbook_rel.borrow_mut().add_worksheet_v2();
+        let (sheet_id, name) = self.workbook.borrow_mut().add_worksheet_v2(r_id, None)?;
+        let worksheet = WorkSheet::add_worksheet(sheet_id, &name, target_id, self);
+        self.sheets.push(worksheet);
+        self.get_worksheet_mut(sheet_id)
     }
 
-    pub fn duplicate_worksheet(&mut self, id: u32) -> WorkbookResult<& mut WorkSheet> {
+    pub fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<&mut WorkSheet> {
+        let (r_id, target_id) = self.workbook_rel.borrow_mut().add_worksheet_v2();
+        let (sheet_id, name) = self.workbook.borrow_mut().add_worksheet_v2(r_id, Some(name))?;
+        let worksheet = WorkSheet::add_worksheet(sheet_id, &name, target_id, self);
+        self.sheets.push(worksheet);
+        self.get_worksheet_mut(sheet_id)
+    }
+
+    pub fn duplicate_worksheet(&mut self, id: u32) -> WorkbookResult<&mut WorkSheet> {
         let copy_worksheet = self.sheets
             .iter()
             .find(|sheet| sheet.id == id).ok_or(WorkSheetError::FileNotFound)?;
-        let sheet_id = self.workbook.borrow().next_sheet_id();
-        let (r_id, target) = self.workbook_rel.borrow_mut().add_worksheet(sheet_id);
-        let name = self.workbook.borrow_mut().add_worksheet(sheet_id, r_id)?;
-        let sheet = WorkSheet::from_worksheet(
-            sheet_id,
-            &name,
-            &target,
-            &self.tmp_path,
-            Rc::clone(&self.workbook),
-            Rc::clone(&self.workbook_rel),
-            Rc::clone(&self.style_sheet),
-            Rc::clone(&self.content_types),
-            Rc::clone(&self.medias),
-            Rc::clone(&self.metadata),
-            copy_worksheet,
-        );
-        self.sheets.push(sheet);
-        self.get_worksheet(sheet_id)
+        let (r_id, target_id) = self.workbook_rel.borrow_mut().add_worksheet_v2();
+        let (sheet_id, new_name) = self.workbook.borrow_mut().add_worksheet_v2(r_id, None)?;
+        let worksheet = WorkSheet::from_worksheet_v2(sheet_id, &new_name, target_id, copy_worksheet);
+        self.sheets.push(worksheet);
+        self.get_worksheet_mut(sheet_id)
     }
 
-    pub fn duplicate_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<& mut WorkSheet> {
+    pub fn duplicate_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<&mut WorkSheet> {
         let copy_worksheet = self.sheets
             .iter()
             .find(|sheet| sheet.name == name).ok_or(WorkSheetError::FileNotFound)?;
-        let sheet_id = self.workbook.borrow().next_sheet_id();
-        let (r_id, target) = self.workbook_rel.borrow_mut().add_worksheet(sheet_id);
-        let name = format!("{name} Duplicated");
-        self.workbook.borrow_mut().add_worksheet_by_name(sheet_id, r_id, &name)?;
-        let sheet = WorkSheet::from_worksheet(
-            sheet_id,
-            &name,
-            &target,
-            &self.tmp_path,
-            Rc::clone(&self.workbook),
-            Rc::clone(&self.workbook_rel),
-            Rc::clone(&self.style_sheet),
-            Rc::clone(&self.content_types),
-            Rc::clone(&self.medias),
-            Rc::clone(&self.metadata),
-            copy_worksheet,
-        );
-        self.sheets.push(sheet);
-        self.get_worksheet(sheet_id)
+        let new_name = format!("{} Duplicated", name);
+        let (r_id, target_id) = self.workbook_rel.borrow_mut().add_worksheet_v2();
+        let (sheet_id, _) = self.workbook.borrow_mut().add_worksheet_v2(r_id, Some(&new_name))?;
+        let worksheet = WorkSheet::from_worksheet_v2(sheet_id, &new_name, target_id, copy_worksheet);
+        self.sheets.push(worksheet);
+        self.get_worksheet_mut(sheet_id)
     }
 
     pub fn set_size(&mut self, width: u32, height: u32) -> WorkbookResult<()> {
@@ -183,18 +164,12 @@ impl Workbook {
         Ok(())
     }
 
-    pub fn worksheets(&mut self) -> slice::IterMut<WorkSheet> {
+    pub fn worksheets_mut(&mut self) -> slice::IterMut<WorkSheet> {
         self.sheets.iter_mut()
     }
 
-    pub fn get_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<& mut WorkSheet> {
-        let sheet = self.sheets
-            .iter_mut()
-            .find(|sheet| sheet.name == name);
-        match sheet {
-            Some(sheet) => Ok(sheet),
-            None => Err(WorkbookError::SheetError(WorkSheetError::FileNotFound))
-        }
+    pub fn worksheets(&self) -> slice::Iter<WorkSheet> {
+        self.sheets.iter()
     }
 
     pub fn read_only_recommended(&mut self) -> WorkbookResult<()> {
@@ -216,37 +191,60 @@ impl Workbook {
 
 impl Workbook {
     async fn from_path_async<P: AsRef<Path>>(file_path: P) -> WorkbookResult<Workbook> {
-        let tmp_path = Workbook::extract_tmp_dir(&file_path)?;
-        let workbook = xml::workbook::Workbook::from_path_async(&tmp_path);
-        let workbook_rel = Relationships::from_path_async(&tmp_path, XlsxFileType::WorkbookRels);
-        let style_sheet = StyleSheet::from_path_async(&tmp_path);
-        let content_types = ContentTypes::from_path_async(&tmp_path);
-        let medias = Medias::from_path_async(&tmp_path);
-        let metadata = Metadata::from_path_async(&tmp_path);
-        let (workbook, workbook_rel, style_sheet,
-            content_types, medias, metadata
-        ) = join!(workbook, workbook_rel, style_sheet, content_types, medias, metadata);
+        let file_name = file_path.as_ref().file_name().ok_or(ZipError::FileNotFound)?;
+        let tmp_path = format!("./~${}_{:X}", file_name.to_str().ok_or(ZipError::FileNotFound)?, id_util::new_id());
+        let file = File::open(&file_path)?;
+        let mut archive = zip::ZipArchive::new(file)?;
+        let (mut workbook_xml, mut workbook_rel
+            , mut content_types, mut style_sheet
+            , mut metadata, mut shared_string) =
+            (None, None, None, None, None, None);
+        let mut medias = Medias::default();
+        for i in 0..archive.len() {
+            let mut file = archive.by_index(i)?;
+            let file_name = file.name();
+            match file_name {
+                "xl/workbook.xml" => workbook_xml = Some(xml::workbook::Workbook::from_zip_file(&mut file)),
+                "xl/_rels/workbook.xml.rels" => workbook_rel = Some(Relationships::from_zip_file(&mut file)),
+                "[Content_Types].xml" => content_types = Some(ContentTypes::from_zip_file(&mut file)),
+                "xl/styles.xml" => style_sheet = Some(StyleSheet::from_zip_file(&mut file)),
+                "xl/metadata.xml" => metadata = Some(Metadata::from_zip_file(&mut file)),
+                "xl/sharedStrings.xml" => shared_string = Some(SharedString::from_zip_file(&mut file)),
+                _ => {
+                    if file_name.starts_with("xl/media/") {
+                        medias.add_existed_media(&file_name);
+                    }
+                },
+            }
+        }
 
-        let workbook = Rc::new(RefCell::new(workbook.unwrap()));
-        let workbook_rel = Rc::new(RefCell::new(workbook_rel.unwrap()));
-        let style_sheet = Rc::new(RefCell::new(style_sheet.unwrap()));
-        let content_types = Rc::new(RefCell::new(content_types.unwrap()));
-        let medias = Rc::new(RefCell::new(medias.unwrap()));
+        let workbook = Rc::new(RefCell::new(workbook_xml.unwrap_or_default()));
+        let workbook_rel = Rc::new(RefCell::new(workbook_rel.unwrap_or_default()));
+        let content_types = Rc::new(RefCell::new(content_types.unwrap_or_default()));
+        let style_sheet = Rc::new(RefCell::new(style_sheet.unwrap_or_default()));
         let metadata = Rc::new(RefCell::new(metadata.unwrap_or_default()));
+        let shared_string = Rc::new(shared_string.unwrap_or_default());
+        let medias = Rc::new(RefCell::new(
+            medias
+        ));
 
         let sheets = workbook.borrow().sheets.sheets.iter().map(
             |sheet_xml| {
+                let binding = workbook_rel.borrow();
+                let (target, target_id) = binding.get_target(&sheet_xml.r_id);
                 WorkSheet::from_xml(
                     sheet_xml.sheet_id,
                     &sheet_xml.name,
-                    &workbook_rel.borrow().get_target(&sheet_xml.r_id),
-                    &tmp_path,
+                    target,
+                    target_id,
+                    &file_path,
                     Rc::clone(&workbook),
                     Rc::clone(&workbook_rel),
                     Rc::clone(&style_sheet),
                     Rc::clone(&content_types),
                     Rc::clone(&medias),
                     Rc::clone(&metadata),
+                    Rc::clone(&shared_string),
                 )
             }).collect::<Vec<WorkSheet>>();
 
@@ -263,8 +261,8 @@ impl Workbook {
             metadata,
             core_properties: None,
             app_properties: None,
+            shared_string,
         };
-
         Ok(workbook)
     }
 
@@ -272,10 +270,6 @@ impl Workbook {
         let workbook = Self::from_path_async(file_path);
         let workbook = block_on(workbook);
         workbook
-    }
-
-    fn extract_tmp_dir<P: AsRef<Path>>(file_path: P) -> WorkbookResult<String> {
-        Ok(zip_util::extract_dir(file_path)?)
     }
 
     async fn save_async(&self) -> WorkbookResult<()> {
@@ -296,6 +290,11 @@ impl Workbook {
     }
 
     pub fn save_as<P: AsRef<Path>>(&self, file_path: P) -> WorkbookResult<()> {
+        if self.closed {
+            return Err(WorkbookError::FileNotFound);
+        }
+        // Extract xlsx to tmp dir
+        zip_util::extract_dir(&self.file_path, &self.tmp_path)?;
         // save sheets
         self.sheets.iter().for_each(|s| s.save_as(&self.tmp_path).unwrap());
         block_on(self.save_async()).unwrap();
@@ -308,6 +307,8 @@ impl Workbook {
         }
         // package files
         zip_util::zip_dir(&self.tmp_path, file_path)?;
+        // clean cache
+        fs::remove_dir_all(&self.tmp_path).unwrap();
         Ok(())
     }
 
@@ -317,7 +318,7 @@ impl Workbook {
 
     pub fn finish(&mut self) {
         if !self.closed {
-            fs::remove_dir_all(&self.tmp_path).unwrap();
+            fs::remove_dir_all(&self.tmp_path);
             self.closed = true;
         }
     }

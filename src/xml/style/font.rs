@@ -3,7 +3,7 @@ use crate::xml::common::{Element, FromFormat};
 use crate::xml::style::color::Color;
 use crate::api::format::FormatFont;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Fonts {
     #[serde(rename = "@count", default)]
     count: u32,
@@ -34,26 +34,42 @@ impl Fonts {
         self.fonts.push(font.clone());
         self.fonts.len() as u32 - 1
     }
+    
+    pub(crate) fn get_font(&self, id: u32) -> Option<&Font> {
+        self.fonts.get(id as usize)
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub(crate) struct Font {
+    #[serde(rename = "b", skip_serializing_if = "Option::is_none")]
+    pub(crate) bold: Option<Bold>,
+    #[serde(rename = "i", skip_serializing_if = "Option::is_none")]
+    pub(crate) italic: Option<Italic>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    strike: Option<Element<u8>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    condense: Option<Element<u8>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    extend: Option<Element<u8>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    outline: Option<Element<u8>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    shadow: Option<Element<u8>>,
+    #[serde(rename = "u", skip_serializing_if = "Option::is_none")]
+    pub(crate) underline: Option<Underline>,
+    #[serde(rename = "vertAlign", skip_serializing_if = "Option::is_none")]
+    vert_align: Option<Element<String>>,
     pub(crate) sz: Element<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) color: Option<Color>,
-    name: Element<String>,
+    pub(crate) name: Element<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     family: Option<Element<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     charset: Option<Element<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     scheme: Option<Element<String>>,
-    #[serde(rename = "b", skip_serializing_if = "Option::is_none")]
-    pub(crate) bold: Option<Bold>,
-    #[serde(rename = "i", skip_serializing_if = "Option::is_none")]
-    pub(crate) italic: Option<Italic>,
-    #[serde(rename = "u", skip_serializing_if = "Option::is_none")]
-    pub(crate) underline: Option<Underline>,
 }
 
 impl Default for Font {
@@ -67,19 +83,14 @@ impl Default for Font {
             scheme: None,
             bold: None,
             italic: None,
+            strike: None,
+            condense: None,
+            extend: None,
+            outline: None,
+            shadow: None,
             underline: None,
+            vert_align: None,
         }
-    }
-}
-
-impl FromFormat<FormatFont<'_>> for Font {
-    fn set_attrs_by_format(&mut self, format: &FormatFont) {
-        self.color = Some(Color::from_format(&format.color));
-        self.name = Element::from_val(format.name.to_string());
-        self.sz = Element::from_val(format.size);
-        self.bold = if format.bold { Some(Bold::default()) } else { None };
-        self.underline = if format.underline { Some(Underline::default()) } else { None };
-        self.italic = if format.italic { Some(Italic::default()) } else { None };
     }
 }
 

@@ -17,6 +17,7 @@ pub(crate) enum RelType {
     SharedStrings,
     PrinterSettings,
     CalcChain,
+    Table,
 }
 
 impl Serialize for RelType {
@@ -57,6 +58,7 @@ impl RelType {
             RelType::Comments => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments",
             RelType::PrinterSettings => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/printerSettings",
             RelType::CalcChain => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain",
+            RelType::Table => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table",
             RelType::Unknown => "",
         }
     }
@@ -75,6 +77,7 @@ impl RelType {
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" => RelType::Comments,
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/printerSettings" => RelType::PrinterSettings,
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain" => RelType::CalcChain,
+            "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table" => RelType::Table,
             &_ => RelType::Unknown
         }
     }
