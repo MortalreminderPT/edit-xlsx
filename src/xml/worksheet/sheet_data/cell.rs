@@ -123,16 +123,18 @@ impl Cell {
             self.style = Some(*style)
         }
         if let Some(formula) = &api_cell.formula {
-            match api_cell.formula_type {
-                Some(FormulaType::OldFormula(_)) => {
-                    self.cell_type = None;
-                    self.text = None;
-                },
-                _ => {
-                    self.text = Some(String::from("0"));
-                    self.cm = Some(1);
-                }
-            }
+            // match api_cell.formula_type {
+            //     Some(FormulaType::OldFormula(_)) => {
+            //         self.cell_type = None;
+            //         self.text = None;
+            //     },
+            //     _ => {
+            //         self.text = Some(String::from("0"));
+            //         self.cm = Some(1);
+            //     }
+            // }
+            self.text = Some(String::from("0"));
+            self.cm = Some(1);
             self.formula = Some(Formula::from_formula_type(formula, api_cell.formula_type.clone().unwrap()))
         }
         Ok(())

@@ -8,8 +8,7 @@ use crate::api::cell::location::{Location, LocationRange};
 use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::{Column, Filters, FormatColor};
-use crate::api::worksheet::row::Row;
-use crate::result::{ColResult, RowResult, WorkSheetResult};
+use crate::result::{ColResult, WorkSheetResult};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
 use crate::xml::worksheet::auto_filter::AutoFilter;
 use crate::xml::worksheet::columns::{Col, Cols};
@@ -45,7 +44,7 @@ mod table_parts;
 #[serde(rename="worksheet")]
 pub(crate) struct WorkSheet {
     #[serde(flatten)]
-    xmlns_attrs: XmlnsAttrs,
+    pub(crate) xmlns_attrs: XmlnsAttrs,
     #[serde(rename = "sheetPr", default, skip_serializing_if = "Option::is_none")]
     sheet_pr: Option<SheetPr>,
     #[serde(rename = "dimension", default, skip_serializing_if = "Option::is_none")]

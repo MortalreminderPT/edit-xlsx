@@ -6,7 +6,7 @@ pub(crate) struct Formula {
     #[serde(rename = "$value", default, skip_serializing_if = "String::is_empty")]
     formula: String,
     #[serde(rename = "@t", skip_serializing_if = "Option::is_none")]
-    formula_type: Option<String>,
+    pub(crate) formula_type: Option<String>,
     #[serde(rename = "@si", skip_serializing_if = "Option::is_none")]
     si: Option<i32>,
     #[serde(rename = "@ref", skip_serializing_if = "Option::is_none")]

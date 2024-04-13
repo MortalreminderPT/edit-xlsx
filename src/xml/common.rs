@@ -186,6 +186,83 @@ impl XmlnsAttrs {
     }
 }
 
+impl XmlnsAttrs {
+    pub(crate) fn add_xr(&mut self) {
+        match self.xmlns_xr {
+            None => {
+                self.xmlns_xr = Some("http://schemas.microsoft.com/office/spreadsheetml/2014/revision".to_string());
+                let mc = self.mc_ignorable.get_or_insert(String::new());
+                if mc.is_empty() {
+                    mc.push_str("xr");
+                } else {
+                    mc.push_str(" xr");
+                }
+            },
+            _ => {}
+        }
+    }
+
+    pub(crate) fn add_xr_2(&mut self) {
+        match self.xmlns_xr2 {
+            None => {
+                self.xmlns_xr2 = Some("http://schemas.microsoft.com/office/spreadsheetml/2015/revision2".to_string());
+                let mc = self.mc_ignorable.get_or_insert(String::new());
+                if mc.is_empty() {
+                    mc.push_str("xr2");
+                } else {
+                    mc.push_str(" xr2");
+                }
+            },
+            _ => {}
+        }
+    }
+
+    pub(crate) fn add_xr_3(&mut self) {
+        match self.xmlns_xr3 {
+            None => {
+                self.xmlns_xr3 = Some("http://schemas.microsoft.com/office/spreadsheetml/2016/revision3".to_string());
+                let mc = self.mc_ignorable.get_or_insert(String::new());
+                if mc.is_empty() {
+                    mc.push_str("xr3");
+                } else {
+                    mc.push_str(" xr3");
+                }
+            },
+            _ => {}
+        }
+    }
+
+    pub(crate) fn add_xr_6(&mut self) {
+        match self.xmlns_xr6 {
+            None => {
+                self.xmlns_xr6 = Some("http://schemas.microsoft.com/office/spreadsheetml/2016/revision6".to_string());
+                let mc = self.mc_ignorable.get_or_insert(String::new());
+                if mc.is_empty() {
+                    mc.push_str("xr6");
+                } else {
+                    mc.push_str(" xr6");
+                }
+            },
+            _ => {}
+        }
+    }
+
+    pub(crate) fn add_xr_10(&mut self) {
+        match self.xmlns_xr10 {
+            None => {
+                self.xmlns_xr10 = Some("http://schemas.microsoft.com/office/spreadsheetml/2016/revision10".to_string());
+                let mc = self.mc_ignorable.get_or_insert(String::new());
+                if mc.is_empty() {
+                    mc.push_str("xr10");
+                } else {
+                    mc.push_str(" xr10");
+                }
+            },
+            _ => {}
+        }
+    }
+}
+
 pub(crate) fn is_zero(num: &u32) -> bool {
     num.eq(&0)
 }

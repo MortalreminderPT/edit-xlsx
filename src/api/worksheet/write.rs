@@ -219,6 +219,11 @@ trait _Write: _Format + _Hyperlink {
 impl _Write for WorkSheet {
     fn write_by_api_cell<L: Location, T: CellDisplay + CellValue + Clone>(&mut self, loc: &L, cell: &Cell<T>) -> WorkSheetResult<()> {
         let mut cell = cell.clone();
+        if let Some(_) = &cell.formula {
+            self.worksheet.xmlns_attrs.add_xr();
+            self.worksheet.xmlns_attrs.add_xr_2();
+            self.worksheet.xmlns_attrs.add_xr_3();
+        }
         if let Some(format) = &cell.format {
             let style = self.add_format(format);
             cell.style = Some(style);

@@ -14,6 +14,7 @@ pub struct Cell<T: CellDisplay + CellValue> {
     pub formula: Option<String>,
     pub(crate) cell_type: Option<CellType>,
     pub(crate) formula_type: Option<FormulaType>,
+    pub(crate) formula_ref: Option<String>,
     pub(crate) style: Option<u32>,
 }
 //
