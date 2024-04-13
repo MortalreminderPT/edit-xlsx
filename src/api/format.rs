@@ -5,7 +5,6 @@ pub use crate::api::format::border::{FormatBorder, FormatBorderElement, FormatBo
 pub use color::FormatColor;
 pub use crate::api::format::fill::FormatFill;
 pub use font::FormatFont;
-use crate::api::cell::values::CellType::String;
 
 mod align;
 mod color;
@@ -13,7 +12,7 @@ mod fill;
 mod font;
 pub mod border;
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct Format {
     pub font: FormatFont,
     pub border: FormatBorder,

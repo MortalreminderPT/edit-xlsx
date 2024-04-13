@@ -15,8 +15,8 @@ fn main() -> WorkbookResult<()> {
         .set_status("example status");
     workbook.set_properties(&properties)?;
     // Use the default worksheet
-    let worksheet = workbook.get_worksheet(1)?;
-    worksheet.set_column("A:A", 70.0)?;
+    let worksheet = workbook.get_worksheet_mut(1)?;
+    worksheet.set_columns_width("A:A", 70.0)?;
     worksheet.write("A1", "Select 'Workbook Properties' to see properties.")?;
     workbook.save_as("examples/doc_properties.xlsx")?;
     Ok(())

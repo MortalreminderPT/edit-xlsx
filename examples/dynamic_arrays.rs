@@ -25,8 +25,8 @@ fn main() -> WorkbookResult<()> {
     worksheet1.write_with_format("I1", "Units", &header2)?;
 
     write_worksheet_data(worksheet1, &header1)?;
-    worksheet1.set_column_pixels("E:E", 10.0)?;
-    worksheet1.set_column_pixels("J:J", 10.0)?;
+    worksheet1.set_columns_width_pixels("E:E", 10.0)?;
+    worksheet1.set_columns_width_pixels("J:J", 10.0)?;
 
     //
     // Example of using the UNIQUE() function.
@@ -42,8 +42,8 @@ fn main() -> WorkbookResult<()> {
     worksheet2.write_with_format("H1", "Sales Rep", &header2)?;
 
     write_worksheet_data(worksheet2, &header1)?;
-    worksheet2.set_column_pixels("E:E", 10.0)?;
-    worksheet2.set_column_pixels("G:G", 10.0)?;
+    worksheet2.set_columns_width_pixels("E:E", 10.0)?;
+    worksheet2.set_columns_width_pixels("G:G", 10.0)?;
 
     //
     // Example of using the SORT() function.
@@ -60,8 +60,8 @@ fn main() -> WorkbookResult<()> {
     worksheet3.write_with_format("I1", "Units", &header2)?;
 
     write_worksheet_data(worksheet3, &header1)?;
-    worksheet3.set_column_pixels("E:E", 10.0)?;
-    worksheet3.set_column_pixels("G:G", 10.0)?;
+    worksheet3.set_columns_width_pixels("E:E", 10.0)?;
+    worksheet3.set_columns_width_pixels("G:G", 10.0)?;
 
 
     //
@@ -95,7 +95,7 @@ fn main() -> WorkbookResult<()> {
     worksheet4.write_with_format("D1", "Name", &header2)?;
     worksheet4.write_with_format("E1", "Age", &header2)?;
 
-    worksheet4.set_column_pixels("C:C", 10.0)?;
+    worksheet4.set_columns_width_pixels("C:C", 10.0)?;
 
     //
     // Example of using the XLOOKUP() function.
@@ -137,8 +137,8 @@ fn main() -> WorkbookResult<()> {
 
     worksheet5.write_with_format("E1", "Brazil", &header2)?;
 
-    worksheet5.set_column_pixels("A:A", 100.0)?;
-    worksheet5.set_column_pixels("D:D", 10.0)?;
+    worksheet5.set_columns_width_pixels("A:A", 100.0)?;
+    worksheet5.set_columns_width_pixels("D:D", 10.0)?;
 
     //
     // Example of using the XMATCH() function.
@@ -159,7 +159,7 @@ fn main() -> WorkbookResult<()> {
     worksheet6.write_with_format("D1", "Position", &header2)?;
     worksheet6.write("C2", "Grape")?;
 
-    worksheet6.set_column_pixels("B:B", 10.0)?;
+    worksheet6.set_columns_width_pixels("B:B", 10.0)?;
 
     //
     // Example of using the RANDARRAY() function.
@@ -188,9 +188,9 @@ fn main() -> WorkbookResult<()> {
     worksheet9.write_with_format("J1", "Spill", &header2)?;
 
     write_worksheet_data(worksheet9, &header1)?;
-    worksheet9.set_column_pixels("E:E", 10.0)?;
-    worksheet9.set_column_pixels("G:G", 10.0)?;
-    worksheet9.set_column_pixels("I:I", 10.0)?;
+    worksheet9.set_columns_width_pixels("E:E", 10.0)?;
+    worksheet9.set_columns_width_pixels("G:G", 10.0)?;
+    worksheet9.set_columns_width_pixels("I:I", 10.0)?;
 
     //
     // Example of using dynamic ranges with older Excel functions.

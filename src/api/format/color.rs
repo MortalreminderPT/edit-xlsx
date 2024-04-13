@@ -1,7 +1,7 @@
 use crate::xml::common::FromFormat;
 use crate::xml::style::color::Color;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum FormatColor {
     Default,
     // RGB(String),

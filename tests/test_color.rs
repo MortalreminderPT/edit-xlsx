@@ -5,7 +5,7 @@ mod tests {
     #[test]
     fn test_new() -> WorkbookResult<()> {
         let mut workbook = Workbook::new();
-        let worksheet = workbook.get_worksheet(1)?;
+        let worksheet = workbook.get_worksheet_mut(1)?;
         // rgb
         let red = Format::default().set_background_color(FormatColor::RGB(255, 0, 0));
         // index
@@ -19,9 +19,9 @@ mod tests {
         worksheet.write_with_format("C2", "BLUE", &blue)?;
         // col color
         worksheet.merge_range("D1:F1", "TEST COLUMN COLOR")?;
-        worksheet.set_column_with_format("D:D", 10.0, &red)?;
-        worksheet.set_column_with_format("E:E", 10.0, &green)?;
-        worksheet.set_column_with_format("F:F", 10.0, &blue)?;
+        worksheet.set_columns_width_with_format("D:D", 10.0, &red)?;
+        worksheet.set_columns_width_with_format("E:E", 10.0, &green)?;
+        worksheet.set_columns_width_with_format("F:F", 10.0, &blue)?;
         worksheet.write("D2", "RED")?;
         worksheet.write("E2", "GREEN")?;
         worksheet.write("F2", "BLUE")?;
@@ -40,7 +40,7 @@ mod tests {
     #[test]
     fn test_from() -> WorkbookResult<()> {
         let mut workbook = Workbook::from_path("tests/xlsx/color.xlsx")?;
-        let worksheet = workbook.get_worksheet(1)?;
+        let worksheet = workbook.get_worksheet_mut(1)?;
         // cell color
         worksheet.write("A1", "RED")?;
         worksheet.write("B1", "GREEN")?;

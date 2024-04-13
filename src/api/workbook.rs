@@ -62,37 +62,37 @@ impl Workbook {
         wb
     }
 
-    pub fn get_worksheet(&mut self, id: u32) -> WorkbookResult<&mut WorkSheet> {
+    pub fn get_worksheet_mut(&mut self, id: u32) -> WorkbookResult<&mut WorkSheet> {
         let sheet = self.sheets
             .iter_mut()
             .find(|sheet| sheet.id == id).ok_or(WorkSheetError::FileNotFound)?;
         Ok(sheet)
     }
 
-    pub fn read_worksheet(&self, id: u32) -> WorkbookResult<&WorkSheet> {
+    pub fn get_worksheet(&self, id: u32) -> WorkbookResult<&WorkSheet> {
         let sheet = self.sheets
             .iter()
             .find(|sheet| sheet.id == id).ok_or(WorkSheetError::FileNotFound)?;
         Ok(sheet)
     }
 
-    pub fn add_worksheet(&mut self) -> WorkbookResult<& mut WorkSheet> {
+    pub fn add_worksheet(&mut self) -> WorkbookResult<&mut WorkSheet> {
         let (r_id, target_id) = self.workbook_rel.borrow_mut().add_worksheet_v2();
         let (sheet_id, name) = self.workbook.borrow_mut().add_worksheet_v2(r_id, None)?;
         let worksheet = WorkSheet::add_worksheet(sheet_id, &name, target_id, self);
         self.sheets.push(worksheet);
-        self.get_worksheet(sheet_id)
+        self.get_worksheet_mut(sheet_id)
     }
 
-    pub fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<& mut WorkSheet> {
+    pub fn add_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<&mut WorkSheet> {
         let (r_id, target_id) = self.workbook_rel.borrow_mut().add_worksheet_v2();
         let (sheet_id, name) = self.workbook.borrow_mut().add_worksheet_v2(r_id, Some(name))?;
         let worksheet = WorkSheet::add_worksheet(sheet_id, &name, target_id, self);
         self.sheets.push(worksheet);
-        self.get_worksheet(sheet_id)
+        self.get_worksheet_mut(sheet_id)
     }
 
-    pub fn duplicate_worksheet(&mut self, id: u32) -> WorkbookResult<& mut WorkSheet> {
+    pub fn duplicate_worksheet(&mut self, id: u32) -> WorkbookResult<&mut WorkSheet> {
         let copy_worksheet = self.sheets
             .iter()
             .find(|sheet| sheet.id == id).ok_or(WorkSheetError::FileNotFound)?;
@@ -100,10 +100,10 @@ impl Workbook {
         let (sheet_id, new_name) = self.workbook.borrow_mut().add_worksheet_v2(r_id, None)?;
         let worksheet = WorkSheet::from_worksheet_v2(sheet_id, &new_name, target_id, copy_worksheet);
         self.sheets.push(worksheet);
-        self.get_worksheet(sheet_id)
+        self.get_worksheet_mut(sheet_id)
     }
 
-    pub fn duplicate_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<& mut WorkSheet> {
+    pub fn duplicate_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<&mut WorkSheet> {
         let copy_worksheet = self.sheets
             .iter()
             .find(|sheet| sheet.name == name).ok_or(WorkSheetError::FileNotFound)?;
@@ -112,7 +112,7 @@ impl Workbook {
         let (sheet_id, _) = self.workbook.borrow_mut().add_worksheet_v2(r_id, Some(&new_name))?;
         let worksheet = WorkSheet::from_worksheet_v2(sheet_id, &new_name, target_id, copy_worksheet);
         self.sheets.push(worksheet);
-        self.get_worksheet(sheet_id)
+        self.get_worksheet_mut(sheet_id)
     }
 
     pub fn set_size(&mut self, width: u32, height: u32) -> WorkbookResult<()> {
@@ -144,8 +144,12 @@ impl Workbook {
         Ok(())
     }
 
-    pub fn worksheets(&mut self) -> slice::IterMut<WorkSheet> {
+    pub fn worksheets_mut(&mut self) -> slice::IterMut<WorkSheet> {
         self.sheets.iter_mut()
+    }
+
+    pub fn worksheets(&self) -> slice::Iter<WorkSheet> {
+        self.sheets.iter()
     }
 
     pub fn get_worksheet_by_name(&mut self, name: &str) -> WorkbookResult<& mut WorkSheet> {

@@ -4,7 +4,7 @@ fn main() -> WorkbookResult<()> {
     // Create a new workbook
     let mut workbook = Workbook::new();
 
-    let worksheet = workbook.get_worksheet(1)?;
+    let worksheet = workbook.get_worksheet_mut(1)?;
 
     // Write some data.
     worksheet.write("D1", "Some hidden columns.")?;
@@ -20,7 +20,7 @@ fn main() -> WorkbookResult<()> {
     }
 
     // Columns can be hidden explicitly. This doesn't increase the file size..
-    worksheet.hide_column("G:XFD")?;
+    worksheet.hide_columns("G:XFD")?;
 
     workbook.save_as("examples/hide_row_col.xlsx")?;
     Ok(())

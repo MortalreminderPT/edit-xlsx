@@ -3,7 +3,7 @@ use edit_xlsx::{Format, FormatAlignType, FormatBorderType, FormatColor, Workbook
 fn main() -> WorkbookResult<()> {
     // Create a new workbook
     let mut workbook = Workbook::new();
-    let worksheet = workbook.get_worksheet(1)?;
+    let worksheet = workbook.get_worksheet_mut(1)?;
     // write some text
     WorkSheet::write(worksheet, "A1", "Hello")?;
     worksheet.write("B1", "World")?;

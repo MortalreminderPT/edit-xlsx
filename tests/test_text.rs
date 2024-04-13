@@ -5,7 +5,7 @@ mod tests {
     #[test]
     fn test_new_write() -> WorkbookResult<()> {
         let mut workbook = Workbook::new();
-        let worksheet = workbook.get_worksheet(1)?;
+        let worksheet = workbook.get_worksheet_mut(1)?;
         // test write cell
         worksheet.write("A1", "Text")?;
         let texts: Vec<String> = (1..=100).into_iter().map(|i| format!("Text{i}")).collect();

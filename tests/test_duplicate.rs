@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod tests {
-    use edit_xlsx::{Workbook, WorkbookResult, Write};
+    use edit_xlsx::{Workbook, WorkbookResult, WorkSheet, Write};
 
     #[test]
     fn test_new() -> WorkbookResult<()> {
         let mut workbook = Workbook::new();
-        let worksheet = workbook.get_worksheet(1)?;
+        let worksheet = workbook.get_worksheet_mut(1)?;
         let worksheet = workbook.add_worksheet()?;
         let worksheet = workbook.add_worksheet()?;
         let worksheet = workbook.add_worksheet_by_name("worksheet")?;
@@ -29,10 +29,10 @@ mod tests {
     #[test]
     fn test_from_appraisal_score() -> WorkbookResult<()> {
         let mut workbook = Workbook::from_path("tests/xlsx/appraisal_score.xlsx")?;
-        let names = ["Details", "Template", "Advanced Project Plan Template"];
+        let names:Vec<String> = workbook.worksheets().map(|w|w.get_name().to_string()).collect();
         for name in names {
             // let worksheet = workbook.get_worksheet_by_name(name)?;
-            workbook.duplicate_worksheet_by_name(name)?;
+            workbook.duplicate_worksheet_by_name(&name)?;
         }
         // Program will panic here because of the duplicated sheet name
         // workbook.duplicate_worksheet_by_name("Template")?;

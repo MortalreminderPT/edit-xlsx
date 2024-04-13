@@ -1,4 +1,4 @@
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone, Default, Debug)]
 pub struct Column {
     pub(crate) width: Option<f64>,
     pub(crate) style: Option<u32>,

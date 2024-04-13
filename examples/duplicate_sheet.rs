@@ -4,7 +4,7 @@ fn main() -> WorkbookResult<()> {
     // from an existed workbook
     let mut workbook = Workbook::from_path("examples/xlsx/accounting.xlsx")?;
     // Use the first worksheet as a template
-    let template = workbook.get_worksheet(1)?;
+    let template = workbook.get_worksheet_mut(1)?;
     template.insert_image("I1:L3", &"./examples/pics/ferris.png");
     template.set_name("template")?;
     // Deselect and hide the template.

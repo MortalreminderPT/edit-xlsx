@@ -28,7 +28,7 @@ fn main() -> WorkbookResult<()> {
     worksheet1.set_row_level(11, 1)?;
 
     // Adjust the column width for clarity
-    worksheet1.set_column("A:A", 20.0)?;
+    worksheet1.set_columns_width("A:A", 20.0)?;
 
     // Add the data, labels and formulas
     worksheet1.write_with_format("A1", "Region", &bold)?;
@@ -89,7 +89,7 @@ fn main() -> WorkbookResult<()> {
     worksheet2.collapse_row(12)?;
 
     // Adjust the column width for clarity
-    worksheet2.set_column("A:A", 20.0)?;
+    worksheet2.set_columns_width("A:A", 20.0)?;
 
     // Add the data, labels and formulas
     worksheet2.write_with_format("A1", "Region", &bold)?;
@@ -125,10 +125,10 @@ fn main() -> WorkbookResult<()> {
     // Add bold format to the first row.
     worksheet3.set_row_with_format(1, 15.0, &bold)?;
     worksheet3.write_row("A1", &["Month", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Total"])?;
-    worksheet3.set_column_with_format("A:A", 10.0, &bold)?;
-    worksheet3.set_column("B:G", 10.0)?;
-    worksheet3.set_column_level("B:G", 1)?;
-    worksheet3.set_column("H:H", 10.0)?;
+    worksheet3.set_columns_width_with_format("A:A", 10.0, &bold)?;
+    worksheet3.set_columns_width("B:G", 10.0)?;
+    worksheet3.set_columns_level("B:G", 1)?;
+    worksheet3.set_columns_width("H:H", 10.0)?;
     worksheet3.write_column("A2", &["North", "South", "East", "East"])?;
     worksheet3.write_row("B2", &[50, 20, 15, 25, 65, 80])?;
     worksheet3.write_row("B3", &[10, 20, 30, 50, 50, 50])?;

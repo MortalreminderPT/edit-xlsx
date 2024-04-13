@@ -1,6 +1,6 @@
 use crate::xml::common::FromFormat;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum FormatAlignType {
     Top,
     Center,
@@ -55,7 +55,7 @@ impl FromFormat<FormatAlignType> for String {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct FormatAlign {
     pub(crate) horizontal: Option<FormatAlignType>,
     pub(crate) vertical: Option<FormatAlignType>,

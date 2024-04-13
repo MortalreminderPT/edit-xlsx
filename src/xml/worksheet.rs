@@ -108,16 +108,16 @@ impl WorkSheet {
 /// Column xml method
 ///
 impl WorkSheet {
-    pub(crate) fn get_col<R: LocationRange>(&self, col_range: R) -> ColResult<Vec<(u32, u32, Column)>> {
+    pub(crate) fn get_col<R: LocationRange>(&self, col_range: R) -> ColResult<HashMap<String, Column>> {
         let (min, max) = col_range.to_col_range();
         let res = match &self.cols {
             None => {
-                vec![]
+                HashMap::new()
             }
             Some(cols) => {
                 cols.index_range_col_tree(min, max)
                     .iter()
-                    .map(|(min, max, col)| (*min, *max, col.to_api_column()))
+                    .map(|(min, max, col)| ((1, *min, 1, *max).to_col_range_ref(), col.to_api_column()))
                     .collect()
             }
         };

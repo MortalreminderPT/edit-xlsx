@@ -2,10 +2,10 @@ use edit_xlsx::{Format, Workbook, WorkbookResult, FormatColor, FormatAlignType, 
 
 fn main() -> WorkbookResult<()> {
     let mut workbook = Workbook::new();
-    let worksheet = workbook.get_worksheet(1)?;
+    let worksheet = workbook.get_worksheet_mut(1)?;
 
     // Increase the cell size of the merged cells to highlight the formatting.
-    worksheet.set_column("B:D", 18.0)?;
+    worksheet.set_columns_width("B:D", 18.0)?;
     worksheet.set_row(4, 40.0)?;
     worksheet.set_row(7, 30.0)?;
     worksheet.set_row(8, 30.0)?;
