@@ -39,7 +39,7 @@ fn main() -> WorkbookResult<()> {
     // Read then write text and format
     for row in 1..=reading_sheet.max_row() {
         for col in 1..=reading_sheet.max_column() {
-            if let Ok(cell) = reading_sheet.read((row, col)) {
+            if let Ok(cell) = reading_sheet.read_cell((row, col)) {
                 writing_sheet.write_cell((row, col), &cell)?;
             }
         }

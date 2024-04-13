@@ -6,7 +6,7 @@ use crate::api::worksheet::hyperlink::_Hyperlink;
 use crate::result::{CellError, RowError, WorkSheetError};
 
 pub trait Read: _Read {
-    fn read<L: Location>(&self, loc: L) -> WorkSheetResult<Cell<String>> {
+    fn read_cell<L: Location>(&self, loc: L) -> WorkSheetResult<Cell<String>> {
         self.read_api_cell(&loc)
     }
     // fn read_text<L: Location>(&self, loc: L) -> WorkSheetResult<&str> { self.read_value(loc) }
