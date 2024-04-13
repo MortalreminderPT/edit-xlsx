@@ -7,8 +7,9 @@ repository = "https://github.com/MortalreminderPT/edit-xlsx"
 documentation = "https://docs.rs/edit-xlsx/latest/edit_xlsx"
 keywords = ["excel", "xlsx", "writer", "editor"]
 readme = "README.md"
-version = "0.4.1"
+version = "0.4.2"
 edition = "2021"
+exclude = ["tests/", "examples/"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
