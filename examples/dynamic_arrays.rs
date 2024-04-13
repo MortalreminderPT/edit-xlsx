@@ -1,4 +1,4 @@
-use edit_xlsx::{Col, Format, FormatColor, Workbook, WorkbookResult, WorkSheet, WorkSheetResult, Write};
+use edit_xlsx::{WorkSheetCol, Format, FormatColor, Workbook, WorkbookResult, WorkSheet, WorkSheetResult, Write};
 
 fn main() -> WorkbookResult<()> {
     // Create a new workbook called simple.xls and add some worksheets.

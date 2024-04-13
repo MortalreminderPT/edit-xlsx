@@ -1,4 +1,4 @@
-use edit_xlsx::{Col, Row, Workbook, WorkbookResult, Write};
+use edit_xlsx::{WorkSheetCol, Row, Workbook, WorkbookResult, Write};
 
 fn main() -> WorkbookResult<()> {
     // Create a new workbook

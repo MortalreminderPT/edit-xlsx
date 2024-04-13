@@ -1,4 +1,4 @@
-use edit_xlsx::{Workbook, WorkbookResult, Col, Read, Write, Row};
+use edit_xlsx::{Workbook, WorkbookResult, WorkSheetCol, Read, Write, Row};
 
 fn main() -> WorkbookResult<()> {
     // from an existed workbook

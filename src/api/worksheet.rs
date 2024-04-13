@@ -14,7 +14,7 @@ use std::path::Path;
 use std::rc::Rc;
 use crate::{Filters, FormatColor, xml};
 use crate::api::cell::location::{Location, LocationRange};
-use crate::api::worksheet::col::Col;
+use crate::api::worksheet::col::WorkSheetCol;
 use crate::api::worksheet::image::_Image;
 use crate::api::worksheet::read::Read;
 use crate::api::worksheet::row::Row;
@@ -59,7 +59,7 @@ impl Row for WorkSheet {
     //     Ok(())
     // }
 }
-impl Col for WorkSheet {}
+impl WorkSheetCol for WorkSheet {}
 impl Read for WorkSheet {}
 
 impl WorkSheet {

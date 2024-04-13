@@ -1,4 +1,4 @@
-use edit_xlsx::{Col, Format, Workbook, WorkbookResult, Write};
+use edit_xlsx::{WorkSheetCol, Format, Workbook, WorkbookResult, Write};
 
 fn main() -> WorkbookResult<()> {
     // Add the cell formats.

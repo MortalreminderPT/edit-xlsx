@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use edit_xlsx::{Workbook, WorkbookResult, Col, Write};
+use edit_xlsx::{Workbook, WorkbookResult, WorkSheetCol, Write};
 
 fn main() -> WorkbookResult<()> {
     let mut workbook = Workbook::new();

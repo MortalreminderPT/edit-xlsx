@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use edit_xlsx::{Col, Format, FormatColor, Row, Workbook, WorkbookResult, Write};
+    use edit_xlsx::{WorkSheetCol, Format, FormatColor, Row, Workbook, WorkbookResult, Write};
 
     #[test]
     fn test_new() -> WorkbookResult<()> {

@@ -1,7 +1,7 @@
 use crate::Format;
 use crate::api::worksheet::format::_Format;
 use crate::api::worksheet::WorkSheet;
-use crate::result::{RowError, WorkSheetError, WorkSheetResult};
+use crate::result::WorkSheetResult;
 
 pub trait Row: _Row {
     fn get_row(&self, row: u32) -> WorkSheetResult<f64> {

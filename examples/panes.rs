@@ -1,4 +1,4 @@
-use edit_xlsx::{Col, Format, FormatAlignType, FormatBorderType, FormatColor, Row, Workbook, WorkbookResult, Write};
+use edit_xlsx::{WorkSheetCol, Format, FormatAlignType, FormatBorderType, FormatColor, Row, Workbook, WorkbookResult, Write};
 
 fn main() -> WorkbookResult<()> {
     let header_format = Format::default()

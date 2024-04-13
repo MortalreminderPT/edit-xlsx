@@ -1,5 +1,5 @@
 use std::fs;
-use edit_xlsx::{Col, Filter, Filters, Format, Row, Workbook, WorkbookResult, Write};
+use edit_xlsx::{WorkSheetCol, Filter, Filters, Format, Row, Workbook, WorkbookResult, Write};
 
 fn main() -> WorkbookResult<()> {
     // Prepare autofilter data

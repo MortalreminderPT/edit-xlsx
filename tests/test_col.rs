@@ -1,6 +1,25 @@
 #[cfg(test)]
 mod tests {
-    use edit_xlsx::{Col, Workbook, WorkbookResult};
+    use edit_xlsx::{WorkSheetCol, Workbook, WorkbookResult, Column};
+
+    #[test]
+    fn test_new_by_column() -> WorkbookResult<()> {
+        let mut workbook = Workbook::new();
+        let worksheet = workbook.get_worksheet_mut(1)?;
+        worksheet.set_default_column(18.5);
+        let mut column = Column::default();
+        column.width = Some(1.5);
+        column.outline_level = Some(1);
+        column.hidden = Some(0);
+        worksheet.set_columns("A:U", &column)?;
+        column.width = Some(3.0);
+        column.outline_level = Some(2);
+        column.hidden = Some(1);
+        worksheet.set_columns("D:I", &column)?;
+        assert_eq!(18.5, worksheet.get_default_column());
+        workbook.save_as("tests/output/col_test_new_by_column.xlsx")?;
+        Ok(())
+    }
 
     #[test]
     fn test_new_default_width() -> WorkbookResult<()> {

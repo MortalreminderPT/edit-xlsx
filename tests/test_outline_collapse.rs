@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use edit_xlsx::{Col, Row, Workbook, WorkbookResult};
+    use edit_xlsx::{WorkSheetCol, Row, Workbook, WorkbookResult};
 
     #[test]
     fn test_new() -> WorkbookResult<()> {
