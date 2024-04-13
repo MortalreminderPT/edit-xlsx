@@ -8,3 +8,4 @@
 !/tests/xlsx/*.xlsx
 #*.bat
 /examples/demo.rs
+!/tests/output/

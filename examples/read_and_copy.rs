@@ -14,6 +14,7 @@ fn main() -> WorkbookResult<()> {
 
     // Synchronous column width and format
     let columns_map = reading_sheet.get_columns_with_format("A:XFD")?;
+    writing_sheet.set_default_column(reading_sheet.get_default_column());
     columns_map.iter().for_each(|(col_range, (column, format))| {
         if let Some(format) = format {
             // if col format exists, write it to writing_sheet
