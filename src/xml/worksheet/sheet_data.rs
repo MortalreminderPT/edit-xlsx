@@ -5,15 +5,13 @@ pub(crate) mod cell;
 mod row;
 
 use serde::{Deserialize, Serialize};
-use crate::api::cell::formula::FormulaType;
 use crate::api::cell::location::Location;
+use crate::api::cell::Cell as ApiCell;
 use crate::api::cell::values::{CellDisplay, CellType, CellValue};
 use crate::api::worksheet::row::Row as ApiRow;
 use crate::result::CellError::CellNotFound;
-use crate::result::RowError::{CellError, RowNotFound};
-use crate::result::RowResult;
-use crate::result::WorkSheetError::RowError;
-use crate::WorkSheetResult;
+use crate::result::RowError::RowNotFound;
+use crate::result::{RowError, RowResult};
 use crate::xml::worksheet::sheet_data::cell::Cell;
 use crate::xml::worksheet::sheet_data::row::{_OrderCell, Row};
 
@@ -39,12 +37,12 @@ impl SheetData {
         }
     }
 
-    pub(crate) fn get_row_height(&self, row: u32) -> WorkSheetResult<f64> {
-        match self.get_row(row) {
-            Some(row) => row.height.ok_or(RowError(CellError(CellNotFound))),
-            None => Err(RowError(RowNotFound))
-        }
-    }
+    // pub(crate) fn get_row_height(&self, row: u32) -> WorkSheetResult<f64> {
+    //     match self.get_row(row) {
+    //         Some(row) => row.height.ok_or(RowError(CellError(CellNotFound))),
+    //         None => Err(RowError(RowNotFound))
+    //     }
+    // }
 
     pub(crate) fn get_api_row(&self, row: u32) -> RowResult<ApiRow> {
         match self.get_row(row) {
@@ -116,18 +114,37 @@ impl SheetData {
         }
     }
 
-    pub(crate) fn write_cell<L: Location, T: CellDisplay + CellValue>(
-        &mut self,
-        loc: &L,
-        text: Option<&T>,
-        formula: Option<&str>,
-        formula_type: Option<FormulaType>,
-        style: Option<u32>
-    ) -> RowResult<()> {
+    // pub(crate) fn write_cell<L: Location, T: CellDisplay + CellValue>(
+    //     &mut self,
+    //     loc: &L,
+    //     text: Option<&T>,
+    //     formula: Option<&str>,
+    //     formula_type: Option<FormulaType>,
+    //     style: Option<u32>
+    // ) -> RowResult<()> {
+    //     let (row, col) = loc.to_location();
+    //     let row = self.get_or_new_row(row);
+    //     row.add_cell(col, text, formula, formula_type, style);
+    //     Ok(())
+    // }
+
+    pub(crate) fn write_by_api_cell<L: Location, T: CellDisplay + CellValue>(&mut self, loc: &L, api_cell: &ApiCell<T>) -> RowResult<()> {
         let (row, col) = loc.to_location();
         let row = self.get_or_new_row(row);
-        row.add_cell(col, text, formula, formula_type, style);
+        row.add_by_api_cell(col, &api_cell)?;
         Ok(())
+    }
+
+    pub(crate) fn read_api_cell<L: Location>(&self, loc: &L) -> RowResult<ApiCell<String>> {
+        let (row, col) = loc.to_location();
+        if let Some(row) = self.get_row(row) {
+            match row.get_cell(col) {
+                Some(cell) => Ok(cell.to_api_cell()),
+                None => Err(RowError::CellError(CellNotFound)),
+            }
+        } else {
+            Err(RowError::RowNotFound)
+        }
     }
 
     pub(crate) fn write_display<L: Location, T: CellDisplay + CellValue>(&mut self, loc: &L, text: &T, style: Option<u32>) -> RowResult<()> {
@@ -138,12 +155,12 @@ impl SheetData {
         Ok(())
     }
 
-    pub(crate) fn write_formula<L: Location>(&mut self, loc: &L, formula: &str, formula_type: FormulaType, style: Option<u32>) -> RowResult<()> {
-        let (row, col) = loc.to_location();
-        let row = self.get_or_new_row(row);
-        row.add_formula_cell(col, formula, formula_type, style);
-        Ok(())
-    }
+    // pub(crate) fn write_formula<L: Location>(&mut self, loc: &L, formula: &str, formula_type: FormulaType, style: Option<u32>) -> RowResult<()> {
+    //     let (row, col) = loc.to_location();
+    //     let row = self.get_or_new_row(row);
+    //     row.add_formula_cell(col, formula, formula_type, style);
+    //     Ok(())
+    // }
 
     pub(crate) fn clean_formula_value(&mut self) {
         self.rows.iter_mut().for_each(

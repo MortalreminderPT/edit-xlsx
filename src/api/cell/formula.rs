@@ -1,9 +1,17 @@
-#[derive(PartialEq)]
+use crate::api::cell::formula::FormulaType::Formula;
+
+#[derive(PartialEq, Clone, Debug)]
 pub(crate) enum FormulaType {
     Formula(String),
     OldFormula(String),
     ArrayFormula(String),
     DynamicArrayFormula(String),
+}
+
+impl Default for FormulaType {
+    fn default() -> Self {
+        Formula("array".to_string())
+    }
 }
 
 impl FormulaType {

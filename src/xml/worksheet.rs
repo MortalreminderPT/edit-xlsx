@@ -199,6 +199,14 @@ impl WorkSheet {
         hyperlinks.add_hyperlink(loc, r_id);
     }
 
+    pub(crate) fn get_hyperlink<L: Location>(&self, loc: &L) -> Option<String> {
+        if let Some(hyperlinks) = &self.hyperlinks {
+            hyperlinks.get_hyperlink(loc)
+        } else {
+            None
+        }
+    }
+
     pub(crate) fn set_default_row_height(&mut self, height: f64) {
         self.sheet_format_pr.set_default_row_height(height);
     }

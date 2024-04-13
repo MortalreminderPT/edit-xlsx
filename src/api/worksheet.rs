@@ -15,10 +15,11 @@ use std::rc::Rc;
 use crate::{Filters, FormatColor, xml};
 use crate::api::cell::location::{Location, LocationRange};
 use crate::api::worksheet::col::WorkSheetCol;
-use crate::api::worksheet::image::_Image;
+use crate::api::worksheet::image::Image;
 use crate::api::worksheet::read::Read;
 use crate::api::worksheet::row::WorkSheetRow;
 use crate::api::worksheet::write::Write;
+use crate::api::workbook::Workbook as ApiWorkbook;
 use crate::file::XlsxFileType;
 use crate::result::{WorkSheetError, WorkSheetResult};
 use crate::xml::drawings::Drawings;
@@ -28,7 +29,6 @@ use crate::xml::relationships::Relationships;
 use crate::xml::shared_string::SharedString;
 use crate::xml::worksheet::WorkSheet as XmlWorkSheet;
 use crate::xml::workbook::Workbook;
-use crate::api::workbook::Workbook as ApiWorkbook;
 use crate::xml::style::StyleSheet;
 
 #[derive(Debug)]
@@ -39,7 +39,6 @@ pub struct WorkSheet {
     pub(crate) target_id: u32,
     workbook: Rc<RefCell<Workbook>>,
     workbook_rel: Rc<RefCell<Relationships>>,
-    // workbook_api: Weak<& mut ApiWorkbook>,
     worksheet: XmlWorkSheet,
     worksheet_rel: Relationships,
     style_sheet: Rc<RefCell<StyleSheet>>,
@@ -53,12 +52,7 @@ pub struct WorkSheet {
 }
 
 impl Write for WorkSheet {}
-impl WorkSheetRow for WorkSheet {
-    // fn hide_row(&mut self, row: u32) -> WorkSheetResult<()> {
-    //     self.worksheet.sheet_data.hide_row(row);
-    //     Ok(())
-    // }
-}
+impl WorkSheetRow for WorkSheet {}
 impl WorkSheetCol for WorkSheet {}
 impl Read for WorkSheet {}
 

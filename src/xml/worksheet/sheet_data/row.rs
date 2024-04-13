@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use crate::api::cell::formula::FormulaType;
 use crate::api::cell::values::{CellDisplay, CellValue};
 use crate::api::worksheet::row::Row as ApiRow;
+use crate::api::cell::Cell as ApiCell;
+use crate::result::RowResult;
 use crate::xml::worksheet::sheet_data::Cell;
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
@@ -80,6 +82,12 @@ impl Row {
         // 判断新增cell位置是否已经存在别的cell
         let cell = self.get_or_new_cell(col);
         cell.update(text, formula, formula_type, style)
+    }
+
+    pub(crate) fn add_by_api_cell<T: CellDisplay + CellValue>(&mut self, col: u32, api_cell: &ApiCell<T>) -> RowResult<()> {
+        let cell = self.get_or_new_cell(col);
+        cell.update_by_api_cell(api_cell)?;
+        Ok(())
     }
 
     pub(crate) fn add_display_cell<T: CellDisplay + CellValue>(&mut self, col: u32, text: &T, style: Option<u32>) {

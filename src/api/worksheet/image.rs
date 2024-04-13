@@ -7,12 +7,12 @@ use crate::WorkSheetResult;
 use crate::xml::drawings::Drawings;
 use crate::xml::relationships::Relationships;
 
-pub(crate) trait _Image {
+pub(crate) trait Image {
     fn add_background<P: AsRef<Path>>(&mut self, filename: &P) -> WorkSheetResult<u32> ;
     fn add_drawing<L: LocationRange,P: AsRef<Path>>(&mut self, loc: L, filename: &P) -> WorkSheetResult<u32>;
 }
 
-impl _Image for WorkSheet {
+impl Image for WorkSheet {
     fn add_background<P: AsRef<Path>>(&mut self, image_path: &P) -> WorkSheetResult<u32> {
         let extension = get_extension(image_path)?;
         if extension != "png" {

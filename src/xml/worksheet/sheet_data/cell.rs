@@ -3,10 +3,12 @@ pub(crate) mod formula;
 use std::fmt::Formatter;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::{Error, Visitor};
+use crate::api::cell::Cell as ApiCell;
 use crate::api::cell::formula::FormulaType;
-use crate::api::cell::location::{Location, LocationRange};
+use crate::api::cell::location::Location;
 use crate::xml::worksheet::sheet_data::cell::formula::Formula;
 use crate::api::cell::values::{CellDisplay, CellValue, CellType};
+use crate::result::CellResult;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Cell {
@@ -69,9 +71,20 @@ impl Cell {
 }
 
 ///
-/// Get
+/// Convertor
 ///
-impl Cell {}
+impl Cell {
+    pub(crate) fn to_api_cell(&self) -> ApiCell<String> {
+        let mut api_cell = ApiCell::default();
+        api_cell.text = self.text.clone();
+        if let Some(formula) = &self.formula {
+            api_cell.formula = Some(formula.get_formula().to_string())
+        }
+        api_cell.cell_type = self.cell_type.clone();
+        api_cell.style = self.style;
+        api_cell
+    }
+}
 
 ///
 /// Update
@@ -99,6 +112,30 @@ impl Cell {
         if let (Some(formula), Some(formula_type)) = (formula, formula_type) {
             self.update_by_formula(formula, formula_type, style)
         }
+    }
+
+    pub(crate) fn update_by_api_cell<T: CellDisplay + CellValue>(&mut self, api_cell: &ApiCell<T>) -> CellResult<()> {
+        if let Some(text) = &api_cell.text {
+            self.text = Some(text.to_display());
+            self.cell_type = Some(text.to_cell_type());
+        }
+        if let Some(style) = &api_cell.style {
+            self.style = Some(*style)
+        }
+        if let Some(formula) = &api_cell.formula {
+            match api_cell.formula_type {
+                Some(FormulaType::OldFormula(_)) => {
+                    self.cell_type = None;
+                    self.text = None;
+                },
+                _ => {
+                    self.text = Some(String::from("0"));
+                    self.cm = Some(1);
+                }
+            }
+            self.formula = Some(Formula::from_formula_type(formula, api_cell.formula_type.clone().unwrap()))
+        }
+        Ok(())
     }
 
     pub(crate) fn update_by_formula(&mut self, formula: &str, formula_type: FormulaType, style: Option<u32>) {

@@ -2,7 +2,7 @@ use edit_xlsx::{Workbook, WorkbookResult, WorkSheetCol, Read, Write, WorkSheetRo
 
 fn main() -> WorkbookResult<()> {
     // from an existed workbook
-    let reading_book = Workbook::from_path("./examples/xlsx/accounting.xlsx")?;
+    let reading_book = Workbook::from_path("./tests/xlsx/accounting.xlsx")?;
     // Read the first sheet
     let reading_sheet = reading_book.get_worksheet(1)?;
     let mut writing_book = Workbook::new();
@@ -24,19 +24,13 @@ fn main() -> WorkbookResult<()> {
     // Read then write text and format
     for row in 1..=reading_sheet.max_row() {
         for col in 1..=reading_sheet.max_column() {
-            match (reading_sheet.read((row, col)), reading_sheet.read_format((row, col))) {
-                (Ok(text), Ok(format)) => {
-                    writing_sheet.write_with_format((row, col), text, &format).unwrap();
+            match (reading_sheet.read((row, col))) {
+                Ok(cell) => {
+                    writing_sheet.write_cell((row, col), &cell)?;
                 }
-                (Ok(text), _) => {
-                    writing_sheet.write((row, col), text).unwrap();
-                }
-                (_, Ok(format)) => {
-                    writing_sheet.write_with_format((row, col), "", &format).unwrap();
-                }
-                _ => {}
+                Err(_) => {}
             }
-            if let Ok(height) = writing_sheet.get_row_height(row) {
+            if let Ok(Some(height)) = writing_sheet.get_row_height(row) {
                 writing_sheet.set_row_height(row, height)?;
             }
         }

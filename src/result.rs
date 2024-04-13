@@ -15,6 +15,8 @@ pub enum RowError {
     CellError(CellError),
 }
 
+impl From<CellError> for RowError { fn from(err: CellError) -> RowError { RowError::CellError(err) } }
+
 pub type ColResult<T> = Result<T, ColError>;
 #[derive(Debug)]
 pub enum ColError {
