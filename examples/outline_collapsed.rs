@@ -1,4 +1,4 @@
-use edit_xlsx::{WorkSheetCol, Format, FormatColor, Row, Workbook, WorkbookResult, WorkSheet, Write};
+use edit_xlsx::{WorkSheetCol, Format, FormatColor, WorkSheetRow, Workbook, WorkbookResult, WorkSheet, Write};
 
 fn main() -> WorkbookResult<()> {
     // Create a new workbook
@@ -124,7 +124,7 @@ fn main() -> WorkbookResult<()> {
     // Example 5: Create a worksheet with outlined columns.
     //
     let worksheet5 = workbook.add_worksheet_by_name("Outline Columns")?;
-    worksheet5.set_row_with_format(1, 15.0, &bold)?;
+    worksheet5.set_row_height_with_format(1, 15.0, &bold)?;
     worksheet5.write_row("A1", &["Month", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Total"])?;
     worksheet5.set_columns_width_with_format("A:A", 10.0, &bold)?;
     worksheet5.set_columns_width("B:G", 5.0)?;
@@ -148,7 +148,7 @@ fn main() -> WorkbookResult<()> {
     // This is the same as the previous example except with collapsed columns.
     //
     let worksheet6 = workbook.add_worksheet_by_name("Collapsed Columns")?;
-    worksheet6.set_row_with_format(1, 15.0, &bold)?;
+    worksheet6.set_row_height_with_format(1, 15.0, &bold)?;
     worksheet6.write_row("A1", &["Month", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Total"])?;
     worksheet6.set_columns_width_with_format("A:H", 10.0, &bold)?;
     worksheet6.set_columns_level("B:G", 1)?;

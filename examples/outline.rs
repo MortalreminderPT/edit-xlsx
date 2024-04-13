@@ -1,4 +1,4 @@
-use edit_xlsx::{WorkSheetCol, Format, Row, Workbook, WorkbookResult, Write};
+use edit_xlsx::{WorkSheetCol, Format, WorkSheetRow, Workbook, WorkbookResult, Write};
 
 fn main() -> WorkbookResult<()> {
     // Create a new workbook
@@ -123,7 +123,7 @@ fn main() -> WorkbookResult<()> {
     //
     let worksheet3 = workbook.add_worksheet_by_name("Outline Columns")?;
     // Add bold format to the first row.
-    worksheet3.set_row_with_format(1, 15.0, &bold)?;
+    worksheet3.set_row_height_with_format(1, 15.0, &bold)?;
     worksheet3.write_row("A1", &["Month", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Total"])?;
     worksheet3.set_columns_width_with_format("A:A", 10.0, &bold)?;
     worksheet3.set_columns_width("B:G", 10.0)?;

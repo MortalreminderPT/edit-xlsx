@@ -1,5 +1,5 @@
 use std::fs;
-use edit_xlsx::{WorkSheetCol, Filter, Filters, Format, Row, Workbook, WorkbookResult, Write};
+use edit_xlsx::{WorkSheetCol, Filter, Filters, Format, WorkSheetRow, Workbook, WorkbookResult, Write};
 
 fn main() -> WorkbookResult<()> {
     // Prepare autofilter data
@@ -24,7 +24,7 @@ fn main() -> WorkbookResult<()> {
         // Make the columns wider.
         worksheet.set_columns_width("A:D", 12.0)?;
         // // Make the header row larger.
-        worksheet.set_row_with_format(1, 20.0, &Format::default().set_bold())?;
+        worksheet.set_row_height_with_format(1, 20.0, &Format::default().set_bold())?;
         // Make the headers bold.
         worksheet.write_row("A1", &headers)?;
     }

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use edit_xlsx::{WorkSheetCol, Format, FormatColor, Row, Workbook, WorkbookResult, Write};
+    use edit_xlsx::{WorkSheetCol, Format, FormatColor, WorkSheetRow, Workbook, WorkbookResult, Write};
 
     #[test]
     fn test_new() -> WorkbookResult<()> {
@@ -27,9 +27,9 @@ mod tests {
         worksheet.write("F2", "BLUE")?;
         // row color
         worksheet.merge_range((5, 1, 5, 16384), "TEST ROW COLOR")?;
-        worksheet.set_row_with_format(6, 15.0, &red)?;
-        worksheet.set_row_with_format(7, 15.0, &green)?;
-        worksheet.set_row_with_format(8, 15.0, &blue)?;
+        worksheet.set_row_height_with_format(6, 15.0, &red)?;
+        worksheet.set_row_height_with_format(7, 15.0, &green)?;
+        worksheet.set_row_height_with_format(8, 15.0, &blue)?;
         worksheet.write("A6", "RED")?;
         worksheet.write("A7", "GREEN")?;
         worksheet.write("A8", "BLUE")?;

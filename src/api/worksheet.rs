@@ -17,7 +17,7 @@ use crate::api::cell::location::{Location, LocationRange};
 use crate::api::worksheet::col::WorkSheetCol;
 use crate::api::worksheet::image::_Image;
 use crate::api::worksheet::read::Read;
-use crate::api::worksheet::row::Row;
+use crate::api::worksheet::row::WorkSheetRow;
 use crate::api::worksheet::write::Write;
 use crate::file::XlsxFileType;
 use crate::result::{WorkSheetError, WorkSheetResult};
@@ -53,7 +53,7 @@ pub struct WorkSheet {
 }
 
 impl Write for WorkSheet {}
-impl Row for WorkSheet {
+impl WorkSheetRow for WorkSheet {
     // fn hide_row(&mut self, row: u32) -> WorkSheetResult<()> {
     //     self.worksheet.sheet_data.hide_row(row);
     //     Ok(())

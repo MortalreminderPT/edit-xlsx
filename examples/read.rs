@@ -1,4 +1,4 @@
-use edit_xlsx::{Workbook, WorkbookResult, WorkSheetCol, Read, Write, Row};
+use edit_xlsx::{Workbook, WorkbookResult, WorkSheetCol, Read, Write, WorkSheetRow};
 
 fn main() -> WorkbookResult<()> {
     // from an existed workbook
@@ -36,8 +36,8 @@ fn main() -> WorkbookResult<()> {
                 }
                 _ => {}
             }
-            if let Ok(height) = writing_sheet.get_row(row) {
-                writing_sheet.set_row(row, height)?;
+            if let Ok(height) = writing_sheet.get_row_height(row) {
+                writing_sheet.set_row_height(row, height)?;
             }
         }
     }

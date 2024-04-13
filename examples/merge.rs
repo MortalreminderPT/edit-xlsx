@@ -1,4 +1,4 @@
-use edit_xlsx::{Format, Workbook, WorkbookResult, FormatColor, FormatAlignType, WorkSheetCol, Write, Row, FormatBorderType};
+use edit_xlsx::{Format, Workbook, WorkbookResult, FormatColor, FormatAlignType, WorkSheetCol, Write, WorkSheetRow, FormatBorderType};
 
 fn main() -> WorkbookResult<()> {
     let mut workbook = Workbook::new();
@@ -6,9 +6,9 @@ fn main() -> WorkbookResult<()> {
 
     // Increase the cell size of the merged cells to highlight the formatting.
     worksheet.set_columns_width("B:D", 18.0)?;
-    worksheet.set_row(4, 40.0)?;
-    worksheet.set_row(7, 30.0)?;
-    worksheet.set_row(8, 30.0)?;
+    worksheet.set_row_height(4, 40.0)?;
+    worksheet.set_row_height(7, 30.0)?;
+    worksheet.set_row_height(8, 30.0)?;
 
     // Create a format to use in the merged range.
     let merge_format = Format::default()

@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use edit_xlsx::{Row, Workbook, WorkbookResult};
+    use edit_xlsx::{WorkSheetRow, Workbook, WorkbookResult};
 
     #[test]
     fn test_new_default_height() -> WorkbookResult<()> {
@@ -28,8 +28,8 @@ mod tests {
         let mut workbook = Workbook::new();
         let worksheet = workbook.get_worksheet_mut(1)?;
         // assert_eq!(20.0, worksheet.get_row(1)?);
-        worksheet.set_row(1, 22.5)?;
-        assert_eq!(22.5, worksheet.get_row(1)?);
+        worksheet.set_row_height(1, 22.5)?;
+        assert_eq!(22.5, worksheet.get_row_height(1)?);
         workbook.save_as("tests/output/row_test_new_custom_row.xlsx")?;
         Ok(())
     }
@@ -38,8 +38,8 @@ mod tests {
     fn test_from_custom_height() -> WorkbookResult<()> {
         let mut workbook = Workbook::from_path("tests/xlsx/row_and_col.xlsx")?;
         let worksheet = workbook.get_worksheet_mut(1)?;
-        worksheet.set_row(1, 100.0)?;
-        assert_eq!(100.0, worksheet.get_row(1)?);
+        worksheet.set_row_height(1, 100.0)?;
+        assert_eq!(100.0, worksheet.get_row_height(1)?);
         workbook.save_as("tests/output/row_test_from_custom_row.xlsx")?;
         Ok(())
     }

@@ -1,4 +1,4 @@
-use edit_xlsx::{WorkSheetCol, Format, FormatAlignType, FormatBorderType, FormatColor, Row, Workbook, WorkbookResult, Write};
+use edit_xlsx::{WorkSheetCol, Format, FormatAlignType, FormatBorderType, FormatColor, WorkSheetRow, Workbook, WorkbookResult, Write};
 
 fn main() -> WorkbookResult<()> {
     let header_format = Format::default()
@@ -19,7 +19,7 @@ fn main() -> WorkbookResult<()> {
     worksheet1.freeze_panes("A2")?;
     // Other sheet formatting.
     worksheet1.set_columns_width("A:I", 16.0)?;
-    worksheet1.set_row(0, 20.0)?;
+    worksheet1.set_row_height(0, 20.0)?;
     worksheet1.set_selection("C3:C3")?;
 
     // Some text to demonstrate scrolling.
@@ -59,7 +59,7 @@ fn main() -> WorkbookResult<()> {
 
     // Other sheet formatting.
     worksheet3.set_columns_width("A:Z", 16.0)?;
-    worksheet3.set_row(1, 20.0)?;
+    worksheet3.set_row_height(1, 20.0)?;
     worksheet3.set_selection("C3:C3")?;
     worksheet3.write_with_format((1, 1), "", &header_format)?;
 

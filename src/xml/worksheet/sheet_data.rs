@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::api::cell::formula::FormulaType;
 use crate::api::cell::location::Location;
 use crate::api::cell::values::{CellDisplay, CellType, CellValue};
-use crate::api::worksheet::row::RowSet;
+use crate::api::worksheet::row::Row as ApiRow;
 use crate::result::CellError::CellNotFound;
 use crate::result::RowError::{CellError, RowNotFound};
 use crate::result::RowResult;
@@ -46,7 +46,14 @@ impl SheetData {
         }
     }
 
-    pub(crate) fn set_row_by_rowset(&mut self, row: u32, row_set: &RowSet) {
+    pub(crate) fn get_api_row(&self, row: u32) -> RowResult<ApiRow> {
+        match self.get_row(row) {
+            Some(row) => Ok(row.to_api_row()),
+            None => Err(RowNotFound)
+        }
+    }
+
+    pub(crate) fn set_by_row(&mut self, row: u32, row_set: &ApiRow) {
         let row = self.get_or_new_row(row);
         if let Some(height) = row_set.height {
             row.height = Some(height);

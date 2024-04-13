@@ -1,4 +1,4 @@
-use edit_xlsx::{WorkSheetCol, Row, Workbook, WorkbookResult, Write};
+use edit_xlsx::{WorkSheetCol, WorkSheetRow, Workbook, WorkbookResult, Write};
 
 fn main() -> WorkbookResult<()> {
     // Create a new workbook
@@ -16,7 +16,7 @@ fn main() -> WorkbookResult<()> {
     // Set the height of empty rows that we do want to display even if it is
     // the default height.
     for row in 2..=7 {
-        worksheet.set_row(row, 15.0)?;
+        worksheet.set_row_height(row, 15.0)?;
     }
 
     // Columns can be hidden explicitly. This doesn't increase the file size..

@@ -14,7 +14,7 @@ pub use api::format::FormatAlignType;
 pub use api::format::FormatColor;
 pub use api::worksheet::write::Write;
 pub use api::worksheet::read::Read;
-pub use api::worksheet::row::Row;
+pub use api::worksheet::row::WorkSheetRow;
 pub use api::worksheet::col::Column;
 pub use api::worksheet::col::WorkSheetCol;
 pub use api::properties::Properties;

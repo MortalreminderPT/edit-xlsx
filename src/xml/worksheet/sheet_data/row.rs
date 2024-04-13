@@ -3,6 +3,7 @@
 use serde::{Deserialize, Serialize};
 use crate::api::cell::formula::FormulaType;
 use crate::api::cell::values::{CellDisplay, CellValue};
+use crate::api::worksheet::row::Row as ApiRow;
 use crate::xml::worksheet::sheet_data::Cell;
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
@@ -30,6 +31,18 @@ pub(crate) struct Row {
     pub(crate) collapsed: Option<u8>,
     #[serde(rename = "@hidden", skip_serializing_if = "Option::is_none")]
     pub(crate) hidden: Option<u8>,
+}
+
+impl Row {
+    pub(crate) fn to_api_row(&self) -> ApiRow {
+        let mut row = ApiRow::default();
+        row.height = self.height;
+        row.style = self.style;
+        row.hidden = self.hidden;
+        row.outline_level = self.outline_level;
+        row.collapsed = self.collapsed;
+        row
+    }
 }
 
 impl Row {
