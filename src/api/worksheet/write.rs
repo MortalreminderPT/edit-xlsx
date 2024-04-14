@@ -1,6 +1,6 @@
 use std::slice::Iter;
 use crate::api::cell::Cell;
-use crate::api::cell::formula::FormulaType;
+use crate::api::cell::formula::Formula;
 use crate::api::cell::values::{CellDisplay, CellValue};
 use crate::api::cell::location::{Location, LocationRange};
 use crate::api::worksheet::format::_Format;
@@ -95,28 +95,31 @@ pub trait Write: _Write {
 
     fn write_formula<L: Location>(&mut self, loc: L, data: &str) -> WorkSheetResult<()> {
         let mut cell: Cell<&str> = Cell::default();
-        cell.formula = Some(data.to_string());
-        cell.formula_type = Some(FormulaType::Formula(loc.to_ref()));
+        // cell.formula = Some(data.to_string());
+        // cell.formula_type = Some("array".to_string());
+        // cell.formula_ref = Some(loc.to_ref());
+        cell.formula = Some(Formula::new_array_formula(data, &loc));
+        // Some(FormulaType::Formula(loc.to_ref()).to_formula_ref());
         self.write_by_api_cell(&loc, &cell)
         // self.write_formula_all(&loc, data, FormulaType::Formula(loc.to_ref()), None)
     }
 
     fn write_old_formula<L: Location>(&mut self, loc: L, data: &str) -> WorkSheetResult<()> {
         let mut cell: Cell<&str> = Cell::default();
-        cell.formula = Some(data.to_string());
-        cell.formula_type = Some(FormulaType::OldFormula(loc.to_ref()));
+        cell.formula = Some(Formula::new_array_formula(data, &loc));
+        // cell.formula_type = Some(FormulaType::OldFormula(loc.to_ref()));
         self.write_by_api_cell(&loc, &cell)
     }
     fn write_array_formula<L: Location>(&mut self, loc: L, data: &str) -> WorkSheetResult<()> {
         let mut cell: Cell<&str> = Cell::default();
-        cell.formula = Some(data.to_string());
-        cell.formula_type = Some(FormulaType::ArrayFormula(loc.to_ref()));
+        cell.formula = Some(Formula::new_array_formula(data, &loc));
+        // cell.formula_type = Some(FormulaType::ArrayFormula(loc.to_ref()));
         self.write_by_api_cell(&loc, &cell)
     }
     fn write_dynamic_array_formula<L: Location>(&mut self, loc: L, data: &str) -> WorkSheetResult<()> {
         let mut cell: Cell<&str> = Cell::default();
-        cell.formula = Some(data.to_string());
-        cell.formula_type = Some(FormulaType::DynamicArrayFormula(loc.to_ref()));
+        cell.formula = Some(Formula::new_array_formula(data, &loc));
+        // cell.formula_type = Some(FormulaType::DynamicArrayFormula(loc.to_ref()));
         self.write_by_api_cell(&loc, &cell)
     }
     fn write_with_format<L: Location, T: Default + Clone + CellDisplay + CellValue>(&mut self, loc: L, data: T, format: &Format) -> WorkSheetResult<()> {
@@ -183,24 +186,24 @@ pub trait Write: _Write {
     }
     fn write_formula_with_format<L: Location>(&mut self, loc: L, data: &str, format: &Format) -> WorkSheetResult<()> {
         let mut cell: Cell<&str> = Cell::default();
-        cell.formula = Some(data.to_string());
-        cell.formula_type = Some(FormulaType::Formula(loc.to_ref()));
+        cell.formula = Some(Formula::new_array_formula(data, &loc));
+        // cell.formula_type = Some(FormulaType::Formula(loc.to_ref()));
         cell.format = Some(format.clone());
         self.write_by_api_cell(&loc, &cell)
     }
     fn write_array_formula_with_format<L: Location>(&mut self, loc: L, data: &str, format: &Format) -> WorkSheetResult<()> {
         let mut cell: Cell<&str> = Cell::default();
-        cell.formula = Some(data.to_string());
-        cell.formula_type = Some(FormulaType::ArrayFormula(loc.to_ref()));
+        cell.formula = Some(Formula::new_array_formula(data, &loc));
+        // cell.formula_type = Some(FormulaType::ArrayFormula(loc.to_ref()));
         cell.format = Some(format.clone());
         self.write_by_api_cell(&loc, &cell)
     }
     fn write_dynamic_array_formula_with_format<L: LocationRange>(&mut self, loc_range: L, data: &str, format: &Format) -> WorkSheetResult<()> {
         let loc = loc_range.to_range();
         let mut cell: Cell<&str> = Cell::default();
-        cell.formula = Some(data.to_string());
+        cell.formula = Some(Formula::new_array_formula_by_range(data, &loc));
         cell.format = Some(format.clone());
-        cell.formula_type = Some(FormulaType::DynamicArrayFormula(loc_range.to_range_ref()));
+        // cell.formula_type = Some(FormulaType::DynamicArrayFormula(loc_range.to_range_ref()));
         self.write_by_api_cell(&(loc.0, loc.1), &cell)
     }
     fn merge_range_with_format<L: LocationRange, T: CellDisplay + CellValue>(&mut self, loc: L, data: T, format:&Format) -> WorkSheetResult<()> {
@@ -233,12 +236,18 @@ impl _Write for WorkSheet {
             self.worksheet.add_hyperlink(loc, url_r_id);
         }
         if let Some(_) = &cell.formula {
-            let formula_type = cell.formula_type.get_or_insert(FormulaType::Formula(loc.to_ref()));
+            // let formula_type = cell.formula_type
+            //     .get_or_insert(
+            //         // FormulaType::Formula(
+            //         //     cell.formula_ref.clone().unwrap_or(loc.to_ref())
+            //         // )
+            //     );
+            self.metadata.borrow_mut().add_extension(ExtensionType::XdaDynamicArrayProperties);
             self.workbook_rel.borrow_mut().get_or_add_metadata();
             self.content_types.borrow_mut().add_metadata();
-            if FormulaType::OldFormula(loc.to_ref()) != *formula_type {
-                self.metadata.borrow_mut().add_extension(ExtensionType::XdaDynamicArrayProperties);
-            }
+            // if FormulaType::OldFormula(loc.to_ref()) != *formula_type {
+            //     self.metadata.borrow_mut().add_extension(ExtensionType::XdaDynamicArrayProperties);
+            // }
         }
         self.worksheet.sheet_data.write_by_api_cell(loc, &cell)?;
         Ok(())

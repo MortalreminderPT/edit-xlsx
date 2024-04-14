@@ -34,6 +34,7 @@ impl _Read for WorkSheet {
             let id: usize = if let Some(s) = cell.text {
                 s.parse().unwrap_or_default()
             } else { 0 };
+            cell.cell_type = Some(CellType::String);
             cell.text = Some(self.shared_string.get_text(id).unwrap().to_string());
         };
         cell.hyperlink = self.worksheet.get_hyperlink(loc);

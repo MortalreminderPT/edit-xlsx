@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::{Error, Visitor};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 // #[serde(untagged)]
 pub(crate) enum CellType {
     Boolean,
@@ -46,7 +46,7 @@ impl CellType {
     }
 
     pub(crate) fn de<'de, D>(deserializer: D) -> Result<CellType, D::Error> where D: Deserializer<'de> {
-        let s: &str = Deserialize::deserialize(deserializer).unwrap_or("s");
+        let s: &str = Deserialize::deserialize(deserializer).unwrap_or("str");
         Ok(CellType::from_str(s))
     }
 }
@@ -158,7 +158,6 @@ impl CellValue for f64 {
         CellType::Number
     }
 }
-
 impl CellValue for bool {
     fn to_cell_type(&self) -> CellType {
         CellType::Boolean

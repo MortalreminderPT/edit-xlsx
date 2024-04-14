@@ -36,7 +36,7 @@ If you encounter any issues or have questions while using Edit-xlsx, please don'
 
 ## Usage
 
-A simple example of usage is shown below, and you can see more examples in the [example](https://github.com/MortalreminderPT/edit-xlsx/tree/dev-0.3.0/examples) directory
+A simple example of usage is shown below, and you can see more examples in the [example](https://github.com/MortalreminderPT/edit-xlsx/tree/main/examples) directory
 
 ```rust
 use edit_xlsx::{Format, FormatAlignType, FormatBorderType, FormatColor, Workbook, WorkbookResult, WorkSheet, Write};

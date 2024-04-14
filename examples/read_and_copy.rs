@@ -25,7 +25,7 @@ fn main() -> WorkbookResult<()> {
     });
 
     // Synchronous row height and format
-    writing_sheet.set_default_row(writing_sheet.get_default_row());
+    writing_sheet.set_default_row(reading_sheet.get_default_row());
     for row_number in 1..=reading_sheet.max_row() {
         let (row, format) = reading_sheet.get_row_with_format(row_number)?;
         if let Some(format) = format {
