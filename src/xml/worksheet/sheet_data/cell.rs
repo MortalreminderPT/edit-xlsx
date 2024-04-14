@@ -138,9 +138,6 @@ impl Cell {
             // }
             self.text = Some(String::from("0"));
             self.cm = Some(1);
-            // self.formula = Some(Formula::from_formula_type(formula, api_cell.formula_type.clone().unwrap()))
-            // self.formula = Some(Formula::from_formula_type(formula, api_cell.formula_type.clone().unwrap()))
-            // self.formula = Some(Formula::from_api_formula(formula, &api_cell.formula_type, &api_cell.formula_ref))
             self.formula = Some(Formula::from_api_formula(formula));
         }
         Ok(())

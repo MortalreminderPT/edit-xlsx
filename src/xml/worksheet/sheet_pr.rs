@@ -7,10 +7,18 @@ use crate::xml::style::color::Color;
 pub(crate) struct SheetPr {
     #[serde(rename = "@codeName", default, skip_serializing_if = "Option::is_none")]
     code_name: Option<String>,
+    #[serde(rename = "pageSetUpPr", default, skip_serializing_if = "Option::is_none")]
+    page_set_up_pr: Option<PageSetUpPr>,
     #[serde(rename = "tabColor", default, skip_serializing_if = "Option::is_none")]
     tab_color: Option<Color>,
     #[serde(rename = "outlinePr", default, skip_serializing_if = "Option::is_none")]
     outline_pr: Option<OutlinePr>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+struct PageSetUpPr {
+    #[serde(rename = "@fitToPage", default, skip_serializing_if = "Option::is_none")]
+    fit_to_page: Option<u8>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -40,6 +48,7 @@ impl SheetPr {
     fn new(color: &FormatColor) -> SheetPr {
         SheetPr {
             code_name: None,
+            page_set_up_pr: None,
             tab_color: Default::default(), //Color::from_format(color),
             outline_pr: None,
         }

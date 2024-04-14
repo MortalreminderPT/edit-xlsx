@@ -236,18 +236,9 @@ impl _Write for WorkSheet {
             self.worksheet.add_hyperlink(loc, url_r_id);
         }
         if let Some(_) = &cell.formula {
-            // let formula_type = cell.formula_type
-            //     .get_or_insert(
-            //         // FormulaType::Formula(
-            //         //     cell.formula_ref.clone().unwrap_or(loc.to_ref())
-            //         // )
-            //     );
             self.metadata.borrow_mut().add_extension(ExtensionType::XdaDynamicArrayProperties);
             self.workbook_rel.borrow_mut().get_or_add_metadata();
             self.content_types.borrow_mut().add_metadata();
-            // if FormulaType::OldFormula(loc.to_ref()) != *formula_type {
-            //     self.metadata.borrow_mut().add_extension(ExtensionType::XdaDynamicArrayProperties);
-            // }
         }
         self.worksheet.sheet_data.write_by_api_cell(loc, &cell)?;
         Ok(())

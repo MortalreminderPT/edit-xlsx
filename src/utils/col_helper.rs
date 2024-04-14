@@ -30,7 +30,9 @@ pub(crate) fn to_loc(loc_ref: &str) -> (u32, u32) {
     if let Some(locs) = locs {
         let col = locs.0.chars().filter(|&c| { c >= '0' && c <= '9' }).collect::<String>();
         let row = locs.1.chars().filter(|&c| { c >= '0' && c <= '9' }).collect::<String>();
-        return (row.parse().unwrap(), col.parse().unwrap());
+        return (row.parse().unwrap_or_default(), col.parse().unwrap_or_default());
+
+        // return (row.parse().unwrap(), col.parse().unwrap());
     }
     let col = loc_ref.chars().filter(|&c| { c >= 'A' && c <= 'Z' }).collect::<String>();
     let row = loc_ref.chars().filter(|&c| { c >= '0' && c <= '9' }).collect::<String>();

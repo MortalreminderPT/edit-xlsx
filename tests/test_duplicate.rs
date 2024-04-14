@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use edit_xlsx::{Workbook, WorkbookResult, WorkSheet, Write};
+    use edit_xlsx::{Workbook, WorkbookResult, Write};
 
     #[test]
     fn test_new() -> WorkbookResult<()> {
@@ -46,6 +46,15 @@ mod tests {
         let sheet = workbook.duplicate_worksheet(1)?;
         sheet.write_column("C6", &(1..140).into_iter().collect::<Vec<i32>>())?;
         workbook.save_as("tests/output/duplicate_test_from_accounting.xlsx")?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_from_calender() -> WorkbookResult<()> {
+        let mut calender_workbook = Workbook::from_path("./tests/xlsx/yearly-calendar.xlsx")?;
+        let sheet = calender_workbook.duplicate_worksheet_by_name("Calendar")?;
+        sheet.write_column("C6", &(1..140).into_iter().collect::<Vec<i32>>())?;
+        calender_workbook.save_as("./tests/output/duplicate_test_from_yearly_calender.xlsx")?;
         Ok(())
     }
 }

@@ -46,4 +46,23 @@ mod tests {
         writing_book.save_as("./tests/output/read_cell_test_from.xlsx")?;
         Ok(())
     }
+
+    #[test]
+    fn test_from_calender() -> WorkbookResult<()> {
+        // Read an existed workbook
+        let calender_workbook = Workbook::from_path("./tests/xlsx/yearly-calendar.xlsx")?;
+        calender_workbook.save_as("./tests/output/read_cell_test_from_yearly_calender.xlsx")?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_from_monthly_calender() -> WorkbookResult<()> {
+        // Read an existed workbook
+        let calender_workbook = Workbook::from_path("./tests/xlsx/monthly-calendar.xlsx")?;
+        let worksheet = calender_workbook.get_worksheet_by_name("Jan")?;
+        let cell = worksheet.read_cell("C31")?;
+        println!("{:?}", cell);
+        calender_workbook.save_as("./tests/output/read_cell_test_from_monthly_calender.xlsx")?;
+        Ok(())
+    }
 }

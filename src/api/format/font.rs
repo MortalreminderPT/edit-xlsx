@@ -29,8 +29,8 @@ impl Default for FormatFont {
 impl FromFormat<FormatFont> for Font {
     fn set_attrs_by_format(&mut self, format: &FormatFont) {
         self.color = Some(Color::from_format(&format.color));
-        self.name = Element::from_val(format.name.to_string());
-        self.sz = Element::from_val(format.size);
+        self.name = Some(Element::from_val(format.name.to_string()));
+        self.sz = Some(Element::from_val(format.size));
         self.bold = if format.bold { Some(Bold::default()) } else { None };
         self.underline = if format.underline { Some(Underline::default()) } else { None };
         self.italic = if format.italic { Some(Italic::default()) } else { None };
@@ -40,8 +40,12 @@ impl FromFormat<FormatFont> for Font {
         format.bold = self.bold.is_some();
         format.italic = self.italic.is_some();
         format.underline = self.underline.is_some();
-        format.size = self.sz.get_format();
-        format.name = self.name.val.to_string();
+        if let Some(size) = &self.sz {
+            format.size = size.get_format();
+        }
+        if let Some(name) = &self.name {
+            format.name = name.val.to_string();
+        }
         format.color = self.color.as_ref().get_format();
     }
 }

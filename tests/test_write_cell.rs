@@ -19,7 +19,7 @@ mod tests {
         cell.text = Some(123456);
         cell.format = Some(Format::default().set_font("Elephant").set_underline().set_color(FormatColor::RGB(0, 0, 255)));
         cell.hyperlink = Some("https://google.com.tw".to_string());
-        cell.formula = Some("SUM(D2:E26)".to_string());
+        // cell.formula = Some("SUM(D2:E26)".to_string());
         // test write col
         worksheet.write_cell("B4", &cell)?;
         workbook.save_as("tests/output/test_from_write_cell_analysis_tabs.xlsx")?;

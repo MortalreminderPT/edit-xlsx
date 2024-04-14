@@ -60,10 +60,12 @@ pub(crate) struct Font {
     pub(crate) underline: Option<Underline>,
     #[serde(rename = "vertAlign", skip_serializing_if = "Option::is_none")]
     vert_align: Option<Element<String>>,
-    pub(crate) sz: Element<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) sz: Option<Element<f64>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) color: Option<Color>,
-    pub(crate) name: Element<String>,
+    #[serde(rename = "name", default, skip_serializing_if = "Option::is_none")]
+    pub(crate) name: Option<Element<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     family: Option<Element<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -75,9 +77,9 @@ pub(crate) struct Font {
 impl Default for Font {
     fn default() -> Font {
         Font {
-            sz: Element::from_val(11.0),
+            sz: Some(Element::from_val(11.0)),
             color: None,
-            name: Element::from_val("Calibri".to_string()),
+            name: Some(Element::from_val("Calibri".to_string())),
             family: None,
             charset: None,
             scheme: None,

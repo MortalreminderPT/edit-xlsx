@@ -16,22 +16,22 @@ pub(crate) struct Row {
     pub(crate) row: u32,
     #[serde(rename = "@spans", skip_serializing_if = "Option::is_none")]
     pub(crate) spans: Option<String>,
-    #[serde(rename = "@ht", skip_serializing_if = "Option::is_none")]
-    pub(crate) height: Option<f64>,
     #[serde(rename = "@s", skip_serializing_if = "Option::is_none")]
     pub(crate) style: Option<u32>,
     #[serde(rename = "@customFormat", skip_serializing_if = "Option::is_none")]
     pub(crate) custom_format: Option<u8>,
+    #[serde(rename = "@ht", skip_serializing_if = "Option::is_none")]
+    pub(crate) height: Option<f64>,
     #[serde(rename = "@customHeight", skip_serializing_if = "Option::is_none")]
     pub(crate) custom_height: Option<u8>,
-    #[serde(rename(serialize = "@x14ac:dyDescent", deserialize = "@dyDescent"), skip_serializing_if = "Option::is_none")]
-    pub(crate) x14ac_dy_descent: Option<f64>,
     #[serde(rename = "@outlineLevel", skip_serializing_if = "Option::is_none")]
     pub(crate) outline_level: Option<u32>,
     #[serde(rename = "@collapsed", skip_serializing_if = "Option::is_none")]
     pub(crate) collapsed: Option<u8>,
     #[serde(rename = "@hidden", skip_serializing_if = "Option::is_none")]
     pub(crate) hidden: Option<u8>,
+    #[serde(rename(serialize = "@x14ac:dyDescent", deserialize = "@dyDescent"), skip_serializing_if = "Option::is_none")]
+    pub(crate) x14ac_dy_descent: Option<f64>,
 }
 
 impl Row {

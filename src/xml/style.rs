@@ -123,7 +123,7 @@ impl Default for CellStyles {
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 struct CellStyle {
-    #[serde(rename = "@name")]
+    #[serde(rename = "@name", default, skip_serializing_if = "String::is_empty")]
     name: String,
     #[serde(rename = "@xfId", default)]
     xf_id: u32,
@@ -183,13 +183,21 @@ impl Default for TableStyles {
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct Colors {
-    #[serde(rename = "mruColors", default)]
-    color: Option<MruColors>
+    #[serde(rename = "indexedColors", default, skip_serializing_if = "Option::is_none")]
+    indexed_color: Option<IndexedColors>,
+    #[serde(rename = "mruColors", default, skip_serializing_if = "Option::is_none")]
+    mru_color: Option<MruColors>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct MruColors {
     #[serde(rename = "color", default)]
+    color: Vec<Color>
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+struct IndexedColors {
+    #[serde(rename = "rgbColor", default)]
     color: Vec<Color>
 }
 

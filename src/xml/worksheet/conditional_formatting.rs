@@ -1,12 +1,11 @@
 use serde::{Deserialize, Serialize};
-use crate::xml::worksheet::sheet_data::cell::Sqref;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct ConditionalFormatting {
-    #[serde(rename = "cfRule", default, skip_serializing_if = "Option::is_none")]
-    cf_rule: Option<CfRule>,
-    #[serde(rename = "@sqref", default)]
-    sqref: Sqref,
+    #[serde(rename = "cfRule", default, skip_serializing_if = "Vec::is_empty")]
+    cf_rule: Vec<CfRule>,
+    #[serde(rename = "@sqref", default, skip_serializing_if = "String::is_empty")]
+    sqref: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

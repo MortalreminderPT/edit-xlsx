@@ -59,12 +59,12 @@ pub(crate) struct WorkSheet {
     pub(crate) sheet_data: SheetData,
     #[serde(rename = "mergeCells", default, skip_serializing_if = "Option::is_none")]
     merge_cells: Option<MergeCells>,
-    #[serde(rename = "conditionalFormatting", default, skip_serializing_if = "Option::is_none")]
-    conditional_formatting: Option<ConditionalFormatting>,
-    #[serde(rename = "dataValidations", default, skip_serializing_if = "Option::is_none")]
-    data_validations: Option<DataValidations>,
     #[serde(rename = "phoneticPr", default, skip_serializing_if = "Option::is_none")]
     phonetic_pr: Option<PhoneticPr>,
+    #[serde(rename = "conditionalFormatting", default, skip_serializing_if = "Vec::is_empty")]
+    conditional_formatting: Vec<ConditionalFormatting>,
+    #[serde(rename = "dataValidations", default, skip_serializing_if = "Option::is_none")]
+    data_validations: Option<DataValidations>,
     #[serde(rename = "hyperlinks", default, skip_serializing_if = "Option::is_none")]
     hyperlinks: Option<Hyperlinks>,
     #[serde(rename = "autoFilter", default, skip_serializing_if = "Option::is_none")]
@@ -276,7 +276,7 @@ impl Default for WorkSheet {
             cols: None,
             sheet_data: SheetData::default(),
             merge_cells: None,
-            conditional_formatting: None,
+            conditional_formatting: vec![],
             data_validations: None,
             phonetic_pr: None,
             page_margins: PageMargins::default(),
@@ -346,7 +346,8 @@ impl WorkSheet {
 
     pub(crate) fn save<P: AsRef<Path>>(& self, file_path: P, target: &str) {
         let xml = se::to_string_with_root("worksheet", &self).unwrap();
-        let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
+        let mut xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
+        // xml = xml.replace("&quot;", "\"");
         let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::SheetFile(target.to_string())).unwrap();
         file.write_all(xml.as_ref()).unwrap();
     }
