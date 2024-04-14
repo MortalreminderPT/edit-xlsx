@@ -288,9 +288,6 @@ impl Default for WorkSheet {
             ignored_errors: None,
             picture: None,
             hyperlinks: None,
-            // drawing: Some(
-            //     Drawing::default()
-            // ),
             drawing: None,
             auto_filter: None,
             legacy_drawing: None,

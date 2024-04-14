@@ -2,10 +2,10 @@
 .idea
 *.zip
 *.xlsx
-/test
 !/examples/xlsx/*.xlsx
 !/resources/new.xlsx
 !/tests/xlsx/*.xlsx
+/tests/output
+!/tests/output/*.png
 #*.bat
 /examples/demo.rs
-!/tests/output/

@@ -129,6 +129,8 @@ struct CellStyle {
     xf_id: u32,
     #[serde(rename = "@builtinId", default)]
     builtin_id: u32,
+    #[serde(rename = "@customBuiltin", default)]
+    custom_builtin: Option<u32>,
 }
 
 impl Default for CellStyle {
@@ -137,6 +139,7 @@ impl Default for CellStyle {
             name: "Normal".to_string(),
             xf_id: 0,
             builtin_id: 0,
+            custom_builtin: None,
         }
     }
 }
@@ -151,10 +154,10 @@ struct Dxfs {
 
 #[derive(Debug, Clone, Deserialize, Serialize, Default)]
 struct Dxf {
-    #[serde(rename = "fill", skip_serializing_if = "Option::is_none")]
-    fill: Option<Fill>,
     #[serde(rename = "font", skip_serializing_if = "Option::is_none")]
     font: Option<Font>,
+    #[serde(rename = "fill", skip_serializing_if = "Option::is_none")]
+    fill: Option<Fill>,
     #[serde(rename = "alignment", skip_serializing_if = "Option::is_none")]
     alignment: Option<Alignment>,
     #[serde(rename = "numFmt", skip_serializing_if = "Option::is_none")]

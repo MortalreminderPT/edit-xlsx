@@ -65,7 +65,8 @@ impl WorkSheet {
             self.drawings_rel.as_ref().unwrap().save(&file_path, XlsxFileType::DrawingRels(self.id));
         }
         if let Some(id) = self.worksheet_rel.get_vml_drawing_rid() {
-            self.vml_drawing.as_ref().unwrap().save(&file_path, id);
+            // self.vml_drawing.as_ref().unwrap().save(&file_path, id);
+            // self.vml_drawing.as_ref().unwrap().save(&file_path, id);
         }
         Ok(())
     }

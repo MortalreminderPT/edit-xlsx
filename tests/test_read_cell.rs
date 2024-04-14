@@ -50,19 +50,35 @@ mod tests {
     #[test]
     fn test_from_calender() -> WorkbookResult<()> {
         // Read an existed workbook
-        let calender_workbook = Workbook::from_path("./tests/xlsx/yearly-calendar.xlsx")?;
-        calender_workbook.save_as("./tests/output/read_cell_test_from_yearly_calender.xlsx")?;
+        let mut calendar_workbook = Workbook::from_path("./tests/xlsx/yearly-calendar.xlsx")?;
+        let worksheet = calendar_workbook.get_worksheet_mut_by_name("Calendar")?;
+        worksheet.write_row("C3", &["hello", "world", "hello", "rust"])?;
+        let cell = worksheet.read_cell("C31")?;
+        calendar_workbook.save_as("./tests/output/read_cell_test_from_yearly_calendar.xlsx")?;
         Ok(())
     }
 
     #[test]
     fn test_from_monthly_calender() -> WorkbookResult<()> {
         // Read an existed workbook
-        let calender_workbook = Workbook::from_path("./tests/xlsx/monthly-calendar.xlsx")?;
-        let worksheet = calender_workbook.get_worksheet_by_name("Jan")?;
+        let mut calendar_workbook = Workbook::from_path("./tests/xlsx/monthly-calendar.xlsx")?;
+        let worksheet = calendar_workbook.get_worksheet_mut_by_name("Jan")?;
+        let cell = worksheet.read_cell("C31")?;
+        worksheet.write_column("A14", &["hello", "world", "hello", "rust"])?;
+        println!("{:?}", cell);
+        calendar_workbook.save_as("./tests/output/read_cell_test_from_monthly_calendar.xlsx")?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_from_week_calender() -> WorkbookResult<()> {
+        // Read an existed workbook
+        let mut calendar_workbook = Workbook::from_path("./tests/xlsx/week-calendar.xlsx")?;
+        let worksheet = calendar_workbook.get_worksheet_mut_by_name("Calendar")?;
+        worksheet.write_column("B6", &["hello", "world", "hello", "rust"])?;
         let cell = worksheet.read_cell("C31")?;
         println!("{:?}", cell);
-        calender_workbook.save_as("./tests/output/read_cell_test_from_monthly_calender.xlsx")?;
+        calendar_workbook.save_as("./tests/output/read_cell_test_from_week_calender.xlsx")?;
         Ok(())
     }
 }
