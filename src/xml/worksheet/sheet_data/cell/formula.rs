@@ -3,14 +3,14 @@ use crate::api::cell::formula::Formula as ApiFormula;
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub(crate) struct Formula {
-    #[serde(rename = "$value", default, skip_serializing_if = "String::is_empty")]
-    pub(crate) formula: String,
     #[serde(rename = "@t", skip_serializing_if = "Option::is_none")]
     pub(crate) formula_type: Option<String>,
-    #[serde(rename = "@si", skip_serializing_if = "Option::is_none")]
-    si: Option<i32>,
     #[serde(rename = "@ref", skip_serializing_if = "Option::is_none")]
     pub(crate) formula_ref: Option<String>,
+    #[serde(rename = "@si", skip_serializing_if = "Option::is_none")]
+    si: Option<i32>,
+    #[serde(rename = "$value", default, skip_serializing_if = "String::is_empty")]
+    pub(crate) formula: String,
 }
 
 impl Formula {

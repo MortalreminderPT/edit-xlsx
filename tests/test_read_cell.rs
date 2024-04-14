@@ -81,4 +81,85 @@ mod tests {
         calendar_workbook.save_as("./tests/output/read_cell_test_from_week_calender.xlsx")?;
         Ok(())
     }
+
+    #[test]
+    fn test_from_weekly_schedule() -> WorkbookResult<()> {
+        // Read an existed workbook
+        let mut schedule_workbook = Workbook::from_path("./tests/xlsx/weekly-schedule.xlsx")?;
+        let worksheet = schedule_workbook.get_worksheet_mut_by_name("Week with hours")?;
+        worksheet.write_column("D8", &["hello", "world", "hello", "rust"])?;
+        let cell = worksheet.read_cell("C31")?;
+        println!("{:?}", cell);
+        schedule_workbook.save_as("./tests/output/read_cell_test_from_weekly_schedule.xlsx")?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_from_work_schedule() -> WorkbookResult<()> {
+        // Read an existed workbook
+        let mut schedule_workbook = Workbook::from_path("./tests/xlsx/work-schedule.xlsx")?;
+        let worksheet = schedule_workbook.get_worksheet_mut_by_name("Week 1-2")?;
+        worksheet.write_column("C6", &["hello", "world", "hello", "rust"])?;
+        let cell = worksheet.read_cell("C31")?;
+        println!("{:?}", cell);
+        schedule_workbook.save_as("./tests/output/read_cell_test_from_work_schedule.xlsx")?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_from_shift_schedule() -> WorkbookResult<()> {
+        // Read an existed workbook
+        let mut schedule_workbook = Workbook::from_path("./tests/xlsx/shift-schedule.xlsx")?;
+        let worksheet = schedule_workbook.get_worksheet_mut_by_name("Schedule")?;
+        worksheet.write_row("B9", &["hello", "world", "hello", "rust"])?;
+        let cell = worksheet.read_cell("C31")?;
+        println!("{:?}", cell);
+        schedule_workbook.save_as("./tests/output/read_cell_test_from_shift_schedule.xlsx")?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_from_budget() -> WorkbookResult<()> {
+        // Read an existed workbook
+        let mut schedule_workbook = Workbook::from_path("./tests/xlsx/home-budget.xlsx")?;
+        let worksheet = schedule_workbook.get_worksheet_mut_by_name("Budget")?;
+        worksheet.write_column("B14", &(100..=107).into_iter().collect::<Vec<i32>>())?;
+        let cell = worksheet.read_cell("C31")?;
+        println!("{:?}", cell);
+        schedule_workbook.save_as("./tests/output/read_cell_test_from_home_budget.xlsx")?;
+
+        // todo image will be copied to other worksheet
+        let mut schedule_workbook = Workbook::from_path("./tests/xlsx/personal-budget.xlsx")?;
+        let worksheet = schedule_workbook.get_worksheet_mut_by_name("Budget")?;
+        worksheet.write_column("B12", &(100..=105).into_iter().collect::<Vec<i32>>())?;
+        let cell = worksheet.read_cell("C31")?;
+        worksheet.insert_image("B12:E19", &"./examples/pics/capybara.bmp")?;
+        println!("{:?}", cell);
+        schedule_workbook.save_as("./tests/output/read_cell_test_from_personal_budget.xlsx")?;
+
+        let mut schedule_workbook = Workbook::from_path("./tests/xlsx/wedding-budget.xlsx")?;
+        let worksheet = schedule_workbook.get_worksheet_mut_by_name("Breakdown")?;
+        worksheet.write_column("B12", &(100..=105).into_iter().collect::<Vec<i32>>())?;
+        let cell = worksheet.read_cell("C31")?;
+        worksheet.insert_image("B12:E19", &"./examples/pics/capybara.bmp")?;
+        println!("{:?}", cell);
+        schedule_workbook.save_as("./tests/output/read_cell_test_from_wedding_budget.xlsx")?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_from_register() -> WorkbookResult<()> {
+        // Read an existed workbook
+        let mut schedule_workbook = Workbook::from_path("./tests/xlsx/checkbook-register.xlsx")?;
+        let worksheet = schedule_workbook.get_worksheet_mut_by_name("Register")?;
+        worksheet.write_row("B9", &["hello", "world", "hello", "rust"])?;
+        let cell = worksheet.read_cell("C31")?;
+        for i in 6..16 {
+            worksheet.set_row_level(i, 1)?;
+            worksheet.collapse_row(i)?;
+        }
+        println!("{:?}", cell);
+        schedule_workbook.save_as("./tests/output/read_cell_test_from_checkbook_register.xlsx")?;
+        Ok(())
+    }
 }

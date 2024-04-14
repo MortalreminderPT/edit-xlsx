@@ -112,19 +112,49 @@ impl FormatBorderType {
 
 impl FromFormat<FormatBorder> for Border {
     fn set_attrs_by_format(&mut self, format: &FormatBorder) {
-        self.left = BorderElement::from_format(&format.left);
-        self.right = BorderElement::from_format(&format.right);
-        self.top = BorderElement::from_format(&format.top);
-        self.bottom = BorderElement::from_format(&format.bottom);
-        self.diagonal = BorderElement::from_format(&format.diagonal);
+        self.left = Some(BorderElement::from_format(&format.left));
+        self.right = Some(BorderElement::from_format(&format.right));
+        self.top = Some(BorderElement::from_format(&format.top));
+        self.bottom = Some(BorderElement::from_format(&format.bottom));
+        self.diagonal = Some(BorderElement::from_format(&format.diagonal));
     }
 
     fn set_format(&self, format: &mut FormatBorder) {
-        format.left = self.left.get_format();
-        format.right = self.right.get_format();
-        format.top = self.top.get_format();
-        format.bottom = self.bottom.get_format();
-        format.diagonal = self.diagonal.get_format();
+        format.left = {
+            if let Some(left) = &self.left {
+                left.get_format()
+            } else {
+                FormatBorderElement::default()
+            }
+        };
+        format.right = {
+            if let Some(right) = &self.right {
+                right.get_format()
+            } else {
+                FormatBorderElement::default()
+            }
+        };
+        format.top = {
+            if let Some(top) = &self.top {
+                top.get_format()
+            } else {
+                FormatBorderElement::default()
+            }
+        };
+        format.bottom = {
+            if let Some(bottom) = &self.bottom {
+                bottom.get_format()
+            } else {
+                FormatBorderElement::default()
+            }
+        };
+        format.diagonal = {
+            if let Some(diagonal) = &self.diagonal {
+                diagonal.get_format()
+            } else {
+                FormatBorderElement::default()
+            }
+        }
     }
 }
 

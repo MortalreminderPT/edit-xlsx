@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize};
 use zip::read::ZipFile;
 use crate::api::format::Format;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
+use crate::xml::common;
 use crate::xml::common::{FromFormat, XmlnsAttrs};
 use crate::xml::extension::ExtensionList;
 use crate::xml::io::Io;
@@ -156,12 +157,14 @@ struct Dxfs {
 struct Dxf {
     #[serde(rename = "font", skip_serializing_if = "Option::is_none")]
     font: Option<Font>,
+    #[serde(rename = "numFmt", skip_serializing_if = "Option::is_none")]
+    num_fmt: Option<NumFmt>,
     #[serde(rename = "fill", skip_serializing_if = "Option::is_none")]
     fill: Option<Fill>,
     #[serde(rename = "alignment", skip_serializing_if = "Option::is_none")]
     alignment: Option<Alignment>,
-    #[serde(rename = "numFmt", skip_serializing_if = "Option::is_none")]
-    num_fmt: Option<NumFmt>,
+    #[serde(rename = "border", skip_serializing_if = "Option::is_none")]
+    border: Option<Vec<Border>>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -172,6 +175,30 @@ struct TableStyles {
     default_table_style: String,
     #[serde(rename = "@defaultPivotStyle")]
     default_pivot_style: String,
+    #[serde(rename = "tableStyle", default, skip_serializing_if = "Vec::is_empty")]
+    table_style: Vec<TableStyle>
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+struct TableStyle {
+    #[serde(rename = "@name", default, skip_serializing_if = "String::is_empty")]
+    name: String,
+    #[serde(rename = "@pivot", default, skip_serializing_if = "common::is_zero")]
+    pivot: u32,
+    #[serde(rename = "@count", default, skip_serializing_if = "common::is_zero")]
+    count: u32,
+    #[serde(rename(serialize = "@xr9:uid", deserialize = "@xr9:uid"), default, skip_serializing_if = "String::is_empty")]
+    xr9_uid: String,
+    #[serde(rename = "tableStyleElement", default, skip_serializing_if = "Vec::is_empty")]
+    table_style_element: Vec<TableStyleElement>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+struct TableStyleElement {
+    #[serde(rename = "@type", default, skip_serializing_if = "String::is_empty")]
+    tp: String,
+    #[serde(rename = "@dxfId", default, skip_serializing_if = "common::is_zero")]
+    dxf_id: u32,
 }
 
 impl Default for TableStyles {
@@ -180,6 +207,7 @@ impl Default for TableStyles {
             count: 1,
             default_table_style: "TableStyleMedium2".to_string(),
             default_pivot_style: "PivotStyleLight16".to_string(),
+            table_style: vec![],
         }
     }
 }

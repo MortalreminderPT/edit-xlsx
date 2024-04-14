@@ -75,18 +75,18 @@ pub(crate) struct WorkSheet {
     page_margins: PageMargins,
     #[serde(rename = "pageSetup", default, skip_serializing_if = "Option::is_none")]
     page_setup: Option<PageSetup>,
-    #[serde(rename = "tableParts", default, skip_serializing_if = "Option::is_none")]
-    table_parts: Option<TableParts>,
     #[serde(rename = "autoFilter", default, skip_serializing_if = "Option::is_none")]
     header_footer: Option<HeaderFooter>,
     #[serde(rename = "rowBreaks", default, skip_serializing_if = "Option::is_none")]
     row_breakers: Option<RowBreaks>,
     #[serde(rename = "ignoredErrors", default, skip_serializing_if = "Option::is_none")]
     ignored_errors: Option<IgnoredErrors>,
-    #[serde(rename = "legacyDrawing", default, skip_serializing_if = "Option::is_none")]
-    legacy_drawing: Option<Drawing>,
     #[serde(rename = "drawing", default, skip_serializing_if = "Option::is_none")]
     drawing: Option<Drawing>,
+    #[serde(rename = "legacyDrawing", default, skip_serializing_if = "Option::is_none")]
+    legacy_drawing: Option<Drawing>,
+    #[serde(rename = "tableParts", default, skip_serializing_if = "Option::is_none")]
+    table_parts: Option<TableParts>,
     #[serde(rename = "picture", default, skip_serializing_if = "Option::is_none")]
     picture: Option<Picture>,
 }

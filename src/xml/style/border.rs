@@ -1,12 +1,10 @@
 use serde::{Deserialize, Serialize};
-use crate::api::format::border::{FormatBorder, FormatBorderElement};
-use crate::FormatBorderType;
-use crate::xml::common::FromFormat;
+use crate::xml::common;
 use crate::xml::style::color::Color;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Borders {
-    #[serde(rename = "@count", default)]
+    #[serde(rename = "@count", default, skip_serializing_if = "common::is_zero")]
     count: u32,
     border: Vec<Border>,
 }
@@ -28,13 +26,24 @@ impl Borders {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Default)]
 pub(crate) struct Border {
-    pub(crate) left: BorderElement,
-    pub(crate) right: BorderElement,
-    pub(crate) top: BorderElement,
-    pub(crate) bottom: BorderElement,
-    pub(crate) diagonal: BorderElement,
+    #[serde(rename = "@diagonalUp", skip_serializing_if = "Option::is_none")]
+    pub(crate) diagonal_up: Option<u8>,
+    #[serde(rename = "@diagonalDown", skip_serializing_if = "Option::is_none")]
+    pub(crate) diagonal_down: Option<u8>,
+    #[serde(rename = "@outline", skip_serializing_if = "Option::is_none")]
+    pub(crate) outline: Option<u8>,
+    #[serde(rename = "left", skip_serializing_if = "Option::is_none")]
+    pub(crate) left: Option<BorderElement>,
+    #[serde(rename = "right", skip_serializing_if = "Option::is_none")]
+    pub(crate) right: Option<BorderElement>,
+    #[serde(rename = "top", skip_serializing_if = "Option::is_none")]
+    pub(crate) top: Option<BorderElement>,
+    #[serde(rename = "bottom", skip_serializing_if = "Option::is_none")]
+    pub(crate) bottom: Option<BorderElement>,
+    #[serde(rename = "diagonal", skip_serializing_if = "Option::is_none")]
+    pub(crate) diagonal: Option<BorderElement>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
@@ -50,18 +59,6 @@ impl Default for BorderElement {
         BorderElement {
             style: None,
             color: Some(Color::default()),
-        }
-    }
-}
-
-impl Default for Border {
-    fn default() -> Self {
-        Border {
-            left: BorderElement::default(),
-            right: BorderElement::default(),
-            top: BorderElement::default(),
-            bottom: BorderElement::default(),
-            diagonal: BorderElement::default(),
         }
     }
 }
