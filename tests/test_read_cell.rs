@@ -162,4 +162,35 @@ mod tests {
         schedule_workbook.save_as("./tests/output/read_cell_test_from_checkbook_register.xlsx")?;
         Ok(())
     }
+
+    #[test]
+    fn test_from_meeting() -> WorkbookResult<()> {
+        // Read an existed workbook
+        let mut schedule_workbook = Workbook::from_path("./tests/xlsx/world-meeting-planner.xlsx")?;
+        // let worksheet = schedule_workbook.get_worksheet_mut_by_name("Register")?;
+        schedule_workbook.save_as("./tests/output/read_cell_test_from_world_meeting_planner.xlsx")?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_from_chart() -> WorkbookResult<()> {
+        // Read an existed workbook
+        let mut chart_workbook = Workbook::from_path("./tests/xlsx/company-organization-chart.xlsx")?;
+        // let worksheet = schedule_workbook.get_worksheet_mut_by_name("Register")?;
+        chart_workbook.save_as("./tests/output/read_cell_test_from_company_organization_chart.xlsx")?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_from_calculator() -> WorkbookResult<()> {
+        // Read an existed workbook
+        let mut calculator_workbook = Workbook::from_path("./tests/xlsx/paycheck-calculator.xlsx")?;
+        let worksheet = calculator_workbook.get_worksheet_mut_by_name("NEW W-4")?;
+        worksheet.write("C5", 1234567)?;
+        // worksheet.write("C5", 1234567)?;
+        worksheet.write_old_formula("F50", "=IF(C11=\"Yes\",0,IF(C10=\"Married Joint\",12900,8600))")?;
+
+        calculator_workbook.save_as("./tests/output/read_cell_test_from_paycheck_calculator.xlsx")?;
+        Ok(())
+    }
 }

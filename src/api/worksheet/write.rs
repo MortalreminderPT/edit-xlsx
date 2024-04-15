@@ -106,8 +106,7 @@ pub trait Write: _Write {
 
     fn write_old_formula<L: Location>(&mut self, loc: L, data: &str) -> WorkSheetResult<()> {
         let mut cell: Cell<&str> = Cell::default();
-        cell.formula = Some(Formula::new_array_formula(data, &loc));
-        // cell.formula_type = Some(FormulaType::OldFormula(loc.to_ref()));
+        cell.formula = Some(Formula::new(data));
         self.write_by_api_cell(&loc, &cell)
     }
     fn write_array_formula<L: Location>(&mut self, loc: L, data: &str) -> WorkSheetResult<()> {

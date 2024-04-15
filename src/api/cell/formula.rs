@@ -9,6 +9,15 @@ pub(crate) struct Formula {
 }
 
 impl Formula {
+    pub(crate) fn new(formula_content: &str) -> Formula {
+        Formula {
+            formula: formula_content.to_string(),
+            formula_type: None,
+            si: None,
+            formula_ref: None,
+        }
+    }
+
     pub(crate) fn new_array_formula<L: Location>(formula_content: &str, loc: &L) -> Formula {
         Formula {
             formula: formula_content.to_string(),

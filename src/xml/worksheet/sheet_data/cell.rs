@@ -18,7 +18,7 @@ pub(crate) struct Cell {
     #[serde(rename = "@t", skip_serializing_if = "Option::is_none")]
     pub(crate) cell_type: Option<CellType>,
     #[serde(rename = "@cm", skip_serializing_if = "Option::is_none")]
-    pub(crate) cm: Option<u8>,
+    pub(crate) cell_meta_index: Option<u8>,
     #[serde(rename = "f", skip_serializing_if = "Option::is_none")]
     pub(crate) formula: Option<Formula>,
     #[serde(rename = "v", skip_serializing_if = "Option::is_none")]
@@ -39,7 +39,7 @@ impl Cell {
             loc: Sqref::from_location(&loc),
             style: None,
             cell_type: Some(CellType::String),
-            cm: None,
+            cell_meta_index: None,
             formula: None,
             text: None,
         }
@@ -50,23 +50,11 @@ impl Cell {
             loc: Sqref::from_location(&loc),
             style,
             cell_type: Some(text.to_cell_type()),
-            cm: None,
+            cell_meta_index: None,
             formula: None,
             text: Some(text.to_display()),
         }
     }
-
-    // pub(crate) fn new_formula<L: Location>(loc: L, formula: &str, formula_type: FormulaType, style: Option<u32>) -> Cell {
-    //     let formula = Formula::from_formula_type(formula, formula_type);
-    //     Cell {
-    //         loc: Sqref::from_location(&loc),
-    //         style,
-    //         cell_type: Some(CellType::String),
-    //         cm: Some(1),
-    //         formula: Some(formula),
-    //         text: None,
-    //     }
-    // }
 }
 
 ///
@@ -77,10 +65,6 @@ impl Cell {
         let mut api_cell = ApiCell::default();
         api_cell.text = self.text.clone();
         if let Some(formula) = &self.formula {
-            // let (formula, formula_type, formula_ref) = (&formula.formula, &formula.formula_type,&formula.formula_ref);
-            // api_cell.formula = Some(formula.clone());// Some(formula.get_formula().to_string());
-            // api_cell.formula_ref = formula_ref.clone();
-            // api_cell.formula_type = formula_type.clone();
             api_cell.formula = Some(formula.to_api_formula());
         }
         api_cell.cell_type = self.cell_type.clone();
@@ -102,21 +86,6 @@ impl Cell {
         self.formula = None;
     }
 
-    // pub(crate) fn update<T: CellDisplay + CellValue>(
-    //     &mut self,
-    //     text: Option<&T>,
-    //     formula: Option<&str>,
-    //     formula_type: Option<FormulaType>,
-    //     style: Option<u32>
-    // ) {
-    //     if let Some(text) = text {
-    //         self.update_by_display(text, style);
-    //     }
-    //     if let (Some(formula), Some(formula_type)) = (formula, formula_type) {
-    //         self.update_by_formula(formula, formula_type, style)
-    //     }
-    // }
-
     pub(crate) fn update_by_api_cell<T: CellDisplay + CellValue>(&mut self, api_cell: &ApiCell<T>) -> CellResult<()> {
         if let Some(text) = &api_cell.text {
             self.text = Some(text.to_display());
@@ -126,39 +95,14 @@ impl Cell {
             self.style = Some(*style)
         }
         if let Some(formula) = &api_cell.formula {
-            // match api_cell.formula_type {
-            //     Some(FormulaType::OldFormula(_)) => {
-            //         self.cell_type = None;
-            //         self.text = None;
-            //     },
-            //     _ => {
-            //         self.text = Some(String::from("0"));
-            //         self.cm = Some(1);
-            //     }
+            // if formula.formula_type.is_some() {
+            //     self.text = Some(String::from("0"));
+            //     self.cell_meta_index = Some(1);
             // }
-            self.text = Some(String::from("0"));
-            self.cm = Some(1);
             self.formula = Some(Formula::from_api_formula(formula));
         }
         Ok(())
     }
-
-    // pub(crate) fn update_by_formula(&mut self, formula: &str, formula_type: FormulaType, style: Option<u32>) {
-    //     self.style = style;
-    //     self.cell_type = None;
-    //     match formula_type {
-    //         FormulaType::OldFormula(_) => {
-    //             self.text = None;
-    //             self.cm = None;
-    //         },
-    //         _ => {
-    //             self.text = Some(String::from("0"));
-    //             self.cm = Some(1);
-    //         },
-    //     };
-    //     let formula = Formula::from_formula_type(formula, formula_type);
-    //     self.formula = Some(formula);
-    // }
 }
 
 impl Sqref {
@@ -192,7 +136,6 @@ impl<'de> Visitor<'de> for Sqref {
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> where E: Error {
         // let (row, col) = to_loc(&v);
         let sqref = Sqref::from_location(&v);
-        // let sqref = Sqref::from_location(&v);
         Ok(sqref)
     }
 }
