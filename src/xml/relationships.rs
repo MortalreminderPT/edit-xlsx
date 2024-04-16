@@ -2,16 +2,19 @@ mod rel_type;
 mod rel;
 
 use std::collections::HashMap;
+use std::fs::File;
 use serde::{Deserialize, Serialize};
 use std::io;
 use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use zip::read::ZipFile;
+use zip::ZipArchive;
 use crate::api::relationship::Rel;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::relationships::rel::RelationShip;
 use crate::xml::relationships::rel_type::RelType;
+use crate::xml::workbook::Workbook;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Relationships {
@@ -215,12 +218,6 @@ impl Relationships {
 
     pub(crate) async fn save_async<P: AsRef<Path>>(&self, file_path: P, rel_type: XlsxFileType) {
         self.save(file_path, rel_type)
-    }
-
-    pub(crate) fn from_zip_file(file: &mut ZipFile) -> Relationships {
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        de::from_str(&xml).unwrap()
     }
 
     pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, rel_type: XlsxFileType) -> io::Result<Relationships> {

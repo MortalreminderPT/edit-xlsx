@@ -201,20 +201,6 @@ impl Metadata {
 }
 
 impl Io<Metadata> for Metadata {
-    fn from_zip_file(mut file: &mut ZipFile) -> Self {
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        de::from_str(&xml).unwrap_or_default()
-    }
-
-    fn from_path<P: AsRef<Path>>(file_path: P) -> std::io::Result<Metadata> {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::MetaData)?;
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        let metadata = de::from_str(&xml).unwrap();
-        Ok(metadata)
-    }
-
     fn save<P: AsRef<Path>>(& self, file_path: P) {
         let xml = se::to_string_with_root("metadata", &self).unwrap();
         let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);

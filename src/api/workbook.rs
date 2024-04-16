@@ -17,7 +17,7 @@ use crate::{Properties, xml};
 use crate::xml::content_types::ContentTypes;
 use crate::xml::core_properties::CoreProperties;
 use crate::xml::app_properties::AppProperties;
-use crate::xml::io::Io;
+use crate::xml::io::{Io, IoV2};
 use crate::xml::medias::Medias;
 use crate::xml::metadata::Metadata;
 use crate::xml::style::StyleSheet;
@@ -190,54 +190,43 @@ impl Workbook {
 }
 
 impl Workbook {
-    async fn from_path_async<P: AsRef<Path>>(file_path: P) -> WorkbookResult<Workbook> {
+    fn from_path_v2<P: AsRef<Path>>(file_path: P) -> WorkbookResult<Workbook> {
         let file_name = file_path.as_ref().file_name().ok_or(ZipError::FileNotFound)?;
         let tmp_path = format!("./~${}_{:X}", file_name.to_str().ok_or(ZipError::FileNotFound)?, id_util::new_id());
         let file = File::open(&file_path)?;
         let mut archive = zip::ZipArchive::new(file)?;
-        let (mut workbook_xml, mut workbook_rel
-            , mut content_types, mut style_sheet
-            , mut metadata, mut shared_string) =
-            (None, None, None, None, None, None);
         let mut medias = Medias::default();
+        let mut workbook_xml = xml::workbook::Workbook::from_zip_file(&mut archive, "xl/workbook.xml");
+        let mut workbook_rel = Relationships::from_zip_file(&mut archive, "xl/_rels/workbook.xml.rels");
+        let mut content_types = ContentTypes::from_zip_file(&mut archive, "[Content_Types].xml");
+        let mut style_sheet = StyleSheet::from_zip_file(&mut archive, "xl/styles.xml");
+        let mut metadata = Metadata::from_zip_file(&mut archive, "xl/metadata.xml");
+        let mut shared_string = SharedString::from_zip_file(&mut archive, "xl/sharedStrings.xml");
         for i in 0..archive.len() {
             let mut file = archive.by_index(i)?;
             let file_name = file.name();
-            match file_name {
-                "xl/workbook.xml" => workbook_xml = Some(xml::workbook::Workbook::from_zip_file(&mut file)),
-                "xl/_rels/workbook.xml.rels" => workbook_rel = Some(Relationships::from_zip_file(&mut file)),
-                "[Content_Types].xml" => content_types = Some(ContentTypes::from_zip_file(&mut file)),
-                "xl/styles.xml" => style_sheet = Some(StyleSheet::from_zip_file(&mut file)),
-                "xl/metadata.xml" => metadata = Some(Metadata::from_zip_file(&mut file)),
-                "xl/sharedStrings.xml" => shared_string = Some(SharedString::from_zip_file(&mut file)),
-                _ => {
-                    if file_name.starts_with("xl/media/") {
-                        medias.add_existed_media(&file_name);
-                    }
-                },
+            if file_name.starts_with("xl/media/") {
+                medias.add_existed_media(&file_name);
             }
         }
-
         let workbook = Rc::new(RefCell::new(workbook_xml.unwrap_or_default()));
         let workbook_rel = Rc::new(RefCell::new(workbook_rel.unwrap_or_default()));
         let content_types = Rc::new(RefCell::new(content_types.unwrap_or_default()));
         let style_sheet = Rc::new(RefCell::new(style_sheet.unwrap_or_default()));
         let metadata = Rc::new(RefCell::new(metadata.unwrap_or_default()));
         let shared_string = Rc::new(shared_string.unwrap_or_default());
-        let medias = Rc::new(RefCell::new(
-            medias
-        ));
-
+        let medias = Rc::new(RefCell::new(medias));
         let sheets = workbook.borrow().sheets.sheets.iter().map(
             |sheet_xml| {
                 let binding = workbook_rel.borrow();
                 let (target, target_id) = binding.get_target(&sheet_xml.r_id);
-                WorkSheet::from_xml(
+                WorkSheet::from_archive(
                     sheet_xml.sheet_id,
                     &sheet_xml.name,
                     target,
                     target_id,
                     &file_path,
+                    &mut archive,
                     Rc::clone(&workbook),
                     Rc::clone(&workbook_rel),
                     Rc::clone(&style_sheet),
@@ -247,8 +236,7 @@ impl Workbook {
                     Rc::clone(&shared_string),
                 )
             }).collect::<Vec<WorkSheet>>();
-
-        let workbook = Workbook {
+        let api_workbook = Workbook {
             sheets,
             tmp_path,
             file_path: file_path.as_ref().to_str().unwrap().to_string(),
@@ -263,12 +251,12 @@ impl Workbook {
             app_properties: None,
             shared_string,
         };
-        Ok(workbook)
+        Ok(api_workbook)
     }
 
     pub fn from_path<P: AsRef<Path>>(file_path: P) -> WorkbookResult<Workbook> {
-        let workbook = Self::from_path_async(file_path);
-        let workbook = block_on(workbook);
+        let workbook = Self::from_path_v2(file_path);
+        // let workbook = block_on(workbook);
         workbook
     }
 

@@ -36,32 +36,28 @@ impl Medias {
 }
 
 impl Io<Medias> for Medias {
-    fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<Medias> {
-        let mut medias = Medias { medias: vec![] };
-        let mut id = 1;
-        Ok(loop {
-            let extension = &file_path.as_ref().extension().unwrap_or("png".as_ref()).to_string_lossy();
-            let file_name = format!("image{}.{}", id, extension);
-            let file = XlsxFileReader::from_path(&file_path, XlsxFileType::Medias(file_name));
-            match file {
-                Ok(file) => {
-                    let media = Media::new(id, file.file_path);
-                    medias.medias.push(media);
-                    id += 1;
-                },
-                Err(_) => {
-                    break medias;
-                },
-            }
-        })
-    }
+    // fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<Medias> {
+    //     let mut medias = Medias { medias: vec![] };
+    //     let mut id = 1;
+    //     Ok(loop {
+    //         let extension = &file_path.as_ref().extension().unwrap_or("png".as_ref()).to_string_lossy();
+    //         let file_name = format!("image{}.{}", id, extension);
+    //         let file = XlsxFileReader::from_path(&file_path, XlsxFileType::Medias(file_name));
+    //         match file {
+    //             Ok(file) => {
+    //                 let media = Media::new(id, file.file_path);
+    //                 medias.medias.push(media);
+    //                 id += 1;
+    //             },
+    //             Err(_) => {
+    //                 break medias;
+    //             },
+    //         }
+    //     })
+    // }
 
     fn save<P: AsRef<Path>>(& self, file_path: P) {
         self.medias.iter().for_each(|m| { m.save(&file_path) });
-    }
-
-    fn from_zip_file(file: &mut ZipFile) -> Medias {
-        todo!()
     }
 }
 
@@ -88,19 +84,11 @@ impl Media {
 }
 
 impl Io<Media> for Media {
-    fn from_path<P: AsRef<Path>>(_file_path: P) -> io::Result<Media> {
-        todo!()
-    }
-
     fn save<P: AsRef<Path>>(&self, file_path: P) {
         if let Some(path) = &self.file_path {
             let extension = path.extension().unwrap_or("png".as_ref()).to_string_lossy();
             let file_name = format!("image{}.{}", self.id, extension);
             XlsxFileWriter::copy_from(&file_path, XlsxFileType::Medias(file_name), &path).unwrap();
         }
-    }
-
-    fn from_zip_file(file: &mut ZipFile) -> Media {
-        todo!()
     }
 }

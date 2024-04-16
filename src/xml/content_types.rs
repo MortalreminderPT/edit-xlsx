@@ -7,6 +7,7 @@ use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use zip::read::ZipFile;
+use zip::ZipArchive;
 use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
 use crate::xml::io::Io;
 use crate::xml::relationships::Relationships;
@@ -114,20 +115,6 @@ impl ContentTypes {
 }
 
 impl Io<ContentTypes> for ContentTypes {
-    fn from_zip_file(mut file: &mut ZipFile) -> Self {
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        de::from_str(&xml).unwrap_or_default()
-    }
-
-    fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<ContentTypes> {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::ContentTypes)?;
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        let types: ContentTypes = de::from_str(&xml).unwrap();
-        Ok(types)
-    }
-
     fn save<P: AsRef<Path>>(& self, file_path: P) {
         let xml = se::to_string_with_root("Types", &self).unwrap();
         let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);

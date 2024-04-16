@@ -245,20 +245,6 @@ impl Workbook {
 }
 
 impl Io<Workbook> for Workbook {
-    fn from_zip_file(file: &mut ZipFile) -> Self {
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        de::from_str(&xml).unwrap_or_default()
-    }
-
-    fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<Workbook> {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::WorkbookFile)?;
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        let work_book = de::from_str(&xml).unwrap();
-        Ok(work_book)
-    }
-
     fn save<P: AsRef<Path>>(& self, file_path: P) {
         let xml = se::to_string_with_root("workbook", &self).unwrap();
         let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);

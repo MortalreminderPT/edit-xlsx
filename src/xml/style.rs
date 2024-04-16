@@ -305,21 +305,6 @@ impl StyleSheet {
 }
 
 impl Io<StyleSheet> for StyleSheet {
-    fn from_zip_file(mut file: &mut ZipFile) -> Self {
-        let mut xml = String::new();
-        // file.read_to_string(&mut xml).unwrap();
-        file.read_to_string(&mut xml).unwrap_or_default();
-        de::from_str(&xml).unwrap()
-    }
-
-    fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<StyleSheet> {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::StylesFile)?;
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        let style_sheet = de::from_str(&xml).unwrap();
-        Ok(style_sheet)
-    }
-
     fn save<P: AsRef<Path>>(&self, file_path: P) {
         let xml = se::to_string_with_root("styleSheet", &self).unwrap();
         let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);

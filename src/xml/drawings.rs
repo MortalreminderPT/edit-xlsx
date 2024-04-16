@@ -249,14 +249,6 @@ struct AvLst {}
 struct ClientData {}
 
 impl Drawings {
-    pub(crate) fn from_zip_file(mut file: &mut ZipFile) -> Self {
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        de::from_str(&xml).unwrap_or_default()
-    }
-}
-
-impl Drawings {
     pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, drawing_id: u32) -> io::Result<Drawings> {
         let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::Drawings(drawing_id))?;
         let mut xml = String::new();

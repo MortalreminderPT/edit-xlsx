@@ -8,8 +8,6 @@ use zip::result::ZipError;
 use zip::write::FileOptions;
 
 pub(crate) fn extract_dir<P: AsRef<Path>>(file_path: P, target: &str) -> zip::result::ZipResult<String> {
-    // parse the file name
-    let file_name = file_path.as_ref().file_name().ok_or(ZipError::FileNotFound)?;
     // read file from file path
     let file = File::open(&file_path)?;
     let mut archive = zip::ZipArchive::new(file)?;
@@ -33,15 +31,8 @@ pub(crate) fn extract_dir<P: AsRef<Path>>(file_path: P, target: &str) -> zip::re
             }
         }
         if (*file.name()).ends_with('/') {
-            // println!("File {} extracted to \"{}\"", i, out_path.display());
             fs::create_dir_all(&out_path)?;
         } else {
-            // println!(
-            //     "File {} extracted to \"{}\" ({} bytes)",
-            //     i,
-            //     out_path.display(),
-            //     file.size()
-            // );
             if let Some(p) = out_path.parent() {
                 if !p.exists() {
                     fs::create_dir_all(p)?;
@@ -60,7 +51,6 @@ pub(crate) fn extract_dir<P: AsRef<Path>>(file_path: P, target: &str) -> zip::re
             }
         }
     }
-
     let tmp_dir = base_path.to_str().ok_or(ZipError::FileNotFound)?.to_string();
     Ok(tmp_dir)
 }

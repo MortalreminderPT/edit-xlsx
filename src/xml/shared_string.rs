@@ -81,19 +81,6 @@ impl SharedString {
 }
 
 impl Io<SharedString> for SharedString {
-    fn from_zip_file(file: &mut ZipFile) -> Self {
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        de::from_str(&xml).unwrap_or_default()
-    }
-    fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<SharedString> {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SharedStringFile)?;
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        let shared_string = de::from_str(&xml).unwrap();
-        Ok(shared_string)
-    }
-
     fn save<P: AsRef<Path>>(&self, file_path: P) {
         return;
         // let xml = se::to_string_with_root("sst", &self).unwrap();

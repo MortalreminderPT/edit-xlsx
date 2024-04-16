@@ -12,6 +12,8 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::path::Path;
 use std::rc::Rc;
+use zip::read::ZipFile;
+use zip::ZipArchive;
 use crate::{Filters, FormatColor, xml};
 use crate::api::cell::location::{Location, LocationRange};
 use crate::api::worksheet::col::WorkSheetCol;
@@ -24,6 +26,7 @@ use crate::file::XlsxFileType;
 use crate::result::{WorkSheetError, WorkSheetResult};
 use crate::xml::drawings::Drawings;
 use crate::xml::drawings::vml_drawing::VmlDrawing;
+use crate::xml::io::IoV2;
 use crate::xml::metadata::Metadata;
 use crate::xml::relationships::Relationships;
 use crate::xml::shared_string::SharedString;
@@ -306,12 +309,13 @@ impl WorkSheet {
         }
     }
 
-    pub(crate) fn from_xml<P: AsRef<Path>>(
+    pub(crate) fn from_archive<P: AsRef<Path>>(
         sheet_id: u32,
         name: &str,
         target: &str,
         target_id: u32,
         file_path: P,
+        archive: &mut ZipArchive<File>,
         workbook: Rc<RefCell<Workbook>>,
         workbook_rel: Rc<RefCell<Relationships>>,
         style_sheet: Rc<RefCell<StyleSheet>>,
@@ -320,37 +324,16 @@ impl WorkSheet {
         metadata: Rc<RefCell<Metadata>>,
         shared_string: Rc<SharedString>,
     ) -> WorkSheet {
-        let file = File::open(&file_path).unwrap();
-        let mut archive = zip::ZipArchive::new(file).unwrap();
         // Read worksheet from zip dir
-        let mut worksheet = XmlWorkSheet::default();
-        let mut worksheet_rel = Relationships::default();
-        {
-            let worksheet_file = archive.by_name(&format!("xl/{target}"));
-            if let Ok(mut worksheet_file) = worksheet_file {
-                worksheet = XmlWorkSheet::from_zip_file(&mut worksheet_file);
-                // Prevent incorrect results from being filled into cells
-                worksheet.sheet_data.clean_formula_value();
-            };
-        }
-        {
-            let worksheet_rel_id: String = target.chars().filter(|&c| c >= '0' && c <= '9').collect();
-            if let Ok(mut worksheet_rel_file) = archive.by_name(&format!("xl/worksheets/_rels/sheet{worksheet_rel_id}.xml.rels")) {
-                worksheet_rel = Relationships::from_zip_file(&mut worksheet_rel_file);
-            }
-        }
+        let mut worksheet = XmlWorkSheet::from_zip_file(archive, &format!("xl/{target}")).unwrap_or_default();
+        worksheet.sheet_data.clean_formula_value();
+        let worksheet_rel_id: String = target.chars().filter(|&c| c >= '0' && c <= '9').collect();
+        let worksheet_rel = Relationships::from_zip_file(archive, &format!("xl/worksheets/_rels/sheet{worksheet_rel_id}.xml.rels")).unwrap_or_default();
         // load drawings
-        let drawings_id = worksheet_rel.get_drawings_rid();
         let (mut drawings, mut drawings_rel) = (None, None);
-        if let Some(drawings_id) = drawings_id {
-            {
-                let mut drawings_file = archive.by_name(&format!("xl/drawings/drawing{drawings_id}.xml")).unwrap();
-                drawings = Some(Drawings::from_zip_file(&mut drawings_file));
-            }
-            {
-                let mut drawings_rel_file = archive.by_name(&format!("xl/drawings/_rels/drawing{drawings_id}.xml.rels")).unwrap();
-                drawings_rel = Some(Relationships::from_zip_file(&mut drawings_rel_file));
-            }
+        if let Some(drawings_id) = worksheet_rel.get_drawings_rid() {
+            drawings = Drawings::from_zip_file(archive, &format!("xl/drawings/drawing{drawings_id}.xml"));
+            drawings_rel = Relationships::from_zip_file(archive, &format!("xl/drawings/_rels/drawing{drawings_id}.xml.rels"));
         };
         let vml_drawing = match worksheet_rel.get_vml_drawing_rid() {
             Some(vml_drawing_id) => VmlDrawing::from_path(&file_path, vml_drawing_id).ok(),
