@@ -114,20 +114,6 @@ impl SheetData {
         }
     }
 
-    // pub(crate) fn write_cell<L: Location, T: CellDisplay + CellValue>(
-    //     &mut self,
-    //     loc: &L,
-    //     text: Option<&T>,
-    //     formula: Option<&str>,
-    //     formula_type: Option<FormulaType>,
-    //     style: Option<u32>
-    // ) -> RowResult<()> {
-    //     let (row, col) = loc.to_location();
-    //     let row = self.get_or_new_row(row);
-    //     row.add_cell(col, text, formula, formula_type, style);
-    //     Ok(())
-    // }
-
     pub(crate) fn write_by_api_cell<L: Location, T: CellDisplay + CellValue>(&mut self, loc: &L, api_cell: &ApiCell<T>) -> RowResult<()> {
         let (row, col) = loc.to_location();
         let row = self.get_or_new_row(row);

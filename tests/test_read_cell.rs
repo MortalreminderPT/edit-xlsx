@@ -128,7 +128,6 @@ mod tests {
         println!("{:?}", cell);
         schedule_workbook.save_as("./tests/output/read_cell_test_from_home_budget.xlsx")?;
 
-        // todo image will be copied to other worksheet
         let mut schedule_workbook = Workbook::from_path("./tests/xlsx/personal-budget.xlsx")?;
         let worksheet = schedule_workbook.get_worksheet_mut_by_name("Budget")?;
         worksheet.write_column("B12", &(100..=105).into_iter().collect::<Vec<i32>>())?;

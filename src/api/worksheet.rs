@@ -60,9 +60,13 @@ impl WorkSheet {
     pub(crate) fn save_as<P: AsRef<Path>>(&self, file_path: P) -> WorkSheetResult<()> {
         self.worksheet.save(&file_path, &self.target);
         self.worksheet_rel.save(&file_path, XlsxFileType::WorksheetRels(self.target_id));
-        if let Some(_) = self.worksheet_rel.get_drawings_rid() {
-            self.drawings.as_ref().unwrap().save(&file_path, self.id);
-            self.drawings_rel.as_ref().unwrap().save(&file_path, XlsxFileType::DrawingRels(self.id));
+        if let Some(id) = self.worksheet_rel.get_drawings_rid() {
+            if let Some(drawings) = &self.drawings {
+                drawings.save(&file_path, id);
+            }
+            if let Some(drawings_rel) = &self.drawings_rel {
+                drawings_rel.save(&file_path, XlsxFileType::DrawingRels(id));
+            }
         }
         if let Some(id) = self.worksheet_rel.get_vml_drawing_rid() {
             // self.vml_drawing.as_ref().unwrap().save(&file_path, id);

@@ -193,7 +193,6 @@ pub trait Write: _Write {
     fn write_array_formula_with_format<L: Location>(&mut self, loc: L, data: &str, format: &Format) -> WorkSheetResult<()> {
         let mut cell: Cell<&str> = Cell::default();
         cell.formula = Some(Formula::new_array_formula(data, &loc));
-        // cell.formula_type = Some(FormulaType::ArrayFormula(loc.to_ref()));
         cell.format = Some(format.clone());
         self.write_by_api_cell(&loc, &cell)
     }
