@@ -1,3 +1,5 @@
+mod cell_ref;
+
 extern crate proc_macro;
 use std::hash::Hash;
 use std::ops::{Deref, DerefMut};
