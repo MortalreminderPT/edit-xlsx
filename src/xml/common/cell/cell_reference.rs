@@ -1,24 +1,24 @@
 use crate::utils::col_helper;
 
 #[derive(Default, Debug, Copy, Clone)]
-pub(crate) struct Coordinate {
+pub(crate) struct CellReference {
     row: u32,
     col: u32,
     abs_row: bool,
     abs_col: bool,
 }
 
-impl Coordinate {
-    fn new(row: u32, col: u32, abs_row: bool, abs_col: bool) -> Coordinate {
-        Coordinate {
+impl CellReference {
+    fn new(row: u32, col: u32, abs_row: bool, abs_col: bool) -> CellReference {
+        CellReference {
             row,
             col,
             abs_row,
             abs_col,
         }
     }
-    fn from_str(refer: &str) -> Coordinate {
-        let mut coord = Coordinate::default();
+    fn from_str(refer: &str) -> CellReference {
+        let mut coord = CellReference::default();
         let mut row = String::new();
         let mut col = String::new();
         let mut dollar = None;
@@ -56,8 +56,4 @@ impl Coordinate {
         refer.push_str(&self.row.to_string());
         refer
     }
-}
-
-pub(crate) struct CellReference {
-    coords: Vec<Coordinate>
 }

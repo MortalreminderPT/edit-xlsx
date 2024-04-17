@@ -1,4 +1,4 @@
-mod cell_ref;
+pub(crate) mod cell;
 
 extern crate proc_macro;
 use std::hash::Hash;
