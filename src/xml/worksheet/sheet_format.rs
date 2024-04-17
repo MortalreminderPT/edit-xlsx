@@ -44,8 +44,13 @@ impl SheetFormatPr {
         self.default_col_width = Some(width);
     }
 
-    pub(crate) fn get_default_col_width(&self) -> f64 {
-        self.default_col_width.unwrap_or(8.11)
+    pub(crate) fn set_default_col_width_adaptive(&mut self) {
+        self.custom_height = Some(0);
+        self.default_col_width = None;
+    }
+
+    pub(crate) fn get_default_col_width(&self) -> Option<f64> {
+        self.default_col_width
     }
 
     pub(crate) fn hide_unused_rows(&mut self, hide: bool) {

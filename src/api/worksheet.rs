@@ -203,7 +203,12 @@ impl WorkSheet {
         worksheet.set_default_col_width(height);
     }
 
-    pub fn get_default_column(&self) -> f64 {
+    pub fn set_default_column_adaptive(&mut self) {
+        let worksheet = &mut self.worksheet;
+        worksheet.set_default_col_width_adaptive();
+    }
+
+    pub fn get_default_column(&self) -> Option<f64> {
         let worksheet = &self.worksheet;
         worksheet.get_default_col_width()
     }

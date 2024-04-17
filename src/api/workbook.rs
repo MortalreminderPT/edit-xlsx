@@ -196,12 +196,12 @@ impl Workbook {
         let file = File::open(&file_path)?;
         let mut archive = zip::ZipArchive::new(file)?;
         let mut medias = Medias::default();
-        let mut workbook_xml = xml::workbook::Workbook::from_zip_file(&mut archive, "xl/workbook.xml");
-        let mut workbook_rel = Relationships::from_zip_file(&mut archive, "xl/_rels/workbook.xml.rels");
-        let mut content_types = ContentTypes::from_zip_file(&mut archive, "[Content_Types].xml");
-        let mut style_sheet = StyleSheet::from_zip_file(&mut archive, "xl/styles.xml");
-        let mut metadata = Metadata::from_zip_file(&mut archive, "xl/metadata.xml");
-        let mut shared_string = SharedString::from_zip_file(&mut archive, "xl/sharedStrings.xml");
+        let workbook_xml = xml::workbook::Workbook::from_zip_file(&mut archive, "xl/workbook.xml");
+        let workbook_rel = Relationships::from_zip_file(&mut archive, "xl/_rels/workbook.xml.rels");
+        let content_types = ContentTypes::from_zip_file(&mut archive, "[Content_Types].xml");
+        let style_sheet = StyleSheet::from_zip_file(&mut archive, "xl/styles.xml");
+        let metadata = Metadata::from_zip_file(&mut archive, "xl/metadata.xml");
+        let shared_string = SharedString::from_zip_file(&mut archive, "xl/sharedStrings.xml");
         for i in 0..archive.len() {
             let mut file = archive.by_index(i)?;
             let file_name = file.name();

@@ -218,7 +218,11 @@ impl WorkSheet {
         self.sheet_format_pr.set_default_col_width(width);
     }
 
-    pub(crate) fn get_default_col_width(&self) -> f64 {
+    pub(crate) fn set_default_col_width_adaptive(&mut self) {
+        self.sheet_format_pr.set_default_col_width_adaptive()
+    }
+
+    pub(crate) fn get_default_col_width(&self) -> Option<f64> {
         self.sheet_format_pr.get_default_col_width()
     }
 
