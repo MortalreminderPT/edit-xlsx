@@ -44,6 +44,33 @@ impl Format {
     pub fn get_borders(&self) -> &FormatBorder {
         &self.border
     }
+
+    pub fn get_color(&self) -> &FormatColor {
+        &self.font.color
+    }
+
+    pub fn get_font(&self) -> &str {
+        &self.font.name
+    }
+
+    pub fn get_background_color(&self) -> &FormatColor {
+        &self.fill.fg_color
+    }
+    pub fn get_border_left(&self) -> &FormatBorderElement {
+        &self.border.left
+    }
+
+    pub fn get_border_right(&self) -> &FormatBorderElement {
+        &self.border.right
+    }
+
+    pub fn get_border_top(&self) -> &FormatBorderElement {
+        &self.border.top
+    }
+
+    pub fn get_border_bottom(&self) -> &FormatBorderElement {
+        &self.border.bottom
+    }
 }
 
 impl Format {

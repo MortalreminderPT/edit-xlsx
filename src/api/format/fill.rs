@@ -5,9 +5,9 @@ use crate::xml::style::fill::{Fill, PatternFill};
 
 #[derive(Clone, Debug)]
 pub struct FormatFill {
-    pub(crate) pattern_type: String,
-    pub(crate) fg_color: FormatColor,
-    pub(crate) bg_color: FormatColor
+    pub pattern_type: String,
+    pub fg_color: FormatColor,
+    pub bg_color: FormatColor
 }
 
 impl Default for FormatFill<> {

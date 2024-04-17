@@ -5,12 +5,12 @@ use crate::xml::style::font::{Bold, Font, Italic, Underline};
 
 #[derive(Clone, Debug)]
 pub struct FormatFont {
-    pub(crate) bold: bool,
-    pub(crate) italic: bool,
-    pub(crate) underline: bool,
-    pub(crate) size: f64,
-    pub(crate) color: FormatColor,
-    pub(crate) name: String,// &'a str,
+    pub bold: bool,
+    pub italic: bool,
+    pub underline: bool,
+    pub size: f64,
+    pub color: FormatColor,
+    pub name: String,// &'a str,
 }
 
 impl Default for FormatFont {
