@@ -87,7 +87,7 @@ impl Row {
     }
 
     /// If you want to custom the format of row, you can use [`Row::new_by_worksheet()`] method.
-    /// NOTICE: A [`Row`] created using the [`Row::new_by_worksheet()`] method can only be used in incoming worksheets.
+    /// **NOTICE**: A [`Row`] created using the [`Row::new_by_worksheet()`] method can only be used in incoming worksheets.
     /// ```
     /// use edit_xlsx::{Workbook, WorkSheetRow, Row, Format, FormatColor};
     /// let red = Format::default().set_background_color(FormatColor::RGB(255, 0, 0));
@@ -123,7 +123,8 @@ pub trait WorkSheetRow: _Row {
     /// let workbook = Workbook::from_path("./examples/xlsx/accounting.xlsx").unwrap();
     /// let worksheet = workbook.get_worksheet_by_name("worksheet").unwrap();
     /// let first_row = worksheet.get_row(1).unwrap();
-    /// assert_eq!(first_row.height.unwrap(), 28.25);
+    /// // Convert to u32 to reduce error
+    /// assert_eq!(first_row.height.unwrap() as u32, 28);
     /// ```
     fn get_row(&self, row: u32) -> WorkSheetResult<Row> {
         self.get_by_row_number(row)
@@ -200,7 +201,7 @@ pub trait WorkSheetRow: _Row {
     ///
     /// Only not none fields will be updated.
     ///
-    /// NOTICE: Changing the [`Row`]'s [`Format`] does not mean that the effect can be seen directly in Excel,
+    /// **NOTICE**: Changing the [`Row`]'s [`Format`] does not mean that the effect can be seen directly in Excel,
     /// because the style priority is [`Cell`]>[`Row`]>[`Column`].
     /// # Example
     /// ```

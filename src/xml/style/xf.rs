@@ -18,9 +18,9 @@ pub(crate) struct Xf {
     #[serde(rename = "@applyNumberFormat", default, skip_serializing_if = "common::is_zero")]
     pub(crate) apply_number_format: u32,
     #[serde(rename = "@applyFont", default, skip_serializing_if = "common::is_zero")]
-    apply_font: u32,
+    pub(crate) apply_font: u32,
     #[serde(rename = "@applyFill", default, skip_serializing_if = "common::is_zero")]
-    apply_fill: u32,
+    pub(crate) apply_fill: u32,
     #[serde(rename = "@applyBorder", default, skip_serializing_if = "common::is_zero")]
     apply_border: u32,
     #[serde(rename = "@applyAlignment", default, skip_serializing_if = "common::is_zero")]

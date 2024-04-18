@@ -16,7 +16,7 @@ mod tests {
         column.outline_level = Some(2);
         column.hidden = Some(1);
         worksheet.set_columns("D:I", &column)?;
-        assert_eq!(18.5, worksheet.get_default_column());
+        assert_eq!(Some(18.5), worksheet.get_default_column());
         workbook.save_as("tests/output/col_test_new_by_column.xlsx")?;
         Ok(())
     }
@@ -35,7 +35,7 @@ mod tests {
         column.outline_level = Some(2);
         column.hidden = Some(1);
         worksheet.set_columns("D:I", &column)?;
-        assert_eq!(18.5, worksheet.get_default_column());
+        assert_eq!(Some(18.5), worksheet.get_default_column());
         workbook.save_as("tests/output/col_test_from_by_column.xlsx")?;
         Ok(())
     }
@@ -45,7 +45,7 @@ mod tests {
         let mut workbook = Workbook::new();
         let worksheet = workbook.get_worksheet_mut(1)?;
         worksheet.set_default_column(18.5);
-        assert_eq!(18.5, worksheet.get_default_column());
+        assert_eq!(Some(18.5), worksheet.get_default_column());
         workbook.save_as("tests/output/col_test_new_default_col.xlsx")?;
         Ok(())
     }
@@ -54,9 +54,9 @@ mod tests {
     fn test_from_default_width() -> WorkbookResult<()> {
         let mut workbook = Workbook::from_path("tests/xlsx/row_and_col.xlsx")?;
         let worksheet = workbook.get_worksheet_mut(1)?;
-        assert_eq!(8.11, worksheet.get_default_column());
+        assert_eq!(Some(8.11), worksheet.get_default_column());
         worksheet.set_default_column(30.8);
-        assert_eq!(30.8, worksheet.get_default_column());
+        assert_eq!(Some(30.8), worksheet.get_default_column());
         workbook.save_as("tests/output/col_test_from_default_col.xlsx")?;
         Ok(())
     }
@@ -87,6 +87,17 @@ mod tests {
         let workbook = Workbook::from_path("tests/xlsx/accounting.xlsx")?;
         let worksheet = workbook.get_worksheet(1)?;
         let widths = worksheet.get_columns_width("A:A");
+        Ok(())
+    }
+
+    #[test]
+    fn test_col_color() -> WorkbookResult<()> {
+        use edit_xlsx::{Column, Format, FormatColor, Workbook, WorkSheetCol};
+        let mut workbook = Workbook::from_path("./examples/xlsx/accounting.xlsx").unwrap();
+        let worksheet = workbook.get_worksheet_mut_by_name("worksheet").unwrap();
+        let green = Format::default().set_background_color(FormatColor::RGB(0, 100, 100));
+        worksheet.set_columns_with_format("A:XFD", &Column::default(), &green).unwrap();
+        workbook.save_as("tests/output/col_test_col_color.xlsx").unwrap();
         Ok(())
     }
 }

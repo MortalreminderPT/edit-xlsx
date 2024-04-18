@@ -1,7 +1,7 @@
 use std::slice::Iter;
 use crate::api::cell::Cell;
 use crate::api::cell::formula::Formula;
-use crate::api::cell::values::{CellDisplay, CellValue};
+use crate::api::cell::values::{CellDisplay, CellType, CellValue};
 use crate::api::cell::location::{Location, LocationRange};
 use crate::api::worksheet::format::_Format;
 use crate::api::worksheet::hyperlink::_Hyperlink;
@@ -224,6 +224,12 @@ impl _Write for WorkSheet {
             self.worksheet.xmlns_attrs.add_xr();
             self.worksheet.xmlns_attrs.add_xr_2();
             self.worksheet.xmlns_attrs.add_xr_3();
+        }
+        if let None = &cell.cell_type {
+            cell.cell_type = Some(cell.text.clone().unwrap().to_cell_type());
+        }
+        else if let Some(CellType::SharedString) = &cell.cell_type {
+            cell.cell_type = Some(CellType::String);
         }
         if let Some(format) = &cell.format {
             let style = self.add_format(format);

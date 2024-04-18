@@ -87,7 +87,7 @@ impl Column {
     }
 
     /// If you want to custom the format of col, you can use [`Column::new_by_worksheet()`] method.
-    /// NOTICE: A [`Column`] created using the [`Column::new_by_worksheet()`] method can only be used in incoming worksheets.
+    /// **NOTICE**: A [`Column`] created using the [`Column::new_by_worksheet()`] method can only be used in incoming worksheets.
     /// ```
     /// use edit_xlsx::{Workbook, WorkSheetCol, Column, Format, FormatColor};
     /// let red = Format::default().set_background_color(FormatColor::RGB(255, 0, 0));
@@ -210,7 +210,7 @@ pub trait WorkSheetCol: _Col {
     ///
     /// Only not none fields will be updated.
     ///
-    /// NOTICE: Changing the [`Column`]'s [`Format`] does not mean that the effect can be seen directly in Excel,
+    /// **NOTICE**: Changing the [`Column`]'s [`Format`] does not mean that the effect can be seen directly in Excel,
     /// because the style priority is [`Cell`]>[`Row`]>[`Column`].
     /// # Example
     /// ```

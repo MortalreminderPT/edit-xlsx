@@ -15,7 +15,7 @@ impl Default for FormatFill<> {
         FormatFill {
             pattern_type: "none".to_string(),
             fg_color: FormatColor::default(),
-            bg_color: FormatColor::Index(64),
+            bg_color: FormatColor::Index(65),
         }
     }
 }

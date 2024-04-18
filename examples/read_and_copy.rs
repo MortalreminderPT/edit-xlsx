@@ -1,6 +1,6 @@
 use edit_xlsx::{Workbook, WorkbookResult, WorkSheetCol, Read, Write, WorkSheetRow};
 
-/// NOTICE: Reading is an experimental feature,
+/// **NOTICE**: Reading is an experimental feature,
 /// in the current version it performs better for reading and overwriting text, styles,
 /// and worse for formulas, links, etc.
 
