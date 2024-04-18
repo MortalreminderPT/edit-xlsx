@@ -2,7 +2,20 @@ use crate::FormatColor;
 use crate::xml::common::{Element, FromFormat};
 use crate::xml::style::color::Color;
 use crate::xml::style::font::{Bold, Font, Italic, Underline};
+use crate::Cell;
 
+///
+/// [`FormatFont`] is used to handle font-related fields, mainly applied to [`Cell`].
+/// # Fields
+/// | field     | type        | meaning                                |
+/// | --------- | ----------- | -------------------------------------- |
+/// | `bold`      | bool        | Whether the font is bold.              |
+/// | `italic`    | bool        | Whether the font is italic.            |
+/// | `underline` | bool        | Whether the font is underlined.        |
+/// | `size`      | f64         | Font size in point.                    |
+/// | `color`     | [`FormatColor`] | Font color.                            |
+/// | `name`      | [`String`]      | Font name, same as displayed in Excel. |
+///
 #[derive(Clone, Debug, PartialEq)]
 pub struct FormatFont {
     pub bold: bool,
@@ -10,10 +23,11 @@ pub struct FormatFont {
     pub underline: bool,
     pub size: f64,
     pub color: FormatColor,
-    pub name: String,// &'a str,
+    pub name: String,
 }
 
 impl Default for FormatFont {
+    // todo: write document
     fn default() -> Self {
         FormatFont {
             bold: false,

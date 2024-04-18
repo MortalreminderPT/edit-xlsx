@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use edit_xlsx::{Cell, Format, FormatColor, Workbook, WorkbookResult, Write};
+    use edit_xlsx::{Cell, Format, FormatColor, FormatFill, Workbook, WorkbookResult, Write};
 
     #[test]
     fn test_new() -> WorkbookResult<()> {
@@ -21,6 +21,7 @@ mod tests {
         cell.hyperlink = Some("https://google.com.tw".to_string());
         // cell.formula = Some("SUM(D2:E26)".to_string());
         // test write col
+        let format_fill = FormatFill::default();
         worksheet.write_cell("B4", &cell)?;
         workbook.save_as("tests/output/test_from_write_cell_analysis_tabs.xlsx")?;
         Ok(())

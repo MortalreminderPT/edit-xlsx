@@ -1,5 +1,4 @@
 //!
-//!
 //! This module contains the [`FormatColor`] Enum, which used to set the color for the format.
 //! [`FormatColor`] is mainly used for setting fonts, backgrounds, and sheet tab colors.
 //! # Examples
@@ -70,7 +69,6 @@ impl Default for FormatColor {
         Self::Default
     }
 }
-
 
 impl FromFormat<FormatColor> for Color {
     fn set_attrs_by_format(&mut self, format: &FormatColor) {

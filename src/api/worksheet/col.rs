@@ -50,10 +50,10 @@ use crate::result::WorkSheetResult;
 /// # Fields:
 /// | field | type |meaning|
 /// | ---- | ---- |----|
-/// | `width` | `Option<f64>` |The custom width you want to update with.|
-/// | `outline_level` | `Option<u8>` |The outline level of a column, learn more from [official documentation](https://support.microsoft.com/en-us/office/outline-group-data-in-a-worksheet-08ce98c4-0063-4d42-8ac7-8278c49e9aff).|
-/// | `hidden` | `Option<u8>` |Whether the column is hidden or not.|
-/// | `collapsed` | `Option<u8>` |collapse columns to group them.|
+/// | `width` | [`Option<f64>`] |The custom width you want to update with.|
+/// | `outline_level` | [`Option<u8>`] |The outline level of a column, learn more from [official documentation](https://support.microsoft.com/en-us/office/outline-group-data-in-a-worksheet-08ce98c4-0063-4d42-8ac7-8278c49e9aff).|
+/// | `hidden` | [`Option<u8>`] |Whether the column is hidden or not.|
+/// | `collapsed` | [`Option<u8>`] |collapse columns to group them.|
 #[derive(Copy, Clone, Default, Debug)]
 pub struct Column {
     pub width: Option<f64>,

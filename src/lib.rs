@@ -12,6 +12,7 @@ pub use api::format::Format;
 pub use api::format::FormatBorderType;
 pub use api::format::FormatAlignType;
 pub use api::format::FormatColor;
+pub use api::format::FormatFill;
 pub use api::worksheet::write::Write;
 pub use api::worksheet::read::Read;
 pub use api::cell::Cell;
