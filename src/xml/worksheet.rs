@@ -132,17 +132,19 @@ impl WorkSheet {
             self.cols.get_or_insert(Cols::default()).update_col_tree(min, max, col);
         }
         let mut s = min;
-        if cols[cols.len() - 1].1 < max {
+        if cols.len() > 0 && cols[cols.len() - 1].1 < max {
             let mut col = Col::default();
             col.update_by_api_column(column);
             self.cols.get_or_insert(Cols::default()).update_col_tree(cols[cols.len() - 1].1, max, col);
         }
         for i in 0..cols.len() {
             if s < cols[i].0 {
+                // new then update columns not exists
                 let mut col = Col::default();
                 col.update_by_api_column(column);
                 self.cols.get_or_insert(Cols::default()).update_col_tree(s, cols[i].0, col);
             }
+            // update columns already exists
             let mut col = cols[i].2;
             col.update_by_api_column(column);
             self.cols.get_or_insert(Cols::default()).update_col_tree(cols[i].0, cols[i].1, col);

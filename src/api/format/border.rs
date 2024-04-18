@@ -4,7 +4,7 @@ use crate::xml::common::FromFormat;
 use crate::xml::style::border::{Border, BorderElement};
 use crate::xml::style::color::Color;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct FormatBorder {
     pub left: FormatBorderElement,
     pub right: FormatBorderElement,
@@ -13,29 +13,31 @@ pub struct FormatBorder {
     pub diagonal: FormatBorderElement,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Default)]
 pub struct FormatBorderElement {
     pub border_type: FormatBorderType,
     pub color: FormatColor,
 }
 
-impl Default for FormatBorderElement {
-    fn default() -> Self {
-        Self {
-            border_type: Default::default(),
-            color: Default::default(),
+impl FormatBorderElement {
+    pub fn new(border_type: &FormatBorderType, color: &FormatColor) -> FormatBorderElement {
+        FormatBorderElement {
+            border_type: *border_type,
+            color: *color,
         }
     }
-}
 
-impl Default for FormatBorder {
-    fn default() -> Self {
-        Self {
-            left: Default::default(),
-            right: Default::default(),
-            top: Default::default(),
-            bottom: Default::default(),
-            diagonal: Default::default(),
+    pub fn from_color(color: &FormatColor) -> FormatBorderElement {
+        FormatBorderElement {
+            border_type: FormatBorderType::Thin,
+            color: *color,
+        }
+    }
+
+    pub fn from_border_type(border_type: &FormatBorderType) -> FormatBorderElement {
+        FormatBorderElement {
+            border_type: *border_type,
+            color: FormatColor::default(),
         }
     }
 }

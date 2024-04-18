@@ -76,7 +76,7 @@ impl Default for FormatFill {
     /// Method [`FormatFill::default()`] creates a blank [`FormatFill`] with no foreground color,
     /// a blank background color, and a `none` pattern_type.
     ///
-    /// When using [`Format::default()`], its `fill` field is filled by this method.
+    /// When using [`Format::default()`], its `fill` field will be filled by this method.
     fn default() -> Self {
         FormatFill {
             pattern_type: "none".to_string(),
