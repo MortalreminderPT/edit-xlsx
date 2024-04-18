@@ -3,7 +3,7 @@ use crate::xml::common::{Element, FromFormat};
 use crate::xml::style::color::Color;
 use crate::xml::style::font::{Bold, Font, Italic, Underline};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct FormatFont {
     pub bold: bool,
     pub italic: bool,

@@ -3,7 +3,7 @@ use crate::xml::common::FromFormat;
 use crate::xml::style::color::Color;
 use crate::xml::style::fill::{Fill, PatternFill};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct FormatFill {
     pub pattern_type: String,
     pub fg_color: FormatColor,

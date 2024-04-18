@@ -38,7 +38,7 @@
 //! workbook.save_as("./examples/row_update_row.xlsx").unwrap()
 //! ```
 
-use crate::Format;
+use crate::{Format, Column, Cell};
 use crate::api::worksheet::format::_Format;
 use crate::api::worksheet::WorkSheet;
 use crate::result::RowError::RowNotFound;
@@ -50,8 +50,8 @@ use crate::result::WorkSheetResult;
 /// # Fields:
 /// | field | type |meaning|
 /// | ---- | ---- |----|
-/// | `height` | `Option<f64>` |The customed height you want to update with.|
-/// | `outline_level` | `Option<u8>` |The ouline level of a row, learn more from [official documentation](https://support.microsoft.com/en-us/office/outline-group-data-in-a-worksheet-08ce98c4-0063-4d42-8ac7-8278c49e9aff).|
+/// | `height` | `Option<f64>` |The custom height you want to update with.|
+/// | `outline_level` | `Option<u8>` |The outline level of a row, learn more from [official documentation](https://support.microsoft.com/en-us/office/outline-group-data-in-a-worksheet-08ce98c4-0063-4d42-8ac7-8278c49e9aff).|
 /// | `hidden` | `Option<u8>` |Whether the row is hidden or not.|
 /// | `collapsed` | `Option<u8>` |collapse rows to group them.|
 #[derive(Copy, Debug, Clone, Default)]
@@ -177,7 +177,7 @@ pub trait WorkSheetRow: _Row {
     ///
     /// update a row by [`Row`], note that the row number starts with 1.
     ///
-    /// Only not none fields will be updated
+    /// Only not none fields will be updated.
     ///
     /// # Example
     /// ```
@@ -196,11 +196,12 @@ pub trait WorkSheetRow: _Row {
         Ok(())
     }
 
-    ///
     /// update a row by [`Row`], note that the row number starts with 1.
     ///
-    /// Only not none fields will be updated
+    /// Only not none fields will be updated.
     ///
+    /// NOTICE: Changing the [`Row`]'s [`Format`] does not mean that the effect can be seen directly in Excel,
+    /// because the style priority is [`Cell`]>[`Row`]>[`Column`].
     /// # Example
     /// ```
     /// use edit_xlsx::{Format, FormatColor, Row, Workbook, WorkSheetRow};

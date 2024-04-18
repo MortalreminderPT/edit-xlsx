@@ -4,7 +4,7 @@ use crate::xml::common::FromFormat;
 use crate::xml::style::border::{Border, BorderElement};
 use crate::xml::style::color::Color;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct FormatBorder {
     pub left: FormatBorderElement,
     pub right: FormatBorderElement,
@@ -13,7 +13,7 @@ pub struct FormatBorder {
     pub diagonal: FormatBorderElement,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct FormatBorderElement {
     pub border_type: FormatBorderType,
     pub color: FormatColor,
@@ -40,7 +40,7 @@ impl Default for FormatBorder {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum FormatBorderType {
     None,
     Thin,

@@ -12,7 +12,7 @@ mod fill;
 mod font;
 pub mod border;
 
-#[derive(Default, Clone, Debug)]
+#[derive(Default, Clone, Debug, PartialEq)]
 pub struct Format {
     pub font: FormatFont,
     pub border: FormatBorder,
