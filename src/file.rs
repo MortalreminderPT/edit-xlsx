@@ -20,33 +20,10 @@ pub enum XlsxFileType {
     CoreProperties,
     AppProperties,
 }
-
-pub struct XlsxFileReader {
-    file_type: XlsxFileType,
-    pub(crate) file_path: PathBuf,
-    file: File,
-}
-
 pub struct XlsxFileWriter {
     file_type: XlsxFileType,
     file_path: PathBuf,
     file: File,
-}
-
-impl XlsxFileReader {
-    pub(crate) fn from_path<P: AsRef<Path>>(base_path: P, file_type: XlsxFileType) -> io::Result<XlsxFileReader> {
-        // let file_path = get_path(base_path, &file_type);
-        let file_path = file_type.get_path(base_path);
-        Ok(XlsxFileReader {
-            file: File::open(&file_path)?,
-            file_type,
-            file_path,
-        })
-    }
-
-    pub(crate) fn read_to_string(&mut self, target_string: &mut String) -> io::Result<usize> {
-        self.file.read_to_string(target_string)
-    }
 }
 
 impl XlsxFileWriter {
@@ -128,7 +105,6 @@ impl XlsxFileType {
     pub(crate) fn get_path<P: AsRef<Path>>(&self, base_path: P) -> PathBuf {
         base_path.as_ref().join(self.get_dir()).join(self.get_filename())
     }
-
     pub(crate) fn get_relative_path(&self) -> String {
         format!("{}/{}", self.get_dir(), self.get_filename())
     }

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use zip::read::ZipFile;
 use crate::api::cell::location::{Location, LocationRange};
 use crate::api::relationship::Rel;
-use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
+use crate::file::{XlsxFileType, XlsxFileWriter};
 use crate::{Column, Filters, FormatColor};
 use crate::result::{ColResult, WorkSheetResult};
 use crate::xml::common::{PhoneticPr, XmlnsAttrs};
@@ -328,13 +328,13 @@ struct PrintOptions {
 }
 
 impl WorkSheet {
-    pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, target: &str) -> WorkSheetResult<WorkSheet> {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SheetFile(target.to_string()))?;
-        let mut xml = String::new();
-        file.read_to_string(&mut xml)?;
-        let work_sheet = de::from_str(&xml).unwrap();
-        Ok(work_sheet)
-    }
+    // pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, target: &str) -> WorkSheetResult<WorkSheet> {
+    //     let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::SheetFile(target.to_string()))?;
+    //     let mut xml = String::new();
+    //     file.read_to_string(&mut xml)?;
+    //     let work_sheet = de::from_str(&xml).unwrap();
+    //     Ok(work_sheet)
+    // }
 
     pub(crate) fn save<P: AsRef<Path>>(& self, file_path: P, target: &str) {
         let xml = se::to_string_with_root("worksheet", &self).unwrap();

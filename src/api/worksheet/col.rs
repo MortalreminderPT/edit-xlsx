@@ -9,7 +9,7 @@ use crate::result::WorkSheetResult;
 pub struct Column {
     pub width: Option<f64>,
     pub(crate) style: Option<u32>,
-    pub outline_level: Option<u32>,
+    pub outline_level: Option<u8>,
     pub hidden: Option<u8>,
     pub collapsed: Option<u8>,
 }
@@ -102,7 +102,7 @@ pub trait WorkSheetCol: _Col {
     ///
     /// collapse columns
     ///
-    fn set_columns_level<R: LocationRange>(&mut self, col_range: R, level: u32) -> WorkSheetResult<()> {
+    fn set_columns_level<R: LocationRange>(&mut self, col_range: R, level: u8) -> WorkSheetResult<()> {
         let mut col_set = Column::default();
         col_set.outline_level = Some(level);
         self.set_by_column(col_range, &col_set)?;

@@ -25,7 +25,7 @@ pub(crate) struct Row {
     #[serde(rename = "@customHeight", skip_serializing_if = "Option::is_none")]
     pub(crate) custom_height: Option<u8>,
     #[serde(rename = "@outlineLevel", skip_serializing_if = "Option::is_none")]
-    pub(crate) outline_level: Option<u32>,
+    pub(crate) outline_level: Option<u8>,
     #[serde(rename = "@collapsed", skip_serializing_if = "Option::is_none")]
     pub(crate) collapsed: Option<u8>,
     #[serde(rename = "@hidden", skip_serializing_if = "Option::is_none")]

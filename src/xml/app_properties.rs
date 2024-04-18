@@ -4,7 +4,7 @@ use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
-use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
+use crate::file::{XlsxFileType, XlsxFileWriter};
 use crate::Properties;
 
 #[derive(Debug, Deserialize, Serialize)]

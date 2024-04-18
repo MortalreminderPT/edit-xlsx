@@ -1,7 +1,5 @@
-use std::io;
 use std::path::{Path, PathBuf};
-use zip::read::ZipFile;
-use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
+use crate::file::{XlsxFileType, XlsxFileWriter};
 use crate::xml::io::Io;
 
 #[derive(Debug, Default)]
@@ -36,26 +34,6 @@ impl Medias {
 }
 
 impl Io<Medias> for Medias {
-    // fn from_path<P: AsRef<Path>>(file_path: P) -> io::Result<Medias> {
-    //     let mut medias = Medias { medias: vec![] };
-    //     let mut id = 1;
-    //     Ok(loop {
-    //         let extension = &file_path.as_ref().extension().unwrap_or("png".as_ref()).to_string_lossy();
-    //         let file_name = format!("image{}.{}", id, extension);
-    //         let file = XlsxFileReader::from_path(&file_path, XlsxFileType::Medias(file_name));
-    //         match file {
-    //             Ok(file) => {
-    //                 let media = Media::new(id, file.file_path);
-    //                 medias.medias.push(media);
-    //                 id += 1;
-    //             },
-    //             Err(_) => {
-    //                 break medias;
-    //             },
-    //         }
-    //     })
-    // }
-
     fn save<P: AsRef<Path>>(& self, file_path: P) {
         self.medias.iter().for_each(|m| { m.save(&file_path) });
     }

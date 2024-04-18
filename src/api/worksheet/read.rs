@@ -2,8 +2,6 @@ use crate::api::cell::location::Location;
 use crate::{Cell, Format, WorkSheet, WorkSheetResult};
 use crate::api::cell::values::{CellDisplay, CellType, CellValue};
 use crate::api::worksheet::format::_Format;
-use crate::api::worksheet::hyperlink::_Hyperlink;
-use crate::result::{CellError, RowError, WorkSheetError};
 
 pub trait Read: _Read {
     fn read_cell<L: Location>(&self, loc: L) -> WorkSheetResult<Cell<String>> {

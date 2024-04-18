@@ -5,7 +5,7 @@ use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use zip::read::ZipFile;
-use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
+use crate::file::{XlsxFileType, XlsxFileWriter};
 use crate::xml::extension::{AddExtension, ExtensionList, ExtensionType};
 use crate::xml::io::Io;
 

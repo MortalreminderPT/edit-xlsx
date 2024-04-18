@@ -7,6 +7,7 @@ use serde::Deserialize;
 use zip::ZipArchive;
 use crate::xml::content_types::ContentTypes;
 use crate::xml::drawings::Drawings;
+use crate::xml::drawings::vml_drawing::VmlDrawing;
 use crate::xml::metadata::Metadata;
 use crate::xml::relationships::Relationships;
 use crate::xml::shared_string::SharedString;
@@ -41,3 +42,4 @@ impl IoV2<Relationships> for Relationships{}
 impl IoV2<Metadata> for Metadata{}
 impl IoV2<SharedString> for SharedString{}
 impl IoV2<Drawings> for Drawings{}
+impl IoV2<VmlDrawing> for VmlDrawing{}

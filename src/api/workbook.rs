@@ -1,11 +1,9 @@
 use std::{fs, slice};
 use std::cell::RefCell;
-use std::collections::hash_map::DefaultHasher;
 use std::fs::File;
 use std::hash::{Hash, Hasher};
 use std::path::Path;
 use std::rc::Rc;
-use std::time::{SystemTime, UNIX_EPOCH};
 use futures::executor::block_on;
 use futures::join;
 use zip::result::ZipError;
@@ -118,7 +116,7 @@ impl Workbook {
             .find(|sheet| sheet.id == id).ok_or(WorkSheetError::FileNotFound)?;
         let (r_id, target_id) = self.workbook_rel.borrow_mut().add_worksheet_v2();
         let (sheet_id, new_name) = self.workbook.borrow_mut().add_worksheet_v2(r_id, None)?;
-        let worksheet = WorkSheet::from_worksheet_v2(sheet_id, &new_name, target_id, copy_worksheet);
+        let worksheet = WorkSheet::from_worksheet(sheet_id, &new_name, target_id, copy_worksheet);
         self.sheets.push(worksheet);
         self.get_worksheet_mut(sheet_id)
     }
@@ -130,7 +128,7 @@ impl Workbook {
         let new_name = format!("{} Duplicated", name);
         let (r_id, target_id) = self.workbook_rel.borrow_mut().add_worksheet_v2();
         let (sheet_id, _) = self.workbook.borrow_mut().add_worksheet_v2(r_id, Some(&new_name))?;
-        let worksheet = WorkSheet::from_worksheet_v2(sheet_id, &new_name, target_id, copy_worksheet);
+        let worksheet = WorkSheet::from_worksheet(sheet_id, &new_name, target_id, copy_worksheet);
         self.sheets.push(worksheet);
         self.get_worksheet_mut(sheet_id)
     }

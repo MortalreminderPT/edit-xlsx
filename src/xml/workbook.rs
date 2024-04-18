@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use zip::read::ZipFile;
 use zip::ZipArchive;
 use crate::api::relationship::Rel;
-use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
+use crate::file::{XlsxFileType, XlsxFileWriter};
 use crate::result::{WorkSheetError, WorkbookError};
 use crate::WorkbookResult;
 use crate::xml::common::{XmlnsAttrs};

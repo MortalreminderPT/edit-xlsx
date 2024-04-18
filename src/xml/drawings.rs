@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use zip::read::ZipFile;
 use crate::api::cell::location::{Location, LocationRange};
 use crate::api::relationship::Rel;
-use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
+use crate::file::{XlsxFileType, XlsxFileWriter};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename(serialize = "xdr:wsDr", deserialize = "wsDr"))]
@@ -249,13 +249,13 @@ struct AvLst {}
 struct ClientData {}
 
 impl Drawings {
-    pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, drawing_id: u32) -> io::Result<Drawings> {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::Drawings(drawing_id))?;
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        let drawings: Drawings = de::from_str(&xml).unwrap();
-        Ok(drawings)
-    }
+    // pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, drawing_id: u32) -> io::Result<Drawings> {
+    //     let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::Drawings(drawing_id))?;
+    //     let mut xml = String::new();
+    //     file.read_to_string(&mut xml).unwrap();
+    //     let drawings: Drawings = de::from_str(&xml).unwrap();
+    //     Ok(drawings)
+    // }
 
     pub(crate) fn save<P: AsRef<Path>>(& self, file_path: P, drawing_id: u32) {
         let xml = se::to_string_with_root("xdr:wsDr", &self).unwrap();

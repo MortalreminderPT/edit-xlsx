@@ -2,7 +2,6 @@ pub(crate) mod write;
 pub(crate) mod row;
 pub(crate) mod col;
 pub(crate) mod read;
-pub(crate) mod column;
 mod format;
 mod hyperlink;
 mod image;
@@ -12,7 +11,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::path::Path;
 use std::rc::Rc;
-use zip::read::ZipFile;
 use zip::ZipArchive;
 use crate::{Filters, FormatColor, xml};
 use crate::api::cell::location::{Location, LocationRange};
@@ -288,7 +286,7 @@ impl WorkSheet {
         }
     }
 
-    pub(crate) fn from_worksheet_v2(
+    pub(crate) fn from_worksheet(
         sheet_id: u32,
         name: &str,
         target_id: u32,
@@ -341,7 +339,7 @@ impl WorkSheet {
             drawings_rel = Relationships::from_zip_file(archive, &format!("xl/drawings/_rels/drawing{drawings_id}.xml.rels"));
         };
         let vml_drawing = match worksheet_rel.get_vml_drawing_rid() {
-            Some(vml_drawing_id) => VmlDrawing::from_path(&file_path, vml_drawing_id).ok(),
+            Some(vml_drawing_id) => VmlDrawing::from_zip_file(archive, &format!("xl/drawings/vmlDrawing{vml_drawing_id}.xml")),
             None => None
         };
         WorkSheet {

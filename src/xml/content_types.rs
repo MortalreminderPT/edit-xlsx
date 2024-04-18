@@ -8,7 +8,7 @@ use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use zip::read::ZipFile;
 use zip::ZipArchive;
-use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
+use crate::file::{XlsxFileType, XlsxFileWriter};
 use crate::xml::io::Io;
 use crate::xml::relationships::Relationships;
 

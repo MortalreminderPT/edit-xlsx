@@ -11,7 +11,7 @@ use quick_xml::{de, se};
 use zip::read::ZipFile;
 use zip::ZipArchive;
 use crate::api::relationship::Rel;
-use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
+use crate::file::{XlsxFileType, XlsxFileWriter};
 use crate::xml::relationships::rel::RelationShip;
 use crate::xml::relationships::rel_type::RelType;
 use crate::xml::workbook::Workbook;
@@ -212,23 +212,23 @@ impl Relationships {
 }
 
 impl Relationships {
-    pub(crate) async fn from_path_async<P: AsRef<Path>>(file_path: P, rel_type: XlsxFileType) -> io::Result<Relationships> {
-        Self::from_path(file_path, rel_type)
-    }
+    // pub(crate) async fn from_path_async<P: AsRef<Path>>(file_path: P, rel_type: XlsxFileType) -> io::Result<Relationships> {
+    //     Self::from_path(file_path, rel_type)
+    // }
 
     pub(crate) async fn save_async<P: AsRef<Path>>(&self, file_path: P, rel_type: XlsxFileType) {
         self.save(file_path, rel_type)
     }
 
-    pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, rel_type: XlsxFileType) -> io::Result<Relationships> {
-        let mut file = XlsxFileReader::from_path(file_path, rel_type)?;
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        let mut rel: Relationships = de::from_str(&xml).unwrap();
-        rel.relationship.iter()
-            .for_each(|r| rel.targets.add_target(&r.rel_type, &r.target));
-        Ok(rel)
-    }
+    // pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, rel_type: XlsxFileType) -> io::Result<Relationships> {
+    //     let mut file = XlsxFileReader::from_path(file_path, rel_type)?;
+    //     let mut xml = String::new();
+    //     file.read_to_string(&mut xml).unwrap();
+    //     let mut rel: Relationships = de::from_str(&xml).unwrap();
+    //     rel.relationship.iter()
+    //         .for_each(|r| rel.targets.add_target(&r.rel_type, &r.target));
+    //     Ok(rel)
+    // }
 
     pub(crate) fn save<P: AsRef<Path>>(&self, file_path: P, rel_type: XlsxFileType) {
         let xml = se::to_string_with_root("Relationships", &self).unwrap();

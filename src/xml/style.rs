@@ -15,7 +15,7 @@ use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
 use zip::read::ZipFile;
 use crate::api::format::Format;
-use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
+use crate::file::{XlsxFileType, XlsxFileWriter};
 use crate::xml::common;
 use crate::xml::common::{FromFormat, XmlnsAttrs};
 use crate::xml::extension::ExtensionList;

@@ -2,7 +2,7 @@ use std::io;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
-use crate::file::{XlsxFileReader, XlsxFileType, XlsxFileWriter};
+use crate::file::{XlsxFileType, XlsxFileWriter};
 use crate::xml::namespaces::office as o;
 use crate::xml::namespaces::vml as v;
 
@@ -23,13 +23,13 @@ pub(crate) struct VmlDrawing {
 }
 
 impl VmlDrawing {
-    pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, drawing_id: u32) -> io::Result<VmlDrawing> {
-        let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::VmlDrawings(drawing_id))?;
-        let mut xml = String::new();
-        file.read_to_string(&mut xml).unwrap();
-        let drawing: VmlDrawing = de::from_str(&xml).unwrap();
-        Ok(drawing)
-    }
+    // pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, drawing_id: u32) -> io::Result<VmlDrawing> {
+    //     let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::VmlDrawings(drawing_id))?;
+    //     let mut xml = String::new();
+    //     file.read_to_string(&mut xml).unwrap();
+    //     let drawing: VmlDrawing = de::from_str(&xml).unwrap();
+    //     Ok(drawing)
+    // }
 
     pub(crate) fn save<P: AsRef<Path>>(&self, file_path: P, drawing_id: u32) {
         let xml = se::to_string_with_root("xml", &self).unwrap();
