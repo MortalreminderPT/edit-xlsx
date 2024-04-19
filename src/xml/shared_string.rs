@@ -4,11 +4,10 @@ use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
-use zip::read::ZipFile;
-use crate::file::{XlsxFileType, XlsxFileWriter};
+use crate::xml::worksheet::sheet_data::cell::inline_string::RichText;
 use crate::xml::io::Io;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename="sst")]
 pub(crate) struct SharedString {
     // #[serde(flatten)]
@@ -32,10 +31,12 @@ impl Default for SharedString {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub(crate) struct StringItem {
-    #[serde(rename = "t", default)]
+    #[serde(rename = "t", default, skip_serializing_if = "String::is_empty")]
     text: String,
+    #[serde(rename = "r", skip_serializing_if = "Vec::is_empty")]
+    rich_texts: Vec<RichText>
     // #[serde(rename = "phoneticPr", skip_serializing_if = "Option::is_none")]
     // phonetic_pr: Option<PhoneticPr>,
 }
@@ -45,6 +46,13 @@ impl SharedString {
         match self.string_item.get(id) {
             Some(string_item) => Some(string_item.text.as_str()),
             None => None
+        }
+    }
+
+    pub(crate) fn get_rich_text(&self, id: usize) -> Vec<RichText> {
+        match self.string_item.get(id) {
+            Some(string_item) => string_item.rich_texts.clone(),
+            None => vec![]
         }
     }
     // pub(crate) fn add_text(&mut self, text: &str) -> u32 {

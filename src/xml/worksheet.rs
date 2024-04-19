@@ -25,7 +25,7 @@ use self::sheet_views::SheetViews;
 use self::sheet_data::SheetData;
 use self::sheet_pr::SheetPr;
 
-mod sheet_data;
+pub(crate) mod sheet_data;
 mod sheet_pr;
 mod sheet_format;
 mod sheet_views;

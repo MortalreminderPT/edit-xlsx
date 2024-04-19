@@ -3,7 +3,6 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::{Error, Visitor};
 
 #[derive(Debug, Clone, PartialEq)]
-// #[serde(untagged)]
 pub(crate) enum CellType {
     Boolean,
     Date,
@@ -12,6 +11,7 @@ pub(crate) enum CellType {
     SharedString,
     String,
     Undefined,
+    InlineString,
 }
 
 impl Default for CellType {
@@ -29,6 +29,7 @@ impl CellType {
             "n" => CellType::Number,
             "s" => CellType::SharedString,
             "str" => CellType::String,
+            "inlineStr" => CellType::InlineString,
             _ => CellType::Undefined,
         }
     }
@@ -40,6 +41,7 @@ impl CellType {
             CellType::Error => "e",
             CellType::Number => "n",
             CellType::SharedString => "s",
+            CellType::InlineString => "inlineStr",
             CellType::String => "str",
             CellType::Undefined => "",
         }

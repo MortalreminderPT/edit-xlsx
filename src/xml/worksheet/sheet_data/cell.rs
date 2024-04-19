@@ -1,4 +1,5 @@
 pub(crate) mod formula;
+pub(crate) mod inline_string;
 
 use std::fmt::Formatter;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -8,6 +9,7 @@ use crate::api::cell::location::Location;
 use crate::xml::worksheet::sheet_data::cell::formula::Formula;
 use crate::api::cell::values::{CellDisplay, CellValue, CellType};
 use crate::result::CellResult;
+use crate::xml::worksheet::sheet_data::cell::inline_string::InlineString;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Cell {
@@ -23,7 +25,10 @@ pub(crate) struct Cell {
     pub(crate) formula: Option<Formula>,
     #[serde(rename = "v", skip_serializing_if = "Option::is_none")]
     pub(crate) text: Option<String>,
+    #[serde(rename = "is", skip_serializing_if = "Option::is_none")]
+    pub(crate) inline_string: Option<InlineString>,
 }
+
 #[derive(Debug, Clone, Default, PartialEq)]
 pub(crate) struct Sqref {
     pub(crate) col: u32,
@@ -42,6 +47,7 @@ impl Cell {
             cell_meta_index: None,
             formula: None,
             text: None,
+            inline_string: None,
         }
     }
 
@@ -53,6 +59,7 @@ impl Cell {
             cell_meta_index: None,
             formula: None,
             text: Some(text.to_display()),
+            inline_string: None,
         }
     }
 }
