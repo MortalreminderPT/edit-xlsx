@@ -11,10 +11,27 @@ use edit_xlsx::WorkSheetCol;
 use edit_xlsx::{FormatColor, Workbook, WorkbookResult};
 use std::ops::RangeInclusive;
 
-use crate::helper::error_text;
 
-use crate::tabheader::tab_header;
+use std::io::{ErrorKind};
 
+pub fn error_text(text: &str) -> Error {
+    Error::new(ErrorKind::Other, text)
+}
+
+pub fn tab_header(widths: &Vec<f64>) -> String {
+    let mut out = "[cols=\"".to_owned();
+
+    for w in widths.iter().enumerate() {
+        let w100 = w.1 * 100.0;
+        let w100 = w100.round();
+        let w100 = w100 as u32;
+        out += &format!("{}", w100);
+        if w.0 < widths.len() - 1 {
+            out += ", ";
+        };
+    }
+    out + "\"]\r"
+}
 #[derive(Default)]
 pub struct Xlsx2AdocTestResults {
     // Todo
@@ -48,7 +65,7 @@ fn decode_col_range(column_name: &str) -> RangeInclusive<u32> {
 
 fn find_col_width(sheet: &WorkSheet) -> Result<Vec<f64>, Error> {
     let mut widths = Vec::<f64>::new();
-    let default_col_width = sheet.get_default_column();
+    let default_col_width = sheet.get_default_column().unwrap_or(1.0);
 
     for _ in 0..sheet.max_column() {
         widths.push(default_col_width);
@@ -65,27 +82,16 @@ fn find_col_width(sheet: &WorkSheet) -> Result<Vec<f64>, Error> {
         let a = w.1;
         let columns_specs = a.0;
         let column_width = columns_specs.width;
-        let column_width_string = match column_width {
+        match column_width {
             Some(width) => {
                 let col_range = decode_col_range(column_name);
                 for c in col_range {
                     widths[c as usize] = width;
                 }
-                format!("{}", width)
             }
-            None => "-".to_owned(),
+            None => {},
         };
-        let format = &a.1;
-        let x3 = format.clone();
-        let comumn_format_fill = match x3 {
-            Some(x) => {
-                let x = x.get_background();
-                format!("{:?}", x)
-            }
-            None => "-".to_owned(),
-        };
-    }
-
+}
     Ok(widths)
 }
 
@@ -182,8 +188,7 @@ fn main() -> std::io::Result<()> {
     let (in_file_name, out_file_name) = (
         Path::new("./tests/xlsx/accounting.xlsx"),
         Path::new("./tests/xlsx/accounting.adoc"),
-    )
-        .to_owned();
+    );
 
     println!(
         "{} {} -> {}",
