@@ -176,3 +176,22 @@ pub fn xlsx_convert(
     let xlsx_2_adoc_test_results = Xlsx2AdocTestResults { v1: 0, v2: 0 };
     Ok(xlsx_2_adoc_test_results)
 }
+
+const CARGO_PKG_NAME: &str = env!("CARGO_PKG_NAME");
+fn main() -> std::io::Result<()> {
+    let (in_file_name, out_file_name) = (
+        Path::new("./tests/xlsx/accounting.xlsx"),
+        Path::new("./tests/xlsx/accounting.adoc"),
+    )
+        .to_owned();
+
+    println!(
+        "{} {} -> {}",
+        CARGO_PKG_NAME,
+        in_file_name.display(),
+        out_file_name.display()
+    );
+
+    xlsx_convert(&in_file_name, &out_file_name)?;
+    Ok(())
+}
