@@ -3,6 +3,7 @@ use crate::api::cell::Cell;
 use crate::api::cell::formula::Formula;
 use crate::api::cell::values::{CellDisplay, CellType, CellValue};
 use crate::api::cell::location::{Location, LocationRange};
+use crate::api::cell::rich_text::RichText;
 use crate::api::worksheet::format::_Format;
 use crate::api::worksheet::hyperlink::_Hyperlink;
 use crate::Format;
@@ -22,6 +23,11 @@ pub trait Write: _Write {
     fn write_string<L: Location>(&mut self, loc: L, data: String) -> WorkSheetResult<()> {
         let mut cell = Cell::default();
         cell.text = Some(data);
+        self.write_by_api_cell(&loc, &cell)
+    }
+    fn write_rich_string<L: Location>(&mut self, loc: L, data: &RichText) -> WorkSheetResult<()> {
+        let mut cell: Cell<String> = Cell::default();
+        cell.rich_text = Some(data.clone());
         self.write_by_api_cell(&loc, &cell)
     }
     fn write_number<L: Location>(&mut self, loc: L, data: i32) -> WorkSheetResult<()> {

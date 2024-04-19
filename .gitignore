@@ -9,3 +9,4 @@
 !/tests/output/*.png
 #*.bat
 /examples/demo.rs
+**/.DS_Store

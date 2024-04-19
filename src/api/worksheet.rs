@@ -69,14 +69,6 @@ impl WorkSheet {
                 drawings_rel.save(&file_path, XlsxFileType::DrawingRels(*id));
             }
         });
-        // if let Some(id) = self.worksheet_rel.get_drawings_rid() {
-        //     if let Some(drawings) = &self.drawings {
-        //         drawings.save(&file_path, id);
-        //     }
-        //     if let Some(drawings_rel) = &self.drawings_rel {
-        //         drawings_rel.save(&file_path, XlsxFileType::DrawingRels(id));
-        //     }
-        // }
         if let Some(id) = self.worksheet_rel.get_vml_drawing_rid() {
             // self.vml_drawing.as_ref().unwrap().save(&file_path, id);
             // self.vml_drawing.as_ref().unwrap().save(&file_path, id);

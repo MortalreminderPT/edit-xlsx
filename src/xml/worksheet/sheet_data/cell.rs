@@ -9,6 +9,7 @@ use crate::api::cell::location::Location;
 use crate::xml::worksheet::sheet_data::cell::formula::Formula;
 use crate::api::cell::values::{CellDisplay, CellValue, CellType};
 use crate::result::CellResult;
+use crate::xml::common::FromFormat;
 use crate::xml::worksheet::sheet_data::cell::inline_string::InlineString;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -107,6 +108,11 @@ impl Cell {
             //     self.cell_meta_index = Some(1);
             // }
             self.formula = Some(Formula::from_api_formula(formula));
+        }
+        if let Some(rich_text) = &api_cell.rich_text {
+            self.cell_type = Some(CellType::InlineString);
+            self.text = None;
+            self.inline_string = Some(InlineString::from_format(rich_text));
         }
         Ok(())
     }
