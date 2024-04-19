@@ -4,7 +4,6 @@ mod rel;
 use std::collections::HashMap;
 use std::fs::File;
 use serde::{Deserialize, Serialize};
-use std::io;
 use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
@@ -67,6 +66,7 @@ impl Targets {
             RelType::MetaData => "metadata.xml".to_string(),
             RelType::CalcChain => "calcChain.xml".to_string(),
             RelType::Table => format!("../tables/table{id}.xml"),
+            RelType::Chart => format!("../charts/chart{id}.xml"),
             RelType::SharedStrings => { "".to_string() }
             RelType::PrinterSettings => { "".to_string() }
             RelType::VmlDrawing => { "".to_string() }
@@ -119,23 +119,12 @@ impl Relationships {
             .unwrap_or(0)
     }
 
-    pub(crate) fn get_drawings_rid(&self) -> Option<u32> {
+    pub(crate) fn get_drawings_rids(&self) -> Vec<u32> {
         let binding = self.get_target_by_type(RelType::Drawings);
-        let targets = binding.first();
-        match targets {
-            Some(targets) => {
-                let id: u32 = targets.chars().filter(|&c| c >= '0' && c <= '9').collect::<String>().parse().unwrap();
-                Some(id)
-            }
-            None => {
-                None
-            }
-        }
-        // let a = self.relationship
-        //     .iter()
-        //     .filter(|r| r.rel_type == RelType::Drawings);
-        // // rid
-        // let target = self.get_target(rid);
+        let rids: Vec<u32> = binding.iter()
+            .map(|s|s.chars().filter(|&c| c >= '0' && c <= '9').collect::<String>().parse().unwrap())
+            .collect();
+        rids
     }
     
     pub(crate) fn get_vml_drawing_rid(&self) -> Option<u32> {

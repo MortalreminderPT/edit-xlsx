@@ -61,14 +61,22 @@ impl WorkSheet {
     pub(crate) fn save_as<P: AsRef<Path>>(&self, file_path: P) -> WorkSheetResult<()> {
         self.worksheet.save(&file_path, &self.target);
         self.worksheet_rel.save(&file_path, XlsxFileType::WorksheetRels(self.target_id));
-        if let Some(id) = self.worksheet_rel.get_drawings_rid() {
+        self.worksheet_rel.get_drawings_rids().iter().for_each(|id|{
             if let Some(drawings) = &self.drawings {
-                drawings.save(&file_path, id);
+                drawings.save(&file_path, *id);
             }
             if let Some(drawings_rel) = &self.drawings_rel {
-                drawings_rel.save(&file_path, XlsxFileType::DrawingRels(id));
+                drawings_rel.save(&file_path, XlsxFileType::DrawingRels(*id));
             }
-        }
+        });
+        // if let Some(id) = self.worksheet_rel.get_drawings_rid() {
+        //     if let Some(drawings) = &self.drawings {
+        //         drawings.save(&file_path, id);
+        //     }
+        //     if let Some(drawings_rel) = &self.drawings_rel {
+        //         drawings_rel.save(&file_path, XlsxFileType::DrawingRels(id));
+        //     }
+        // }
         if let Some(id) = self.worksheet_rel.get_vml_drawing_rid() {
             // self.vml_drawing.as_ref().unwrap().save(&file_path, id);
             // self.vml_drawing.as_ref().unwrap().save(&file_path, id);
@@ -334,10 +342,10 @@ impl WorkSheet {
         let worksheet_rel = Relationships::from_zip_file(archive, &format!("xl/worksheets/_rels/sheet{worksheet_rel_id}.xml.rels")).unwrap_or_default();
         // load drawings
         let (mut drawings, mut drawings_rel) = (None, None);
-        if let Some(drawings_id) = worksheet_rel.get_drawings_rid() {
+        worksheet_rel.get_drawings_rids().iter().for_each(|&drawings_id|{
             drawings = Drawings::from_zip_file(archive, &format!("xl/drawings/drawing{drawings_id}.xml"));
             drawings_rel = Relationships::from_zip_file(archive, &format!("xl/drawings/_rels/drawing{drawings_id}.xml.rels"));
-        };
+        });
         let vml_drawing = match worksheet_rel.get_vml_drawing_rid() {
             Some(vml_drawing_id) => VmlDrawing::from_zip_file(archive, &format!("xl/drawings/vmlDrawing{vml_drawing_id}.xml")),
             None => None

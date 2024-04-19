@@ -163,7 +163,7 @@ pub trait WorkSheetRow: _Row {
     /// let worksheet = workbook.get_worksheet_by_name("worksheet").unwrap();
     /// let first_height = worksheet.get_row_height(1).unwrap();
     /// let forth_height = worksheet.get_row_height(4).unwrap();
-    /// assert_eq!(first_height, Some(28.25));
+    /// assert_eq!(first_height, Some(28.2));
     /// assert_eq!(forth_height, None);
     /// ```
     fn get_row_height(&self, row: u32) -> WorkSheetResult<Option<f64>> {

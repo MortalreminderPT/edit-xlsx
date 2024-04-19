@@ -2,7 +2,7 @@ use std::fmt::Formatter;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::{Error, Visitor};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 pub(crate) enum RelType {
     Worksheets,
     Theme,
@@ -18,6 +18,7 @@ pub(crate) enum RelType {
     PrinterSettings,
     CalcChain,
     Table,
+    Chart
 }
 
 impl Serialize for RelType {
@@ -59,6 +60,7 @@ impl RelType {
             RelType::PrinterSettings => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/printerSettings",
             RelType::CalcChain => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain",
             RelType::Table => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table",
+            RelType::Chart => "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart",
             RelType::Unknown => "",
         }
     }
@@ -78,6 +80,7 @@ impl RelType {
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/printerSettings" => RelType::PrinterSettings,
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/calcChain" => RelType::CalcChain,
             "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table" => RelType::Table,
+            "http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" => RelType::Chart,
             &_ => RelType::Unknown
         }
     }

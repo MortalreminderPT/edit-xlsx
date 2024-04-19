@@ -26,12 +26,13 @@ impl Image for WorkSheet {
     fn add_drawing<L: LocationRange, P: AsRef<Path>>(&mut self, loc: L, image_path: &P) -> WorkSheetResult<u32> {
         // get extension
         let extension = get_extension(image_path)?;
+        // add image from path
+        let image_id = self.medias.borrow_mut().add_media(image_path);
         // get drawings file
         let drawings = self.drawings.get_or_insert(Drawings::default());
         let drawings_rel = &mut self.drawings_rel.get_or_insert(Relationships::default());
         self.content_types.borrow_mut().add_bin(extension);
         self.content_types.borrow_mut().add_drawing(self.id);
-        let image_id = self.medias.borrow_mut().add_media(image_path);
         let image_r_id = drawings_rel.add_image(image_id, extension);
         drawings.add_drawing(loc, image_r_id);
         let r_id = self.worksheet_rel.add_drawings(self.id);

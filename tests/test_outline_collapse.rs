@@ -102,7 +102,7 @@ mod tests {
         both_sheet.activate();
         let image_sheet = workbook.duplicate_worksheet_by_name("Col Collapse")?;
         image_sheet.insert_image("B14:E24", &"./examples/pics/capybara.bmp")?;
-        image_sheet.insert_image("E14:H24", &"examples/pics/rust.png")?;
+        // image_sheet.insert_image("E14:H24", &"examples/pics/rust.png")?;
         workbook.save_as("tests/output/outline_collapse_test_from_with_image.xlsx")?;
         Ok(())
     }

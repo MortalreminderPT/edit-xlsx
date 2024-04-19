@@ -126,11 +126,11 @@ impl Default for CellStyles {
 struct CellStyle {
     #[serde(rename = "@name", default, skip_serializing_if = "String::is_empty")]
     name: String,
-    #[serde(rename = "@xfId", default)]
-    xf_id: u32,
+    #[serde(rename = "@xfId", default, skip_serializing_if = "Option::is_none")]
+    xf_id: Option<u32>,
     #[serde(rename = "@builtinId", default)]
     builtin_id: u32,
-    #[serde(rename = "@customBuiltin", default)]
+    #[serde(rename = "@customBuiltin", default, skip_serializing_if = "Option::is_none")]
     custom_builtin: Option<u32>,
 }
 
@@ -138,7 +138,7 @@ impl Default for CellStyle {
     fn default() -> Self {
         CellStyle {
             name: "Normal".to_string(),
-            xf_id: 0,
+            xf_id: None,
             builtin_id: 0,
             custom_builtin: None,
         }

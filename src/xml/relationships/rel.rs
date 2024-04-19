@@ -1,7 +1,7 @@
+use std::hash::{Hash, Hasher};
 use serde::{Deserialize, Serialize};
 use crate::api::relationship::Rel;
 use crate::xml::relationships::rel_type::RelType;
-use crate::xml::relationships::Targets;
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub(crate) struct RelationShip {

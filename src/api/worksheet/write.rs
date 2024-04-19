@@ -225,8 +225,8 @@ impl _Write for WorkSheet {
             self.worksheet.xmlns_attrs.add_xr_2();
             self.worksheet.xmlns_attrs.add_xr_3();
         }
-        if let None = &cell.cell_type {
-            cell.cell_type = Some(cell.text.clone().unwrap().to_cell_type());
+        if let (None, Some(text)) = (&cell.cell_type, &cell.text) {
+            cell.cell_type = Some(text.to_cell_type());
         }
         else if let Some(CellType::SharedString) = &cell.cell_type {
             cell.cell_type = Some(CellType::String);

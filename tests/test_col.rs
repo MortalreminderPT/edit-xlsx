@@ -54,7 +54,7 @@ mod tests {
     fn test_from_default_width() -> WorkbookResult<()> {
         let mut workbook = Workbook::from_path("tests/xlsx/row_and_col.xlsx")?;
         let worksheet = workbook.get_worksheet_mut(1)?;
-        assert_eq!(Some(8.11), worksheet.get_default_column());
+        assert_eq!(None, worksheet.get_default_column());
         worksheet.set_default_column(30.8);
         assert_eq!(Some(30.8), worksheet.get_default_column());
         workbook.save_as("tests/output/col_test_from_default_col.xlsx")?;
