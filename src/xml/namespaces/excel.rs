@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 /// xmlns:x="urn:schemas-microsoft-com:office:excel"
 ///
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename(serialize = "x:ClientData", deserialize = "ClientData"))]
 pub(crate) struct ClientData {
     #[serde(rename(serialize = "@ObjectType", deserialize = "@ObjectType"))]
@@ -21,30 +21,30 @@ pub(crate) struct ClientData {
     column: Column,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 struct MoveWithCells {}
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 struct SizeWithCells {
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 struct Anchor {
     #[serde(rename = "$value", default, skip_serializing_if = "String::is_empty")]
     value: String,// Vec<u32>,
 }
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename(serialize = "x:AutoFill", deserialize = "AutoFill"))]
 struct AutoFill {
     #[serde(rename = "$value", default)]
     value: bool,
 }
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 struct Row {
     #[serde(rename = "$value", default)]
     value: u32,
 }
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 struct Column {
     #[serde(rename = "$value", default)]
     value: u32,

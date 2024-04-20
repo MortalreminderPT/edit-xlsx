@@ -5,7 +5,7 @@ use crate::xml::namespaces::excel as x;
 /// xmlns:v="urn:schemas-microsoft-com:vml"
 ///
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename(serialize = "v:shapetype", deserialize = "shapetype"))]
 pub(crate) struct ShapeType {
     #[serde(rename = "@id")]
@@ -22,7 +22,7 @@ pub(crate) struct ShapeType {
     path: Path,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub(crate) struct Shape {
     #[serde(rename = "@id")]
     id: String,
@@ -46,13 +46,13 @@ pub(crate) struct Shape {
     clientdata: x::ClientData,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 struct Stroke {
     #[serde(rename = "@joinstyle")]
     join_style :String
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 struct Path {
     #[serde(rename = "@gradientshapeok", skip_serializing_if = "Option::is_none")]
     gradient_shape_ok: Option<String>,
@@ -60,14 +60,14 @@ struct Path {
     o_connect_type: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename(serialize = "v:fill", deserialize = "fill"))]
 struct Fill {
     #[serde(rename = "@color2")]
     color2: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename(serialize = "v:shadow", deserialize = "shadow"))]
 struct Shadow {
     #[serde(rename = "@on")]
@@ -78,7 +78,7 @@ struct Shadow {
     obscured: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename(serialize = "v:textbox", deserialize = "textbox"))]
 struct TextBox {
     #[serde(rename = "@style")]
@@ -86,7 +86,7 @@ struct TextBox {
     div: Div
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename = "div")]
 struct Div {
     #[serde(rename = "@style")]

@@ -6,7 +6,7 @@ use crate::file::{XlsxFileType, XlsxFileWriter};
 use crate::xml::namespaces::office as o;
 use crate::xml::namespaces::vml as v;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub(crate) struct VmlDrawing {
     #[serde(rename(serialize = "@xmlns:v", deserialize = "@xmlns:v"))]
     xmlns_v: String,

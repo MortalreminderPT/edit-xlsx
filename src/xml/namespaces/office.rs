@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 // #[serde(rename(serialize = "o:shapelayout", deserialize = "shapelayout"))]
 pub(crate) struct ShapeLayout {
     #[serde(rename(serialize = "@v:ext", deserialize = "@ext"))]
@@ -9,7 +9,7 @@ pub(crate) struct ShapeLayout {
     id_map: IdMap,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 // #[serde(rename(serialize = "o:idmap", deserialize = "idmap"))]
 struct IdMap {
     #[serde(rename(serialize = "@v:ext", deserialize = "@ext"))]

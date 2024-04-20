@@ -22,12 +22,12 @@ pub(crate) trait Io<T: Default> {
     }
 }
 
-pub(crate) trait IoV2<T: for<'de> Deserialize<'de>> {
+pub(crate) trait IoV2<T: for<'de> Deserialize<'de> + Default> {
     fn from_zip_file(archive: &mut ZipArchive<File>, path: &str) -> Option<T> {
         if let Ok(mut file) = archive.by_name(path) {
             let mut xml = String::new();
             file.read_to_string(&mut xml).unwrap();
-            let result = de::from_str(&xml).unwrap();
+            let result = de::from_str(&xml).unwrap_or_default();
             Some(result)
         } else {
             None

@@ -1,3 +1,4 @@
+use std::cmp;
 use std::io::BufWriter;
 use std::io::Error;
 use std::io::Write;
@@ -52,14 +53,14 @@ pub(crate) fn to_col(col: &str) -> u32 {
     num
 }
 
-fn decode_col_range(column_name: &str) -> RangeInclusive<u32> {
+fn decode_col_range(column_name: &str, length: usize) -> RangeInclusive<usize> {
     let mut nn = column_name.split(':');
     let nl = nn.next();
     let nl = nl.unwrap();
-    let cl = to_col(nl);
+    let cl = to_col(nl) as usize;
     let nh = nn.next();
     let nh = nh.unwrap();
-    let ch = to_col(nh);
+    let ch = cmp::min(to_col(nh) as usize, length);
     cl - 1..=ch - 1
 }
 
@@ -84,9 +85,9 @@ fn find_col_width(sheet: &WorkSheet) -> Result<Vec<f64>, Error> {
         let column_width = columns_specs.width;
         match column_width {
             Some(width) => {
-                let col_range = decode_col_range(column_name);
+                let col_range = decode_col_range(column_name, widths.len());
                 for c in col_range {
-                    widths[c as usize] = width;
+                    widths[c] = width;
                 }
             }
             None => {},
@@ -186,7 +187,7 @@ pub fn xlsx_convert(
 const CARGO_PKG_NAME: &str = env!("CARGO_PKG_NAME");
 fn main() -> std::io::Result<()> {
     let (in_file_name, out_file_name) = (
-        Path::new("./examples/xlsx/accounting.xlsx"),
+        Path::new("./tests/xlsx/business-budget.xlsx"),
         Path::new("./examples/accounting.adoc"),
     );
 

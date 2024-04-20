@@ -44,7 +44,7 @@ impl Drawings {
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 struct Drawing {
-    #[serde(rename = "@editAs")]
+    #[serde(rename = "@editAs", default, skip_serializing_if = "String::is_empty")]
     edit_as: String,
     #[serde(rename(serialize = "xdr:from", deserialize = "from"))]
     from: DrawingLocation,
