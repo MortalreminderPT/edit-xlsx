@@ -1,3 +1,5 @@
+pub(crate) mod insert;
+
 use std::fs::File;
 use std::io;
 use std::io::Read;

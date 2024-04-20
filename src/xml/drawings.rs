@@ -1,14 +1,13 @@
 pub(crate) mod vml_drawing;
 
-use std::io;
 use std::io::Read;
 use std::path::Path;
-use quick_xml::{de, se};
+use quick_xml::{se};
 use serde::{Deserialize, Serialize};
-use zip::read::ZipFile;
 use crate::api::cell::location::{Location, LocationRange};
 use crate::api::relationship::Rel;
 use crate::file::{XlsxFileType, XlsxFileWriter};
+use crate::xml::io::insert::Insert;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename(serialize = "xdr:wsDr", deserialize = "wsDr"))]
@@ -18,7 +17,7 @@ pub(crate) struct Drawings {
     #[serde(rename(serialize = "@xmlns:a", deserialize = "@xmlns:a"), default, skip_serializing_if = "String::is_empty")]
     xmlns_a: String,
     #[serde(rename(serialize = "xdr:twoCellAnchor", deserialize = "twoCellAnchor"), default)]
-    drawing: Vec<Drawing>
+    pub(crate) drawing: Vec<Drawing>
 }
 
 impl Default for Drawings {
@@ -43,7 +42,7 @@ impl Drawings {
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-struct Drawing {
+pub(crate) struct Drawing {
     #[serde(rename = "@editAs", default, skip_serializing_if = "String::is_empty")]
     edit_as: String,
     #[serde(rename(serialize = "xdr:from", deserialize = "from"))]
@@ -249,17 +248,16 @@ struct AvLst {}
 struct ClientData {}
 
 impl Drawings {
-    // pub(crate) fn from_path<P: AsRef<Path>>(file_path: P, drawing_id: u32) -> io::Result<Drawings> {
-    //     let mut file = XlsxFileReader::from_path(file_path, XlsxFileType::Drawings(drawing_id))?;
-    //     let mut xml = String::new();
-    //     file.read_to_string(&mut xml).unwrap();
-    //     let drawings: Drawings = de::from_str(&xml).unwrap();
-    //     Ok(drawings)
-    // }
-
-    pub(crate) fn save<P: AsRef<Path>>(& self, file_path: P, drawing_id: u32) {
+    pub(crate) fn save<P: AsRef<Path>>(&self, file_path: P, drawing_id: u32) {
         let xml = se::to_string_with_root("xdr:wsDr", &self).unwrap();
-        let xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
+        let mut xml = format!("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n{}", xml);
+        let mut content = String::new();
+        if let Ok(_) = XlsxFileWriter::read_from(&file_path, XlsxFileType::Drawings(drawing_id), &mut content) {
+            if content.len() > 0 {
+                self.insert(&mut content);
+                xml = content.clone();
+            }
+        }
         let mut file = XlsxFileWriter::from_path(file_path, XlsxFileType::Drawings(drawing_id)).unwrap();
         file.write_all(xml.as_ref()).unwrap();
     }

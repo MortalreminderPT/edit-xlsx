@@ -184,6 +184,12 @@ impl Relationships {
     }
 
     pub(crate) fn add_drawings(&mut self, id: u32) -> u32 {
+        let r = self.relationship
+            .iter()
+            .find(|r| r.rel_type == RelType::Drawings);
+        if let Some(r) = r {
+            return r.id.get_id();
+        }
         let r_id = self.next_id();
         self.relationship.push(RelationShip::new_drawing(r_id, id));
         r_id

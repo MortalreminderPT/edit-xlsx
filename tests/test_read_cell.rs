@@ -177,6 +177,8 @@ mod tests {
         // Read an existed workbook
         let mut org_workbook = Workbook::from_path("./tests/xlsx/company-organization-chart.xlsx")?;
         let worksheet = org_workbook.get_worksheet_mut_by_name("WithImages")?;
+        worksheet.insert_image("A16:E25", &"./examples/pics/capybara.bmp")?;
+        worksheet.insert_image("A30:E40", &"./examples/pics/ferris.png")?;
         org_workbook.save_as("./tests/output/read_cell_test_from_company_organization_chart.xlsx")?;
         Ok(())
     }

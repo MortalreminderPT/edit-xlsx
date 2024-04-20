@@ -196,8 +196,10 @@ impl WorkSheet {
     }
 
     pub(crate) fn insert_image(&mut self, r_id: u32) {
-        let drawing = self.drawing.get_or_insert(Drawing::default());
-        drawing.r_id = Rel::from_id(r_id);
+        if let None = &self.drawing {
+            let drawing = self.drawing.get_or_insert(Drawing::default());
+            drawing.r_id = Rel::from_id(r_id);
+        }
     }
 
     pub(crate) fn add_hyperlink<L: Location>(&mut self, loc: &L, r_id: u32) {

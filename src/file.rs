@@ -23,7 +23,7 @@ pub enum XlsxFileType {
 pub struct XlsxFileWriter {
     file_type: XlsxFileType,
     file_path: PathBuf,
-    file: File,
+    pub(crate) file: File,
 }
 
 impl XlsxFileWriter {
@@ -37,6 +37,12 @@ impl XlsxFileWriter {
             file_type,
             file_path,
         })
+    }
+
+    pub(crate) fn read_from<P: AsRef<Path>>(base_path: P, file_type: XlsxFileType, content: &mut String) -> io::Result<()> {
+        let file_path = file_type.get_path(&base_path);
+        *content = fs::read_to_string(file_path).unwrap_or_default();
+        Ok(())
     }
 
     fn mkdir<P: AsRef<Path>>(base_path: P, file_type: &XlsxFileType) -> io::Result<()> {
