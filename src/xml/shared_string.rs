@@ -4,8 +4,10 @@ use std::io::Read;
 use std::path::Path;
 use quick_xml::{de, se};
 use serde::{Deserialize, Serialize};
+use crate::xml::common::FromFormat;
 use crate::xml::worksheet::sheet_data::cell::inline_string::RichText;
 use crate::xml::io::Io;
+use crate::api::cell::rich_text::RichText as ApiRichText;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(rename="sst")]
@@ -31,7 +33,7 @@ impl Default for SharedString {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, Default)]
 pub(crate) struct StringItem {
     #[serde(rename = "t", default, skip_serializing_if = "String::is_empty")]
     text: String,
@@ -49,24 +51,28 @@ impl SharedString {
         }
     }
 
-    pub(crate) fn get_rich_text(&self, id: usize) -> Vec<RichText> {
+    pub(crate) fn get_rich_text(&self, id: usize) -> Option<ApiRichText> {
         match self.string_item.get(id) {
-            Some(string_item) => string_item.rich_texts.clone(),
-            None => vec![]
+            Some(string_item) => Some(string_item.get_format()),
+            None => None
         }
     }
-    // pub(crate) fn add_text(&mut self, text: &str) -> u32 {
-    //     let item = StringItem { text: String::from(text), phonetic_pr: None };
-    //     for i in 0..self.string_item.len() {
-    //         if self.string_item[i].text == item.text {
-    //             return i as u32;
-    //         }
-    //     }
-    //     self.count += 1;
-    //     self.unique_count += 1;
-    //     self.string_item.push(item);
-    //     self.string_item.len() as u32 - 1
-    // }
+}
+
+impl FromFormat<ApiRichText> for StringItem {
+    fn set_attrs_by_format(&mut self, format: &ApiRichText) {
+        self.rich_texts = format.words
+            .iter()
+            .map(|w| RichText::from_format(w))
+            .collect();
+    }
+
+    fn set_format(&self, format: &mut ApiRichText) {
+        format.words = self.rich_texts
+            .iter()
+            .map(|r| r.get_format())
+            .collect()
+    }
 }
 
 impl SharedString {

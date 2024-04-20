@@ -1,7 +1,9 @@
+use std::rc::Rc;
 use crate::api::cell::location::Location;
 use crate::{Cell, Format, WorkSheet, WorkSheetResult};
 use crate::api::cell::values::{CellDisplay, CellType, CellValue};
 use crate::api::worksheet::format::_Format;
+use crate::xml::shared_string::SharedString;
 
 pub trait Read: _Read {
     fn read_cell<L: Location>(&self, loc: L) -> WorkSheetResult<Cell<String>> {
@@ -29,11 +31,19 @@ impl _Read for WorkSheet {
             cell.format = Some(self.get_format(style));
         }
         if let Some(CellType::SharedString) = cell.cell_type {
-            let id: usize = if let Some(s) = cell.text {
+            let id: usize = if let Some(s) = &cell.text {
                 s.parse().unwrap_or_default()
             } else { 0 };
-            cell.cell_type = Some(CellType::String);
-            cell.text = Some(self.shared_string.get_text(id).unwrap().to_string());
+            if let Some(rich_text) = self.shared_string.get_rich_text(id) {
+                cell.cell_type = Some(CellType::InlineString);
+                cell.rich_text = Some(rich_text);
+            } else if let Some(text) = self.shared_string.get_text(id) {
+                cell.cell_type = Some(CellType::String);
+                cell.text = Some(text.to_string());
+            } else {
+                cell.cell_type = Some(CellType::String);
+                cell.text = Some(String::new());
+            }
         };
         cell.hyperlink = self.worksheet.get_hyperlink(loc);
         Ok(cell)

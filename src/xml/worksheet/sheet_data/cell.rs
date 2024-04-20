@@ -77,6 +77,9 @@ impl Cell {
         }
         api_cell.cell_type = self.cell_type.clone();
         api_cell.style = self.style;
+        if let Some(inline_string) = &self.inline_string {
+            api_cell.rich_text = Some(inline_string.get_format());
+        }
         api_cell
     }
 }
