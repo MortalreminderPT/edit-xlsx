@@ -10,3 +10,4 @@
 #*.bat
 /examples/demo.rs
 **/.DS_Store
+tests/xlsx/accounting.adoc
