@@ -186,8 +186,8 @@ pub fn xlsx_convert(
 const CARGO_PKG_NAME: &str = env!("CARGO_PKG_NAME");
 fn main() -> std::io::Result<()> {
     let (in_file_name, out_file_name) = (
-        Path::new("./tests/xlsx/accounting.xlsx"),
-        Path::new("./tests/xlsx/accounting.adoc"),
+        Path::new("./examples/xlsx/accounting.xlsx"),
+        Path::new("./examples/accounting.adoc"),
     );
 
     println!(

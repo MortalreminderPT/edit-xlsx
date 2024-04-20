@@ -35,7 +35,7 @@ impl Default for SharedString {
 pub(crate) struct StringItem {
     #[serde(rename = "t", default, skip_serializing_if = "String::is_empty")]
     text: String,
-    #[serde(rename = "r", skip_serializing_if = "Vec::is_empty")]
+    #[serde(rename = "r", default, skip_serializing_if = "Vec::is_empty")]
     rich_texts: Vec<RichText>
     // #[serde(rename = "phoneticPr", skip_serializing_if = "Option::is_none")]
     // phonetic_pr: Option<PhoneticPr>,

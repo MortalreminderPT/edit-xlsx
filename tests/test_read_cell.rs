@@ -5,7 +5,7 @@ mod tests {
     #[test]
     fn test_from() -> WorkbookResult<()> {
         // Read an existed workbook
-        let reading_book = Workbook::from_path("./tests/xlsx/accounting.xlsx")?;
+        let reading_book = Workbook::from_path("./Archive.xlsx")?;
         let reading_sheet = reading_book.get_worksheet(1)?;
         // Create a new workbook to write
         let mut writing_book = Workbook::new();
