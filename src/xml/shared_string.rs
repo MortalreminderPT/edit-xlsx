@@ -53,7 +53,10 @@ impl SharedString {
 
     pub(crate) fn get_rich_text(&self, id: usize) -> Option<ApiRichText> {
         match self.string_item.get(id) {
-            Some(string_item) => Some(string_item.get_format()),
+            Some(string_item) => {
+                let rich_text = string_item.get_format();
+                if rich_text.words.len() > 0 { Some(string_item.get_format()) } else { None }
+            },
             None => None
         }
     }

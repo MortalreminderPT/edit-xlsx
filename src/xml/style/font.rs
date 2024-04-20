@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use crate::xml::common::{Element, FromFormat};
 use crate::xml::style::color::Color;
 use crate::api::format::FormatFont;
+use crate::RichText;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Fonts {
@@ -66,6 +67,8 @@ pub(crate) struct Font {
     pub(crate) color: Option<Color>,
     #[serde(rename = "name", default, skip_serializing_if = "Option::is_none")]
     pub(crate) name: Option<Element<String>>,
+    #[serde(rename = "rFont", default, skip_serializing_if = "Option::is_none")]
+    pub(crate) rich_font_name: Option<Element<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     family: Option<Element<u8>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -80,6 +83,7 @@ impl Default for Font {
             sz: Some(Element::from_val(11.0)),
             color: None,
             name: Some(Element::from_val("Calibri".to_string())),
+            rich_font_name: None,
             family: None,
             charset: None,
             scheme: None,
@@ -129,8 +133,43 @@ impl Underline {
     }
 }
 
-// #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
-// struct Color {
-//     #[serde(rename = "@theme")]
-//     theme: u32
-// }
+impl FromFormat<FormatFont> for Font {
+    fn set_attrs_by_format(&mut self, format: &FormatFont) {
+        self.color = Some(Color::from_format(&format.color));
+        self.name = Some(Element::from_val(format.name.to_string()));
+        self.sz = Some(Element::from_val(format.size));
+        self.bold = if format.bold { Some(Bold::default()) } else { None };
+        self.underline = if format.underline { Some(Underline::default()) } else { None };
+        self.italic = if format.italic { Some(Italic::default()) } else { None };
+    }
+
+    fn set_format(&self, format: &mut FormatFont) {
+        format.bold = self.bold.is_some();
+        format.italic = self.italic.is_some();
+        format.underline = self.underline.is_some();
+        if let Some(size) = &self.sz {
+            format.size = size.get_format();
+        }
+        if let Some(name) = &self.name {
+            format.name = name.val.to_string();
+        }
+        format.color = self.color.as_ref().get_format();
+    }
+}
+
+impl Font {
+    pub(crate) fn from_rich_font_format(rich_font: &FormatFont) -> Font {
+        let mut font = Font::from_format(rich_font);
+        font.rich_font_name = font.name;
+        font.name = None;
+        font
+    }
+
+    pub(crate) fn get_rich_font_format(&self) -> FormatFont {
+        let mut rich_font = self.get_format();
+        if let Some(rich_font_name) = &self.rich_font_name {
+            rich_font.name = rich_font_name.val.to_string();
+        }
+        rich_font
+    }
+}

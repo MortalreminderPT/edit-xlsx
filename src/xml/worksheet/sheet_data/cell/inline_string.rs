@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use crate::xml::style::font::Font;
 use crate::api::cell::rich_text::{RichText as ApiRichText, Word};
 use crate::xml::common::FromFormat;
+use crate::xml::worksheet::sheet_data::cell::text::Text;
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 pub(crate) struct InlineString {
@@ -13,8 +14,8 @@ pub(crate) struct InlineString {
 pub(crate) struct RichText {
     #[serde(rename = "rPr", skip_serializing_if = "Option::is_none")]
     font: Option<Font>,
-    #[serde(rename = "t", skip_serializing_if = "String::is_empty")]
-    text: String,
+    #[serde(rename = "t", skip_serializing_if = "Option::is_none")]
+    text: Option<Text>,
 }
 
 impl FromFormat<ApiRichText> for InlineString {
@@ -35,12 +36,12 @@ impl FromFormat<ApiRichText> for InlineString {
 
 impl FromFormat<Word> for RichText {
     fn set_attrs_by_format(&mut self, word: &Word) {
-        self.text = word.text.clone();
-        self.font = Some(Font::from_format(&word.font));
+        self.text = Some(Text::new_with_space(&word.text));
+        self.font = Some(Font::from_rich_font_format(&word.font));
     }
 
     fn set_format(&self, word: &mut Word) {
-        word.text = self.text.clone();
-        word.font = self.font.clone().unwrap().get_format();
+        word.text = self.text.clone().unwrap().text;
+        word.font = self.font.clone().unwrap().get_rich_font_format();
     }
 }

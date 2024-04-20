@@ -231,11 +231,12 @@ impl _Write for WorkSheet {
             self.worksheet.xmlns_attrs.add_xr_2();
             self.worksheet.xmlns_attrs.add_xr_3();
         }
-        if let (None, Some(text)) = (&cell.cell_type, &cell.text) {
-            cell.cell_type = Some(text.to_cell_type());
-        }
-        else if let Some(CellType::SharedString) = &cell.cell_type {
-            cell.cell_type = Some(CellType::String);
+        if let Some(CellType::SharedString) = &cell.cell_type {
+            if cell.rich_text.is_some() {
+                cell.cell_type = Some(CellType::InlineString);
+            } else {
+                cell.cell_type = Some(CellType::String);
+            }
         }
         if let Some(format) = &cell.format {
             let style = self.add_format(format);

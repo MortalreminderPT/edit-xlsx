@@ -335,7 +335,7 @@ impl WorkSheet {
         // load drawings
         let (mut drawings, mut drawings_rel) = (None, None);
         worksheet_rel.get_drawings_rids().iter().for_each(|&drawings_id|{
-            drawings = Drawings::from_zip_file(archive, &format!("xl/drawings/drawing{drawings_id}.xml"));
+            // drawings = Drawings::from_zip_file(archive, &format!("xl/drawings/drawing{drawings_id}.xml"));
             drawings_rel = Relationships::from_zip_file(archive, &format!("xl/drawings/_rels/drawing{drawings_id}.xml.rels"));
         });
         let vml_drawing = match worksheet_rel.get_vml_drawing_rid() {

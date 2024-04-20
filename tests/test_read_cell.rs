@@ -5,7 +5,7 @@ mod tests {
     #[test]
     fn test_from() -> WorkbookResult<()> {
         // Read an existed workbook
-        let reading_book = Workbook::from_path("./Archive.xlsx")?;
+        let reading_book = Workbook::from_path("./tests/xlsx/accounting.xlsx")?;
         let reading_sheet = reading_book.get_worksheet(1)?;
         // Create a new workbook to write
         let mut writing_book = Workbook::new();
@@ -39,6 +39,7 @@ mod tests {
         for row in 1..=reading_sheet.max_row() {
             for col in 1..=reading_sheet.max_column() {
                 if let Ok(cell) = reading_sheet.read_cell((row, col)) {
+                    println!("{:?}", cell);
                     writing_sheet.write_cell((row, col), &cell)?;
                 }
             }
@@ -174,9 +175,10 @@ mod tests {
     #[test]
     fn test_from_chart() -> WorkbookResult<()> {
         // Read an existed workbook
-        let mut chart_workbook = Workbook::from_path("./tests/xlsx/company-organization-chart.xlsx")?;
-        // let worksheet = schedule_workbook.get_worksheet_mut_by_name("Register")?;
-        chart_workbook.save_as("./tests/output/read_cell_test_from_company_organization_chart.xlsx")?;
+        let mut org_workbook = Workbook::from_path("./tests/xlsx/company-organization-chart.xlsx")?;
+        let worksheet = org_workbook.get_worksheet_mut_by_name("WithImages")?;
+        worksheet.insert_image("A1:C6", &"./examples/pics/capybara.bmp")?;
+        org_workbook.save_as("./tests/output/read_cell_test_from_company_organization_chart.xlsx")?;
         Ok(())
     }
 

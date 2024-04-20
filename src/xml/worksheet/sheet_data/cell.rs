@@ -1,5 +1,6 @@
 pub(crate) mod formula;
 pub(crate) mod inline_string;
+mod text;
 
 use std::fmt::Formatter;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};

@@ -32,9 +32,17 @@ mod tests {
     fn test_read_from() -> WorkbookResult<()> {
         let mut workbook = Workbook::from_path("tests/xlsx/image_nao.xlsx")?;
         let worksheet = workbook.get_worksheet_mut(1)?;
-        let cell = worksheet.read_cell("A1")?;
-        let rt = cell.rich_text.unwrap();
+        let mut cell = worksheet.read_cell("A1")?;
+        let mut rt = cell.rich_text.unwrap();
+        let mut font = FormatFont::default();
+        font.italic = true;
+        font.size = 30.0;
+        font.color = FormatColor::Index(12);
+        rt = rt + Word::new(" World", &font);
         println!("{:?}", rt);
+        cell.rich_text = Some(rt);
+        worksheet.write_cell("A1", &cell)?;
+        workbook.save_as("tests/output/rich_text_test_read_from.xlsx")?;
         Ok(())
     }
 }
