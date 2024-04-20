@@ -3,7 +3,7 @@ use crate::api::format::FormatAlign;
 use crate::FormatAlignType;
 use crate::xml::common::FromFormat;
 
-#[derive(Debug, Deserialize, Serialize, PartialEq, Clone)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Clone, Default)]
 pub(crate) struct Alignment {
     #[serde(rename = "@horizontal", skip_serializing_if = "Option::is_none")]
     pub(crate) horizontal: Option<String>,
@@ -23,20 +23,18 @@ pub(crate) struct Alignment {
     reading_order: Option<u8>,
 }
 
-impl Default for Alignment {
-    fn default() -> Self {
-        Alignment {
-            horizontal: None,
-            vertical: None,
-            wrap_text: None,
-            indent: None,
-            justify_last_line: None,
-            text_rotation: None,
-            shrink_to_fit: None,
-            reading_order: None,
-        }
-    }
-}
+// impl Alignment {
+//     pub(crate) fn is_empty(&self) -> bool {
+//         self.horizontal.is_none()
+//             &&self.vertical.is_none()
+//             &&self.text_rotation.is_none()
+//             &&self.wrap_text.is_none()
+//             &&self.indent.is_none()
+//             &&self.justify_last_line.is_none()
+//             &&self.shrink_to_fit.is_none()
+//             &&self.reading_order.is_none()
+//     }
+// }
 
 impl FromFormat<FormatAlign> for Alignment {
     fn set_attrs_by_format(&mut self, format: &FormatAlign) {

@@ -27,8 +27,8 @@ pub(crate) trait IoV2<T: for<'de> Deserialize<'de> + Default> {
         if let Ok(mut file) = archive.by_name(path) {
             let mut xml = String::new();
             file.read_to_string(&mut xml).unwrap();
-            let result = de::from_str(&xml).unwrap_or_default();
-            Some(result)
+            let result = de::from_str(&xml);
+            result.ok()
         } else {
             None
         }

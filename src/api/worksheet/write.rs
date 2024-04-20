@@ -17,8 +17,11 @@ pub trait Write: _Write {
         Ok(())
     }
 
-    fn write<L: Location, T: CellDisplay + CellValue>(&mut self, loc: L, data: T) -> WorkSheetResult<()> {
-        self.write_display_all(&loc, &data, None)
+    fn write<L: Location, T: Default + Clone + CellDisplay + CellValue>(&mut self, loc: L, data: T) -> WorkSheetResult<()> {
+        let mut cell = Cell::default();
+        cell.cell_type = Some(data.to_cell_type());
+        cell.text = Some(data);
+        self.write_by_api_cell(&loc, &cell)
     }
     fn write_string<L: Location>(&mut self, loc: L, data: String) -> WorkSheetResult<()> {
         let mut cell = Cell::default();
@@ -129,6 +132,7 @@ pub trait Write: _Write {
     }
     fn write_with_format<L: Location, T: Default + Clone + CellDisplay + CellValue>(&mut self, loc: L, data: T, format: &Format) -> WorkSheetResult<()> {
         let mut cell = Cell::default();
+        cell.cell_type = Some(data.to_cell_type());
         cell.text = Some(data);
         cell.format = Some(format.clone());
         self.write_by_api_cell(&loc, &cell)
