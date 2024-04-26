@@ -57,9 +57,13 @@ use crate::xml::style::color::Color;
 /// | `RGB` | `red: u8,`<br/>`green: u8,`<br/>`blue: u8,` |Using the RGB color format.|
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub enum FormatColor {
+    /// Default, no color
     Default,
+    /// Using the [colorIndex property](https://learn.microsoft.com/en-us/previous-versions/office/developer/office-2007/cc296089(v=office.12)),<br/> `index_id`: color index id.
     Index(u8),
+    /// Use the Theme color format, i.e. leave the color decision to the current theme of xlsx.<br/>You can determine the theme color id and tint by `theme_id` and `tint`
     Theme(u8, f64),
+    /// Using the RGB color format.
     RGB(u8, u8, u8),
 }
 

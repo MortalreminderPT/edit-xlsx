@@ -1,9 +1,90 @@
+//!
+//! This module contains the [`FormatBorder`] Enum, which used to edit the border style of the [`Cell`] in each direction.
+//!
+//! # Examples
+//!
+//! Wrap cells
+//! ```
+//! use std::cell;
+//! use edit_xlsx::{Cell, Format, FormatBorder, FormatBorderElement, FormatBorderType, FormatColor, Workbook, Write};
+//! let format = Format::default().set_border(FormatBorderType::Thin);
+//! // Or use
+//! // let mut format = Format::default();
+//! // let mut format_border = FormatBorder::default();
+//! // let format_border_element = FormatBorderElement::from_border_type(&FormatBorderType::Thin);
+//! // format_border.left = format_border_element;
+//! // format_border.right = format_border_element;
+//! // format_border.top = format_border_element;
+//! // format_border.bottom = format_border_element;
+//! // format.border = format_border;
+//! let mut workbook = Workbook::from_path("./examples/xlsx/accounting.xlsx").unwrap();
+//! let worksheet = workbook.get_worksheet_mut_by_name("worksheet").unwrap();
+//! let mut cell: Cell<String> = Cell::default();
+//! cell.format = Some(format);
+//! for row in 6..=15 {
+//!     for col in 3..=12 {
+//!         worksheet.write_cell((row, col), &cell).unwrap()
+//!     }
+//! }
+//! workbook.save_as("./examples/border_wrap_cells.xlsx").unwrap();
+//! ```
+//!
+//! Use diagonal to creat a table
+//! ```
+//! use std::cell;
+//! use edit_xlsx::{Cell, Format, FormatBorder, FormatBorderElement, FormatBorderType, FormatColor, Read, Workbook, Write};
+//! let mut workbook = Workbook::new();
+//! let worksheet = workbook.get_worksheet_mut(1).unwrap();
+//! let mut cell: Cell<String> = Cell::default();
+//! let mut format = Format::default();
+//! format.border.diagonal = FormatBorderElement::from_border_type(&FormatBorderType::Thin);
+//! cell.format = Some(format);
+//! worksheet.write_cell("A1", &cell).unwrap();
+//! // todo bug fix
+//! worksheet.write_column("A2", &[1, 2, 3]).unwrap();
+//! worksheet.write_column("B1", &["Region", "East", "West", "North"]).unwrap();
+//! worksheet.write_column("C1", &["Sales Rep", "Tom", "Fred", "Amy"]).unwrap();
+//! worksheet.write_column("C1", &["Product", "Apple", "Grape", "Pear"]).unwrap();
+//! workbook.save_as("./examples/border_diagonal_cell.xlsx").unwrap();
+//! ```
+//!
+//! Wrap merged cells
+//! ```
+//! use std::cell;
+//! use edit_xlsx::{Cell, Format, FormatBorder, FormatBorderElement, FormatBorderType, FormatColor, Read, Workbook, Write};
+//! let mut workbook = Workbook::from_path("./examples/xlsx/accounting.xlsx").unwrap();
+//! let worksheet = workbook.get_worksheet_mut_by_name("worksheet").unwrap();
+//! for row in 18..=21 {
+//!     for col in 2..=11 {
+//!         let mut cell: Cell<String> = worksheet.read_cell((row, col)).unwrap();
+//!         cell.format = match cell.format.take() {
+//!             None => None,
+//!             Some(mut format) => Some(format.set_border(FormatBorderType::Double)),
+//!         };
+//!         worksheet.write_cell((row, col), &cell).unwrap()
+//!     }
+//! }
+//! workbook.save_as("./examples/border_wrap_merged_cells.xlsx").unwrap();
+//! ```
+//!
+
 use std::fmt::{Display, Formatter};
-use crate::FormatColor;
+use crate::{Cell, FormatColor};
 use crate::xml::common::FromFormat;
 use crate::xml::style::border::{Border, BorderElement};
 use crate::xml::style::color::Color;
 
+///
+/// [`FormatBorder`] is used to edit the border style of the [`Cell`] in each direction.
+/// # Fields
+/// | field        | type        | meaning                                                      |
+/// | ------------ | ----------- | ------------------------------------------------------------ |
+/// | `left`     | [`FormatBorderElement`] | The [`Cell`]'s left border style               |
+/// | `right`    | [`FormatBorderElement`] | The [`Cell`]'s right border style               |
+/// | `top`      | [`FormatBorderElement`] | The [`Cell`]'s top border style               |
+/// | `bottom`   | [`FormatBorderElement`] | The [`Cell`]'s bottom border style               |
+/// | `diagonal` | [`FormatBorderElement`] | The [`Cell`]'s diagonal border style               |
+///
 #[derive(Clone, Debug, PartialEq, Default)]
 pub struct FormatBorder {
     pub left: FormatBorderElement,
@@ -13,7 +94,15 @@ pub struct FormatBorder {
     pub diagonal: FormatBorderElement,
 }
 
-#[derive(Clone, Debug, PartialEq, Default)]
+///
+/// [`FormatBorderElement`] is used to edit one of the direction of the [`Cell`]'s border style.
+/// # Fields
+/// | field        | type        | meaning                                                      |
+/// | ------------ | ----------- | ------------------------------------------------------------ |
+/// | `border_type`     | [`FormatBorderType`] | Type of the border               |
+/// | `color`    | [`FormatColor`] | Color of the border               |
+///
+#[derive(Clone, Debug, PartialEq, Copy, Default)]
 pub struct FormatBorderElement {
     pub border_type: FormatBorderType,
     pub color: FormatColor,
@@ -27,6 +116,10 @@ impl FormatBorderElement {
         }
     }
 
+    ///
+    /// Create a new [`FormatBorderElement`] based on the border color,
+    /// the border type defaults to [`FormatBorderType::Thin`]
+    ///
     pub fn from_color(color: &FormatColor) -> FormatBorderElement {
         FormatBorderElement {
             border_type: FormatBorderType::Thin,
@@ -34,6 +127,10 @@ impl FormatBorderElement {
         }
     }
 
+    ///
+    /// Create a new [`FormatBorderElement`] based on the border type,
+    /// the border color defaults to [`FormatColor::Default`]
+    ///
     pub fn from_border_type(border_type: &FormatBorderType) -> FormatBorderElement {
         FormatBorderElement {
             border_type: *border_type,
@@ -42,21 +139,56 @@ impl FormatBorderElement {
     }
 }
 
+///
+/// Enumeration of different border type
+///
+/// # Fields:
+/// | unit | meaning |
+/// | ---- | ---- |
+/// | `None` | Default, No border |
+/// | `Thin` | Thin line |
+/// | `Medium` | Medium line |
+/// | `Dashed` | Dashed line |
+/// | `Dotted` | Dotted line |
+/// | `Thick` | Thick line |
+/// | `Double` | Double line |
+/// | `Hair` | Hairline |
+/// | `MediumDashed` | Medium dashed line |
+/// | `DashDot` | Dash-dot line |
+/// | `MediumDashDot` | Medium dash-dot line |
+/// | `DashDotDot` | Dash-dot-dot line |
+/// | `MediumDashDotDot` | Medium dash-dot-dot line |
+/// | `SlantDashDot` | Slanted dash-dot-dot line |
+///
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum FormatBorderType {
+    /// Default, No border
     None,
+    /// Thin line
     Thin,
+    /// Medium line
     Medium,
+    /// Dashed line
     Dashed,
+    /// Dotted line
     Dotted,
+    /// Thick line
     Thick,
+    /// Double line
     Double,
+    /// Hairline
     Hair,
+    /// Medium dashed line
     MediumDashed,
+    /// Dash-dot line
     DashDot,
+    /// Medium dash-dot line
     MediumDashDot,
+    /// Dash-dot-dot line
     DashDotDot,
+    /// Medium dash-dot-dot line
     MediumDashDotDot,
+    /// Slanted dash-dot-dot line
     SlantDashDot,
 }
 
@@ -67,8 +199,8 @@ impl Display for FormatBorderType {
 }
 
 impl Default for FormatBorderType {
-    fn default() -> Self {
-        Self::None
+    fn default() -> FormatBorderType {
+        FormatBorderType::None
     }
 }
 
