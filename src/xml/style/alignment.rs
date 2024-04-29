@@ -44,13 +44,17 @@ impl FromFormat<FormatAlign> for Alignment {
         if let Some(horizontal) = format.horizontal {
             self.horizontal = Some(String::from(horizontal.to_str()));
         }
-        self.reading_order = format.reading_order;
-        self.indent = format.indent;
+        if format.reading_order != 1 {
+            self.reading_order = Some(format.reading_order);
+        }
+        if format.indent != 0 {
+            self.indent = Some(format.indent);
+        }
     }
 
     fn set_format(&self, format: &mut FormatAlign) {
-        format.indent = self.indent;
-        format.reading_order = self.reading_order;
+        format.indent = self.indent.unwrap_or(0);
+        format.reading_order = self.reading_order.unwrap_or(1);
         format.horizontal = FormatAlignType::from_str(self.horizontal.as_ref(), true);
         format.vertical = FormatAlignType::from_str(self.horizontal.as_ref(), false);
     }

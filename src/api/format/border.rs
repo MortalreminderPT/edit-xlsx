@@ -1,5 +1,6 @@
 //!
-//! This module contains the [`FormatBorder`] Enum, which used to edit the border style of the [`Cell`] in each direction.
+//! This module contains the [`FormatBorder`] struct,
+//! which used to edit the border style of the [`Cell`] in each direction.
 //!
 //! # Examples
 //!

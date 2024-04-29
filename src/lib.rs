@@ -11,6 +11,7 @@ pub use api::worksheet::WorkSheet;
 pub use api::format::Format;
 pub use api::format::{FormatBorderElement, FormatBorderType};
 pub use api::format::FormatAlignType;
+pub use api::format::FormatAlign;
 pub use api::format::FormatBorder;
 pub use api::format::FormatColor;
 pub use api::format::FormatFont;
