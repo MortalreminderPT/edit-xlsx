@@ -27,7 +27,7 @@ To use Edit-xlsx in your Rust project, add the following to your Cargo.toml file
 
 ```toml
 [dependencies]
-edit-xlsx = "0.4.3"
+edit-xlsx = "0.4.4"
 ```
 
 ## Notice
