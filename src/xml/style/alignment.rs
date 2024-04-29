@@ -56,7 +56,7 @@ impl FromFormat<FormatAlign> for Alignment {
         format.indent = self.indent.unwrap_or(0);
         format.reading_order = self.reading_order.unwrap_or(1);
         format.horizontal = FormatAlignType::from_str(self.horizontal.as_ref(), true);
-        format.vertical = FormatAlignType::from_str(self.horizontal.as_ref(), false);
+        format.vertical = FormatAlignType::from_str(self.vertical.as_ref(), false);
     }
 }
 
