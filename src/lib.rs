@@ -25,5 +25,16 @@ pub use api::worksheet::col::{Column, WorkSheetCol};
 pub use api::properties::Properties;
 pub use api::filter::Filter;
 pub use api::filter::Filters;
-pub use result::WorkbookResult;
+
+pub use result::CellError;
+pub use result::ColError;
+pub use result::RowError;
+pub use result::RelationshipError;
+pub use result::WorkSheetError;
+pub use result::WorkbookError;
+pub use result::CellResult;
+pub use result::ColResult;
+pub use result::RowResult;
+pub use result::RelationshipResult;
 pub use result::WorkSheetResult;
+pub use result::WorkbookResult;

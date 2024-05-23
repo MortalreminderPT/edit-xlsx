@@ -41,7 +41,13 @@ impl FromFormat<Word> for RichText {
     }
 
     fn set_format(&self, word: &mut Word) {
-        word.text = self.text.clone().unwrap().text;
-        word.font = self.font.clone().unwrap().get_rich_font_format();
+        if let Some(text) = &self.text {
+            word.text = text.text.clone();
+        }
+        if let Some(font) = &self.font {
+            word.font = font.get_rich_font_format();
+        }
+        // word.text = self.text.clone().unwrap().text;
+        // word.font = self.font.clone().unwrap().get_rich_font_format();
     }
 }
