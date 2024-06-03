@@ -15,7 +15,7 @@ impl DefinedNames {
         let defined_name = DefinedName::new(name, value, local_sheet_id);
         self.defined_names.push(defined_name)
     }
-    /// Attempt to find the defined name
+    /// Attempt to find the defined name.  If no sheet id provided, the global names are checked
     pub(crate) fn get_defined_name(&self, name: &str, local_sheet_id: Option<u32>) -> Option<&str> {
         self.defined_names.iter().find_map(|entry| {
             (entry.name == name && entry.local_sheet_id == local_sheet_id)

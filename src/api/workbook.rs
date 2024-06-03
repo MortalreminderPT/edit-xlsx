@@ -21,6 +21,7 @@ use crate::xml::metadata::Metadata;
 use crate::xml::style::StyleSheet;
 use crate::xml::relationships::Relationships;
 use crate::xml::shared_string::SharedString;
+use crate::xml::workbook::DefinedName;
 
 #[derive(Debug)]
 pub struct Workbook {
@@ -164,8 +165,8 @@ impl Workbook {
 
     /// Get the Range Reference for the given Workbook-level Name (if found)
     pub fn get_defined_name(&self, name: &str) -> WorkbookResult<String> {
-        let ret = self.workbook.borrow();
-        ret.defined_names
+        let book = self.workbook.borrow();
+        book.defined_names
             .get_defined_name(name, None)
             .map(String::from) 
             .ok_or(WorkbookError::SheetError(WorkSheetError::FileNotFound))
@@ -175,8 +176,8 @@ impl Workbook {
         if sheet_id > self.sheets.len() as u32 {
             return Err(WorkbookError::SheetError(WorkSheetError::FileNotFound));
         }
-        let ret = self.workbook.borrow();
-        ret.defined_names
+        let book = self.workbook.borrow();
+        book.defined_names
             .get_defined_name(name, Some(sheet_id - 1))
             .map(String::from) 
             .ok_or(WorkbookError::SheetError(WorkSheetError::FileNotFound))   
