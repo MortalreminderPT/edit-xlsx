@@ -162,6 +162,26 @@ impl Workbook {
         Ok(())
     }
 
+    /// Get the Range Reference for the given Workbook-level Name (if found)
+    pub fn get_defined_name(&self, name: &str) -> WorkbookResult<String> {
+        let ret = self.workbook.borrow();
+        ret.defined_names
+            .get_defined_name(name, None)
+            .map(String::from) 
+            .ok_or(WorkbookError::SheetError(WorkSheetError::FileNotFound))
+    }
+    /// Get the Range Reference for the given Worksheet-level Name (if found)
+    pub fn get_defined_local_name(&self, name: &str, sheet_id: u32) -> WorkbookResult<String> {
+        if sheet_id > self.sheets.len() as u32 {
+            return Err(WorkbookError::SheetError(WorkSheetError::FileNotFound));
+        }
+        let ret = self.workbook.borrow();
+        ret.defined_names
+            .get_defined_name(name, Some(sheet_id - 1))
+            .map(String::from) 
+            .ok_or(WorkbookError::SheetError(WorkSheetError::FileNotFound))   
+    }
+
     pub fn worksheets_mut(&mut self) -> slice::IterMut<WorkSheet> {
         self.sheets.iter_mut()
     }
