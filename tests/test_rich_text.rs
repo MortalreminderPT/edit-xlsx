@@ -30,6 +30,12 @@ mod tests {
 
     #[test]
     fn test_read_from() -> WorkbookResult<()> {
+        let workbook = Workbook::from_path("tests/xlsx/rich-text.xlsx")?;
+        let worksheet = workbook.get_worksheet(1)?;
+        let cell = worksheet.read_cell("A1")?;
+        let rt = cell.rich_text.unwrap();
+        println!("{:?}", rt);
+
         let mut workbook = Workbook::from_path("tests/xlsx/image_nao.xlsx")?;
         let worksheet = workbook.get_worksheet_mut(1)?;
         let mut cell = worksheet.read_cell("A1")?;
