@@ -1,9 +1,9 @@
 use std::ops::Add;
 use crate::api::format::FormatFont;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct RichText {
-    pub(crate) words: Vec<Word>
+    pub words: Vec<Word>
 }
 
 impl RichText {
@@ -29,10 +29,19 @@ impl Add<Word> for RichText {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+impl Add<&RichText> for RichText {
+    type Output = RichText;
+
+    fn add(mut self, rhs: &RichText) -> Self::Output {
+        self.words.extend(rhs.words.clone());
+        self
+    }
+}
+
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Word {
-    pub(crate) text: String,
-    pub(crate) font: FormatFont,
+    pub text: String,
+    pub font: FormatFont,
 }
 
 impl Word {

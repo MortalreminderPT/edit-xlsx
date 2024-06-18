@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use edit_xlsx::{FormatColor, FormatFont, Read, RichText, Word, Workbook, WorkbookResult, Write};
+    use edit_xlsx::{Format, FormatColor, FormatFont, Read, RichText, Word, Workbook, WorkbookResult, Write};
 
     #[test]
     fn test_new() -> WorkbookResult<()> {
@@ -25,6 +25,32 @@ mod tests {
         worksheet.write_rich_string("A1", &rich_text)?;
         worksheet.write_rich_string("A2", &rich_text)?;
         workbook.save_as("tests/output/rich_text_test_from.xlsx")?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_read_words() -> WorkbookResult<()> {
+        let mut workbook = Workbook::from_path("tests/xlsx/rich-text.xlsx")?;
+        let worksheet = workbook.get_worksheet_mut(1)?;
+        let mut cell = worksheet.read_cell("A1")?;
+        let mut rich_text = cell.rich_text.unwrap_or_default();
+        let rich_text2 = RichText::new_word("Hello", &FormatFont::default());
+        let mut red = FormatFont::default();
+        red.color = FormatColor::RGB(255, 0, 0);
+        let rich_text3 = RichText::new_word(" World", &red);
+        rich_text = rich_text + &rich_text2 + &rich_text3;
+        println!("{:?}", rich_text);
+        println!("{:?}", rich_text2);
+        println!("{:?}", rich_text3);
+        rich_text.words.iter().for_each(|w| print!("{}", w.text));
+        rich_text.words.iter_mut().for_each(|w| {
+            w.font.bold = true;
+            w.font.italic = false;
+            w.font.underline = true;
+        });
+        cell.rich_text = Some(rich_text);
+        worksheet.write_cell("A1", &cell)?;
+        workbook.save_as("tests/output/rich_text_test_read_words.xlsx")?;
         Ok(())
     }
 
