@@ -1,5 +1,5 @@
 use std::ops::Add;
-use crate::api::format::FormatFont;
+use crate::api::format::{FormatFont, FormatColor};
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct RichText {
@@ -41,14 +41,14 @@ impl Add<&RichText> for RichText {
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Word {
     pub text: String,
-    pub font: FormatFont,
+    pub font: Option<FormatFont>,
 }
 
 impl Word {
     pub fn new(text: &str, font: &FormatFont) -> Word {
         Word {
             text: text.to_string(),
-            font: font.clone(),
+            font: None,
         }
     }
 }

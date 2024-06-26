@@ -19,3 +19,7 @@ serde = { version = "1.0.196", features = ["derive"] }
 quick-xml = { version = "0.31.0", features = ["serialize"] }
 walkdir = "2.4.0"
 futures = "0.3.30"
+ansi_term = { version = "0.12", optional = true }  # 注意这里的 optional = true
+
+[features]
+ansi_term_support = ["ansi_term"]

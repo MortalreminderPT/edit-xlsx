@@ -37,7 +37,9 @@ impl FromFormat<ApiRichText> for InlineString {
 impl FromFormat<Word> for RichText {
     fn set_attrs_by_format(&mut self, word: &Word) {
         self.text = Some(Text::new_with_space(&word.text));
-        self.font = Some(Font::from_rich_font_format(&word.font));
+        if let Some(font) = &word.font {
+            self.font = Some(Font::from_rich_font_format(font));
+        }
     }
 
     fn set_format(&self, word: &mut Word) {
@@ -45,7 +47,7 @@ impl FromFormat<Word> for RichText {
             word.text = text.text.clone();
         }
         if let Some(font) = &self.font {
-            word.font = font.get_rich_font_format();
+            word.font = Some(font.get_rich_font_format());
         }
         // word.text = self.text.clone().unwrap().text;
         // word.font = self.font.clone().unwrap().get_rich_font_format();

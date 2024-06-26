@@ -113,8 +113,27 @@ mod tests {
         let mut schedule_workbook = Workbook::from_path("./tests/xlsx/shift-schedule.xlsx")?;
         let worksheet = schedule_workbook.get_worksheet_mut_by_name("Schedule")?;
         worksheet.write_row("B9", &["hello", "world", "hello", "rust"])?;
-        let cell = worksheet.read_cell("C31")?;
+        let cell = worksheet.read_cell("C28")?;
         println!("{:?}", cell);
+        #[cfg(feature = "ansi_term_support")]
+        {
+            use ansi_term::{ANSIStrings};
+            println!("{}", ANSIStrings(&cell.ansi_strings()));
+        }
+        let cell = worksheet.read_cell("A8")?;
+        println!("{:?}", cell);
+        #[cfg(feature = "ansi_term_support")]
+        {
+            use ansi_term::{ANSIStrings};
+            println!("{}", ANSIStrings(&cell.ansi_strings()));
+        }
+        let cell = worksheet.read_cell("A1")?;
+        println!("{:?}", cell);
+        #[cfg(feature = "ansi_term_support")]
+        {
+            use ansi_term::{ANSIStrings};
+            println!("{}", ANSIStrings(&cell.ansi_strings()));
+        }
         schedule_workbook.save_as("./tests/output/read_cell_test_from_shift_schedule.xlsx")?;
         Ok(())
     }
