@@ -5,6 +5,7 @@
 *.xlsx
 !/examples/xlsx/*.xlsx
 !/resources/new.xlsx
+/tests/xlsx/**
 !/tests/xlsx/*.xlsx
 /tests/output/**
 !/tests/output/*.png
