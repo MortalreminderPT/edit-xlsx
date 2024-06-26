@@ -14,6 +14,7 @@ use crate::xml::metadata::Metadata;
 use crate::xml::relationships::Relationships;
 use crate::xml::shared_string::SharedString;
 use crate::xml::style::StyleSheet;
+use crate::xml::theme::Theme;
 use crate::xml::workbook::Workbook;
 use crate::xml::worksheet::WorkSheet;
 
@@ -46,3 +47,4 @@ impl IoV2<Metadata> for Metadata{}
 impl IoV2<SharedString> for SharedString{}
 impl IoV2<Drawings> for Drawings{}
 impl IoV2<VmlDrawing> for VmlDrawing{}
+impl IoV2<Theme> for Theme {}

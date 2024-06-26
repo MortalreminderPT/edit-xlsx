@@ -106,12 +106,10 @@ mod tests {
             let workbook = Workbook::from_path("tests/xlsx/paycheck-calculator.xlsx")?;
             let worksheet = workbook.get_worksheet_by_name("NEW W-4")?;
             let cell = worksheet.read_cell("A2")?;
-            cell.ansi_strings();
             println!("{}", ANSIStrings(&cell.ansi_strings()));
             let workbook = Workbook::from_path("tests/xlsx/rich-text.xlsx")?;
             let worksheet = workbook.get_worksheet_by_name("Sheet1")?;
             let cell = worksheet.read_cell("A1")?;
-            cell.ansi_strings();
             println!("{}", ANSIStrings(&cell.ansi_strings()));
         }
         Ok(())

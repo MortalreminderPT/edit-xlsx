@@ -21,6 +21,7 @@ use crate::xml::metadata::Metadata;
 use crate::xml::style::StyleSheet;
 use crate::xml::relationships::Relationships;
 use crate::xml::shared_string::SharedString;
+use crate::xml::theme::{Theme, Themes};
 
 #[derive(Debug)]
 pub struct Workbook {
@@ -214,19 +215,28 @@ impl Workbook {
         let file = File::open(&file_path)?;
         let mut archive = zip::ZipArchive::new(file)?;
         let mut medias = Medias::default();
+        let mut themes = Themes::default();
         let workbook_xml = xml::workbook::Workbook::from_zip_file(&mut archive, "xl/workbook.xml");
         let workbook_rel = Relationships::from_zip_file(&mut archive, "xl/_rels/workbook.xml.rels");
         let content_types = ContentTypes::from_zip_file(&mut archive, "[Content_Types].xml");
         let style_sheet = StyleSheet::from_zip_file(&mut archive, "xl/styles.xml");
         let metadata = Metadata::from_zip_file(&mut archive, "xl/metadata.xml");
         let shared_string = SharedString::from_zip_file(&mut archive, "xl/sharedStrings.xml");
+        let mut theme_paths = Vec::new();
         for i in 0..archive.len() {
             let mut file = archive.by_index(i)?;
             let file_name = file.name();
             if file_name.starts_with("xl/media/") {
                 medias.add_existed_media(&file_name);
             }
+            else if file_name.starts_with("xl/theme") {
+                theme_paths.push(file_name.to_string());
+            }
         }
+        theme_paths.iter().for_each(|file_name|{
+            let theme = Theme::from_zip_file(&mut archive, &file_name).unwrap();
+            themes.add_theme(theme);
+        });
         let workbook = Rc::new(RefCell::new(workbook_xml.unwrap_or_default()));
         let workbook_rel = Rc::new(RefCell::new(workbook_rel.unwrap_or_default()));
         let content_types = Rc::new(RefCell::new(content_types.unwrap_or_default()));

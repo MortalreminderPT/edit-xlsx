@@ -3,6 +3,25 @@ mod tests {
     use edit_xlsx::{Read, Workbook, WorkbookResult, WorkSheetCol, WorkSheetRow, Write};
 
     #[test]
+    #[cfg(feature = "ansi_term_support")]
+    fn test_read_ansi_from() -> WorkbookResult<()> {
+        use ansi_term::ANSIStrings;
+        let reading_book = Workbook::from_path("./tests/xlsx/accounting.xlsx")?;
+        let reading_sheet = reading_book.get_worksheet(1)?;
+        // Read then write text and format
+        for row in 1..=reading_sheet.max_column() {
+            for col in 1..=reading_sheet.max_row() {
+                if let Ok(cell) = reading_sheet.read_cell((row, col)) {
+                    println!("{:?}", cell);
+                    print!("{}\t", ANSIStrings(&cell.ansi_strings()));
+                }
+            }
+            println!();
+        }
+        Ok(())
+    }
+
+    #[test]
     fn test_from() -> WorkbookResult<()> {
         // Read an existed workbook
         let reading_book = Workbook::from_path("./tests/xlsx/accounting.xlsx")?;
