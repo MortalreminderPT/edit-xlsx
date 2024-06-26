@@ -3,9 +3,10 @@ mod defined_names;
 
 use std::fs::File;
 use std::io;
-use std::io::Read;
+use std::io::{BufReader, Read};
 use std::path::Path;
-use quick_xml::{de, se};
+use quick_xml::{de, NsReader, Reader, se};
+use quick_xml::de::Deserializer;
 use serde::{Deserialize, Serialize};
 use zip::read::ZipFile;
 use zip::ZipArchive;
@@ -240,7 +241,12 @@ impl Workbook {
         let mut xml = String::new();
         // let file_path = "xl/workbook.xml";
         file.read_to_string(&mut xml).unwrap();
-        de::from_str(&xml).unwrap_or_default()
+
+        let de = Deserializer::from_str(&xml);
+        let wb = de::from_str(&xml).unwrap_or_default();
+
+
+        wb
     }
 }
 

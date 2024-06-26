@@ -1,8 +1,9 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
+use serde::de::IntoDeserializer;
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct Text {
-    #[serde(rename = "$value", skip_serializing_if = "String::is_empty")]
+    #[serde(rename = "$text", skip_serializing_if = "String::is_empty")]
     pub(crate) text: String,
     #[serde(rename = "@xml:space", default, skip_serializing_if = "String::is_empty")]
     pub(crate) xml_space: String,
