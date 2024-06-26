@@ -21,7 +21,6 @@ use crate::xml::metadata::Metadata;
 use crate::xml::style::StyleSheet;
 use crate::xml::relationships::Relationships;
 use crate::xml::shared_string::SharedString;
-use crate::xml::workbook::DefinedName;
 
 #[derive(Debug)]
 pub struct Workbook {
