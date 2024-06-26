@@ -21,7 +21,6 @@ use crate::xml::metadata::Metadata;
 use crate::xml::style::StyleSheet;
 use crate::xml::relationships::Relationships;
 use crate::xml::shared_string::SharedString;
-use crate::xml::workbook::DefinedName;
 
 #[derive(Debug)]
 pub struct Workbook {
@@ -161,26 +160,6 @@ impl Workbook {
         }
         self.workbook.borrow_mut().defined_names.add_define_name(name, value, Some(sheet_id - 1));
         Ok(())
-    }
-
-    /// Get the Range Reference for the given Workbook-level Name (if found)
-    pub fn get_defined_name(&self, name: &str) -> WorkbookResult<String> {
-        let book = self.workbook.borrow();
-        book.defined_names
-            .get_defined_name(name, None)
-            .map(String::from) 
-            .ok_or(WorkbookError::SheetError(WorkSheetError::FileNotFound))
-    }
-    /// Get the Range Reference for the given Worksheet-level Name (if found)
-    pub fn get_defined_local_name(&self, name: &str, sheet_id: u32) -> WorkbookResult<String> {
-        if sheet_id > self.sheets.len() as u32 {
-            return Err(WorkbookError::SheetError(WorkSheetError::FileNotFound));
-        }
-        let book = self.workbook.borrow();
-        book.defined_names
-            .get_defined_name(name, Some(sheet_id - 1))
-            .map(String::from) 
-            .ok_or(WorkbookError::SheetError(WorkSheetError::FileNotFound))   
     }
 
     pub fn worksheets_mut(&mut self) -> slice::IterMut<WorkSheet> {
