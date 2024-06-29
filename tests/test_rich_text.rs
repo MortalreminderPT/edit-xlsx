@@ -88,30 +88,7 @@ mod tests {
         println!("{:?}", rt);
         cell.rich_text = Some(rt);
         worksheet.write_cell("A1", &cell)?;
-        #[cfg(feature = "ansi_term_support")]
-        {
-            use ansi_term::{ANSIStrings};
-            println!("{}", ANSIStrings(&cell.ansi_strings()));
-        }
         workbook.save_as("tests/output/rich_text_test_read_from.xlsx")?;
-        Ok(())
-    }
-
-
-    #[test]
-    fn test_beautify() -> WorkbookResult<()> {
-        #[cfg(feature = "ansi_term_support")]
-        {
-            use ansi_term::{ANSIStrings};
-            let workbook = Workbook::from_path("tests/xlsx/paycheck-calculator.xlsx")?;
-            let worksheet = workbook.get_worksheet_by_name("NEW W-4")?;
-            let cell = worksheet.read_cell("A2")?;
-            println!("{}", ANSIStrings(&cell.ansi_strings()));
-            let workbook = Workbook::from_path("tests/xlsx/rich-text.xlsx")?;
-            let worksheet = workbook.get_worksheet_by_name("Sheet1")?;
-            let cell = worksheet.read_cell("A1")?;
-            println!("{}", ANSIStrings(&cell.ansi_strings()));
-        }
         Ok(())
     }
 }

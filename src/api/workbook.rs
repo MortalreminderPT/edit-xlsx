@@ -34,6 +34,7 @@ pub struct Workbook {
     pub(crate) workbook_rel: Rc<RefCell<Relationships>>,
     pub(crate) content_types: Rc<RefCell<ContentTypes>>,
     pub(crate) medias: Rc<RefCell<Medias>>,
+    pub(crate) themes: Rc<RefCell<Themes>>,
     pub(crate) metadata: Rc<RefCell<Metadata>>,
     pub(crate) core_properties: Option<CoreProperties>,
     pub(crate) app_properties: Option<AppProperties>,
@@ -225,15 +226,17 @@ impl Workbook {
         let mut theme_paths = Vec::new();
         for i in 0..archive.len() {
             let mut file = archive.by_index(i)?;
-            let file_name = file.name();
-            if file_name.starts_with("xl/media/") {
-                medias.add_existed_media(&file_name);
-            }
-            else if file_name.starts_with("xl/theme") {
-                theme_paths.push(file_name.to_string());
+            if file.is_file() {
+                let file_name = file.name();
+                if file_name.starts_with("xl/media/") {
+                    medias.add_existed_media(&file_name);
+                }
+                else if file_name.starts_with("xl/theme/") {
+                    theme_paths.push(file_name.to_string());
+                }
             }
         }
-        theme_paths.iter().for_each(|file_name|{
+        theme_paths.iter().for_each(|file_name| {
             let theme = Theme::from_zip_file(&mut archive, &file_name).unwrap();
             themes.add_theme(theme);
         });
@@ -244,6 +247,7 @@ impl Workbook {
         let metadata = Rc::new(RefCell::new(metadata.unwrap_or_default()));
         let shared_string = Rc::new(shared_string.unwrap_or_default());
         let medias = Rc::new(RefCell::new(medias));
+        let themes = Rc::new(RefCell::new(themes));
         let sheets = workbook.borrow().sheets.sheets.iter().map(
             |sheet_xml| {
                 let binding = workbook_rel.borrow();
@@ -260,6 +264,7 @@ impl Workbook {
                     Rc::clone(&style_sheet),
                     Rc::clone(&content_types),
                     Rc::clone(&medias),
+                    Rc::clone(&themes),
                     Rc::clone(&metadata),
                     Rc::clone(&shared_string),
                 )
@@ -274,6 +279,7 @@ impl Workbook {
             style_sheet: Rc::clone(&style_sheet),
             content_types: Rc::clone(&content_types),
             medias: Rc::clone(&medias),
+            themes: Rc::clone(&themes),
             metadata,
             core_properties: None,
             app_properties: None,

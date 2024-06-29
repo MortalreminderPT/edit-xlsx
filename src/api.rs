@@ -5,3 +5,4 @@ pub mod cell;
 pub mod relationship;
 pub(crate) mod filter;
 pub(crate) mod properties;
+pub mod theme;

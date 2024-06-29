@@ -20,6 +20,11 @@ impl Color {
         Color { indexed: None, rgb: Some(rgb), theme: None, tint: None, auto: None }
     }
 
+    pub(crate) fn from_rgb_hex(rgb: &str) -> Color {
+        let rgb = format!("FF{}", rgb);
+        Color { indexed: None, rgb: Some(rgb), theme: None, tint: None, auto: None }
+    }
+
     pub(crate) fn from_index(id: u8) -> Color {
         Color { indexed: Some(id), rgb: None, theme: None, tint: None, auto: None }
     }

@@ -3,25 +3,6 @@ mod tests {
     use edit_xlsx::{Read, Workbook, WorkbookResult, WorkSheetCol, WorkSheetRow, Write};
 
     #[test]
-    #[cfg(feature = "ansi_term_support")]
-    fn test_read_ansi_from() -> WorkbookResult<()> {
-        use ansi_term::ANSIStrings;
-        let reading_book = Workbook::from_path("./tests/xlsx/accounting.xlsx")?;
-        let reading_sheet = reading_book.get_worksheet(1)?;
-        // Read then write text and format
-        for row in 1..=reading_sheet.max_column() {
-            for col in 1..=reading_sheet.max_row() {
-                if let Ok(cell) = reading_sheet.read_cell((row, col)) {
-                    println!("{:?}", cell);
-                    print!("{}\t", ANSIStrings(&cell.ansi_strings()));
-                }
-            }
-            println!();
-        }
-        Ok(())
-    }
-
-    #[test]
     fn test_from() -> WorkbookResult<()> {
         // Read an existed workbook
         let reading_book = Workbook::from_path("./tests/xlsx/accounting.xlsx")?;
@@ -134,25 +115,7 @@ mod tests {
         worksheet.write_row("B9", &["hello", "world", "hello", "rust"])?;
         let cell = worksheet.read_cell("C28")?;
         println!("{:?}", cell);
-        #[cfg(feature = "ansi_term_support")]
-        {
-            use ansi_term::{ANSIStrings};
-            println!("{}", ANSIStrings(&cell.ansi_strings()));
-        }
         let cell = worksheet.read_cell("A8")?;
-        println!("{:?}", cell);
-        #[cfg(feature = "ansi_term_support")]
-        {
-            use ansi_term::{ANSIStrings};
-            println!("{}", ANSIStrings(&cell.ansi_strings()));
-        }
-        let cell = worksheet.read_cell("A1")?;
-        println!("{:?}", cell);
-        #[cfg(feature = "ansi_term_support")]
-        {
-            use ansi_term::{ANSIStrings};
-            println!("{}", ANSIStrings(&cell.ansi_strings()));
-        }
         schedule_workbook.save_as("./tests/output/read_cell_test_from_shift_schedule.xlsx")?;
         Ok(())
     }

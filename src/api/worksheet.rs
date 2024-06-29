@@ -5,6 +5,7 @@ pub(crate) mod read;
 mod format;
 mod hyperlink;
 mod image;
+mod theme;
 
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -12,7 +13,7 @@ use std::fs::File;
 use std::path::Path;
 use std::rc::Rc;
 use zip::ZipArchive;
-use crate::{Filters, FormatColor, xml};
+use crate::{Cell, Filters, Format, FormatColor, FormatFill, FormatFont, xml};
 use crate::api::cell::location::{Location, LocationRange};
 use crate::api::worksheet::col::WorkSheetCol;
 use crate::api::worksheet::image::Image;
@@ -45,6 +46,7 @@ pub struct WorkSheet {
     style_sheet: Rc<RefCell<StyleSheet>>,
     content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
     medias: Rc<RefCell<xml::medias::Medias>>,
+    themes: Rc<RefCell<xml::theme::Themes>>,
     vml_drawing: Option<VmlDrawing>,
     drawings: Option<Drawings>,
     drawings_rel: Option<Relationships>,
@@ -286,6 +288,7 @@ impl WorkSheet {
             style_sheet: workbook.style_sheet.clone(),
             content_types: workbook.content_types.clone(),
             medias: workbook.medias.clone(),
+            themes: workbook.themes.clone(),
             vml_drawing: None,
             drawings: None,
             drawings_rel: None,
@@ -312,6 +315,7 @@ impl WorkSheet {
             style_sheet: worksheet.style_sheet.clone(),
             content_types: worksheet.content_types.clone(),
             medias: worksheet.medias.clone(),
+            themes: worksheet.themes.clone(),
             vml_drawing: None,
             drawings: worksheet.drawings.clone(),
             drawings_rel: worksheet.drawings_rel.clone(),
@@ -332,6 +336,7 @@ impl WorkSheet {
         style_sheet: Rc<RefCell<StyleSheet>>,
         content_types: Rc<RefCell<xml::content_types::ContentTypes>>,
         medias: Rc<RefCell<xml::medias::Medias>>,
+        themes: Rc<RefCell<xml::theme::Themes>>,
         metadata: Rc<RefCell<Metadata>>,
         shared_string: Rc<SharedString>,
     ) -> WorkSheet {
@@ -366,6 +371,7 @@ impl WorkSheet {
             style_sheet,
             content_types,
             medias,
+            themes,
             vml_drawing,
             drawings,
             drawings_rel,
