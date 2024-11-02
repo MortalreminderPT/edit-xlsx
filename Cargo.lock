@@ -163,7 +163,7 @@ dependencies = [
 
 [[package]]
 name = "edit-xlsx"
-version = "0.4.5"
+version = "0.4.6"
 dependencies = [
  "ansi_term",
  "futures",
