@@ -136,8 +136,26 @@ impl Relationships {
             .find(|r| r.id == *r_id)
             .map(|r| &r.target)
             .unwrap();
-        let target_id: u32 = target[16..target.len() - 4].parse().unwrap();
+        // let target_id: u32 = target[16..target.len() - 4].parse().unwrap();
+        let target_id: u32 = self.get_target_id(&target);
         (target, target_id)
+    }
+
+    fn get_target_id(&self, target: &String) -> u32 {
+        let mut last_num: String = String::new();
+        let mut current_num: String = String::new();
+        target.chars().for_each(|c| {
+            if c.is_digit(10) {
+                current_num.push(c)
+            }
+            else {
+                if !current_num.is_empty() {
+                    last_num = current_num.clone();
+                    current_num = String::new();
+                }
+            }
+        });
+        last_num.parse().unwrap_or(0)
     }
 
     fn get_rid_by_type(&self, rel_type: RelType) -> Vec<u32> {

@@ -19,7 +19,7 @@ mod tests {
     #[test]
     fn test_from() -> WorkbookResult<()> {
         let mut workbook = Workbook::from_path("tests/xlsx/many_sheets.xlsx")?;
-        for i in 1..6 {
+        for i in 1..workbook.sheets.len() as u32 {
             workbook.duplicate_worksheet(i)?;
         }
         workbook.save_as("tests/output/duplicate_test_from.xlsx")?;
