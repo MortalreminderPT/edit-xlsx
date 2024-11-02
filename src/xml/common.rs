@@ -52,7 +52,7 @@ pub(crate) struct XmlnsAttrs {
 }
 
 impl XmlnsAttrs {
-    fn default_none() -> XmlnsAttrs {
+    pub(crate) fn default_none() -> XmlnsAttrs {
         XmlnsAttrs {
             xmlns: None,
             xmlns_r: None,

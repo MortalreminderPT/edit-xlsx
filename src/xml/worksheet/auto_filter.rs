@@ -1,13 +1,26 @@
 use serde::{Deserialize, Serialize};
 use crate::Filters as ApiFilters;
 use crate::Filter as ApiFilter;
+use crate::xml::common::XmlnsAttrs;
 
-#[derive(Debug, Clone, Deserialize, Serialize, Default)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct AutoFilter {
-    #[serde(rename = "@ref")]
+    #[serde(flatten)]
+    pub(crate) xmlns_attrs: XmlnsAttrs,
+    #[serde(rename = "@ref", default, skip_serializing_if = "String::is_empty")]
     pub(crate) sqref: String,
-    #[serde(rename = "filterColumn")]
-    filter_column: Vec<FilterColumn>,
+    #[serde(rename = "filterColumn", default, skip_serializing_if = "Vec::is_empty")]
+    filter_column: Vec<FilterColumn>
+}
+
+impl Default for AutoFilter {
+    fn default() -> Self {
+        AutoFilter {
+            xmlns_attrs: XmlnsAttrs::default_none(),
+            sqref: "".to_string(),
+            filter_column: vec![],
+        }
+    }
 }
 
 impl AutoFilter {

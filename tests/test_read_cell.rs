@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use edit_xlsx::{Read, Workbook, WorkbookResult, WorkSheetCol, WorkSheetRow, Write};
+    use edit_xlsx::{Cell, Read, Workbook, WorkbookResult, WorkSheetCol, WorkSheetResult, WorkSheetRow, Write};
 
     #[test]
     fn test_from() -> WorkbookResult<()> {
@@ -194,6 +194,33 @@ mod tests {
         worksheet.write_old_formula("F50", "=IF(C11=\"Yes\",0,IF(C10=\"Married Joint\",12900,8600))")?;
 
         calculator_workbook.save_as("./tests/output/read_cell_test_from_paycheck_calculator.xlsx")?;
+        Ok(())
+    }
+
+    #[test]
+    fn test_from_gridly() -> WorkbookResult<()> {
+        let mut workbook = Workbook::from_path("tests/xlsx/gridly.xlsx")?;
+        let sheet = workbook.get_worksheet_by_name("Sheet1")?;
+        let maxrow = sheet.max_row();
+        let maxcol = sheet.max_column();
+        // this results in 0, 0
+        eprintln!("Sheet dimensions: {} columns, {} rows.", maxcol, maxrow);
+        // skipped
+        for row in 0..44 {
+            for col in 0..44 {
+                let cell = sheet.read_cell((row, col)).unwrap_or_default();
+                if !cell.text.is_none() {
+                    println!("({:}, {:}) {:?}", row, col, cell);
+                }
+            }
+            // println!();
+        }
+
+        // most entries here contain Err; some have Ok but with empty text values
+        // let cells: Vec<Cell<String>> = (1..=44) // maxcol replaced with 44 for testing purposes
+        //     .map(|c| sheet.read_cell((0, c)).unwrap_or_default())
+        //     .collect();
+        // let c1 = sheet.read_cell("1A")?;
         Ok(())
     }
 }
